@@ -4,6 +4,7 @@ import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtin
 exclude = List(
     ".omp/**",
     ".agents/**",
+    ".obsidian/**",
     "dist/**",
     "CHANGELOG.md"
 )

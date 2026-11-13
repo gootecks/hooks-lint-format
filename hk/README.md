@@ -27,7 +27,7 @@ hk runs steps in parallel. The steps share no files: oxfmt ignores Markdown thro
 
 ## Exclude
 
-`exclude` lists paths no step should see: agent state (`.omp`, `.agents`), build output, generated files and `CHANGELOG.md`. commitizen writes `CHANGELOG.md`, and a failing Markdown check on it would leave a half-done version bump. An entry is justified only by the rules in [../docs/lint-policy.md](../docs/lint-policy.md).
+`exclude` lists paths no step should see: agent state (`.omp`, `.agents`), Obsidian app state (`.obsidian`), build output, generated files and `CHANGELOG.md`. Obsidian rewrites the files in `.obsidian` itself, so a formatter would only cause churn, and the plugin READMEs there are third-party text. commitizen writes `CHANGELOG.md`, and a failing Markdown check on it would leave a half-done version bump. An entry is justified only by the rules in [../docs/lint-policy.md](../docs/lint-policy.md).
 
 ## `rumdl-fix.sh`
 
