@@ -1,6 +1,6 @@
 # oxlint
 
-[oxlint](https://oxc.rs/docs/guide/usage/linter) 1.92.0 lints JS and TS. The hk step runs it as:
+[oxlint](https://oxc.rs/docs/guide/usage/linter) lints JS and TS. The hk step runs it as:
 
 ```sh
 oxlint --type-aware --type-check --deny-warnings {{files}}
@@ -21,27 +21,32 @@ oxlint hands type-aware work to an external binary. This kit uses `tsrs-lint` fr
 
 Install: [../mise](../mise/README.md) (local cargo build) and [../github/hk.yml](../github/hk.yml) (npm in CI).
 
+### Checking the install
+
+`tsrs-lint` rejects `--version` ("unknown option: --version"), so do not use it as a check. Run:
+
+```sh
+~/.local/bin/tsrs --version
+test -x ~/.local/bin/tsrs-lint
+```
+
+The first prints the TypeScript and tsrs versions and proves the build works. The second proves the launcher that oxlint calls exists and is executable.
+
 ## .oxlintrc.json
 
 The template only adds one override:
 
-- `typescript/await-thenable` is off for `**/*.test.ts`. Bun's type declarations make `expect(promise).rejects` look non-thenable, so the rule asks to remove an `await` that the assertion needs at runtime. Removing it would make those tests pass vacuously.
+- `typescript/await-thenable` is off for `**/*.test.ts`. Bun's type declarations make `expect(promise).rejects` look non-thenable, so the rule asks to remove an `await` that the assertion needs at runtime. Removing it would make those tests pass vacuously. This is the shape every exception needs: the rule, the glob, the reason and the consequence ([../docs/lint-policy.md](../docs/lint-policy.md)).
 
 `$schema` points at the published schema because oxlint comes from mise, not `node_modules`.
 
-## Adopting on an existing codebase
+## Existing codebases with a backlog
 
-`--type-check` usually surfaces a backlog. On icon-composer-mcp the first run reported 399 errors:
+`--type-check` usually surfaces a backlog. Do not turn off a tsconfig flag, an oxlint rule or the step because of the count; `noUncheckedIndexedAccess` stays on. Follow [../docs/lint-policy.md](../docs/lint-policy.md):
 
-- 339 came from `noUncheckedIndexedAccess`. The flag was turned off in `tsconfig.json`; it can come back once the code is ready.
-- Exported MCP handler results were `interface`s; the MCP SDK's index-signatured `CallToolResult` only accepts a `type` alias, so `McpResult` became one.
-- The rest were fixed in code (a few lines in `src/cli.ts`, `src/types.ts` and the test helpers).
+1. Count errors by code: `oxlint --type-aware --type-check -f json`.
+2. Run the auto-fix: `oxlint --type-aware --type-check --deny-warnings --fix`.
+3. Fix the rest at the cause. Example from icon-composer-mcp, where the first run reported 399 errors: exported MCP handler results were `interface`s, and the MCP SDK's index-signatured `CallToolResult` only accepts a `type` alias, so changing `McpResult` to a `type` removed a whole class of errors at once.
+4. Report the counts to the user before changing any config.
 
-Count errors by code first (`oxlint --type-aware --type-check -f json`), and decide per flag rather than per line.
-
-## Adopt
-
-1. Copy `.oxlintrc.json` to the repo root.
-2. Run `mise run tsrs:install` and confirm `~/.local/bin/tsrs-lint --version` works.
-3. Install the repo's dependencies; type-aware rules resolve types from `node_modules`.
-4. Run `hk check --all` and work through the backlog as above.
+To add oxlint to a repository, follow the [adopt skill](../skills/hooks-lint-format/SKILL.md).

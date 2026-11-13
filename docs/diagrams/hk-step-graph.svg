@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" role="img" aria-labelledby="t d">
+<title id="t">hk steps: which files go where</title>
+<desc id="d">Each hk step receives only its own file family from the staged files. oxfmt formats code and config and ignores Markdown. rumdl alone formats and lints Markdown, with the repo-markdown-fixer agent handling leftovers locally. oxlint lints JS and TS through the tsrs-lint backend. actionlint and zizmor check GitHub workflows. No step depends on another.</desc>
+<style>
+:root{--paper:#faf8f5;--ink:#1f2430;--mut:#545a6a;--acc:#b8460f;--raise:#fff;--rule:#bdb8ae;--tint:#f3ede4}
+@media (prefers-color-scheme:dark){:root{--paper:#2d3142;--ink:#f5f5f5;--mut:#c6c8d0;--acc:#f08a59;--raise:#393e53;--rule:#646a82;--tint:#363b50}}
+text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;fill:var(--mut)}
+.m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10.5px}
+.h{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.n{font-size:13px;font-weight:600;fill:var(--ink)}
+.c{text-anchor:middle}
+.i{font-style:italic;font-size:12px}
+.k{fill:var(--ink)}
+.a{fill:var(--acc)}
+.bg{fill:var(--paper)}
+.box{fill:var(--raise);stroke:var(--ink);stroke-width:1}
+.foc{fill:var(--tint);stroke:var(--acc);stroke-width:1.4}
+.inp{fill:var(--tint);stroke:var(--mut);stroke-width:1}
+.opt{fill:none;stroke:var(--mut);stroke-width:1;stroke-dasharray:4 3}
+.bin{fill:var(--tint);stroke:var(--mut);stroke-width:1}
+.ln{stroke:var(--mut);stroke-width:1.3;fill:none}
+.dsh{stroke:var(--mut);stroke-width:1.3;fill:none;stroke-dasharray:5 4}
+.arr{fill:var(--mut)}
+</style>
+<defs>
+<marker id="ar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="arr" points="0 0,8 3,0 6"/></marker>
+</defs>
+<rect class="bg" width="1000" height="570"/>
+
+<line class="ln" x1="200" y1="80" x2="338" y2="80" marker-end="url(#ar)"/>
+<line class="ln" x1="200" y1="172" x2="338" y2="172" marker-end="url(#ar)"/>
+<line class="ln" x1="200" y1="264" x2="338" y2="264" marker-end="url(#ar)"/>
+<line class="ln" x1="200" y1="356" x2="338" y2="356" marker-end="url(#ar)"/>
+<line class="ln" x1="200" y1="448" x2="338" y2="448" marker-end="url(#ar)"/>
+<line class="dsh" x1="620" y1="172" x2="698" y2="172" marker-end="url(#ar)"/>
+<line class="ln" x1="620" y1="264" x2="698" y2="264" marker-end="url(#ar)"/>
+
+<text class="m c h" x="269" y="74">code, config</text>
+<text class="m c h" x="269" y="166">markdown</text>
+<text class="m c h" x="269" y="258">js, ts</text>
+<text class="m c h" x="269" y="350">workflows</text>
+<text class="m c h" x="269" y="442">workflows</text>
+<text class="m c h" x="659" y="166">leftovers</text>
+<text class="m c h" x="659" y="258">backend</text>
+
+<rect class="inp" x="40" y="44" width="160" height="440" rx="6"/>
+<text class="m" x="52" y="62" style="font-size:10px">INPUT</text>
+<text class="n c" x="120" y="258">Staged files</text>
+<text class="m c" x="120" y="276">hk passes each step</text>
+<text class="m c" x="120" y="291">only its own files</text>
+
+<rect class="box" x="340" y="44" width="280" height="72" rx="6"/>
+<text class="n" x="356" y="72">oxfmt</text>
+<text class="m" x="356" y="90">JS/TS, JSON, YAML, TOML, CSS, HTML</text>
+<text class="m" x="356" y="105">check + fix, ignores Markdown</text>
+
+<rect class="foc" x="340" y="136" width="280" height="72" rx="6"/>
+<text class="n" x="356" y="164">rumdl</text>
+<text class="m" x="356" y="182">**/*.md  **/*.markdown  **/*.mdx</text>
+<text class="m" x="356" y="197">check + fix via hooks/rumdl-fix.sh</text>
+
+<rect class="box" x="340" y="228" width="280" height="72" rx="6"/>
+<text class="n" x="356" y="256">oxlint</text>
+<text class="m" x="356" y="274">JS/TS, check + fix</text>
+<text class="m" x="356" y="289" style="font-size:10px">--type-aware --type-check --deny-warnings</text>
+
+<rect class="box" x="340" y="320" width="280" height="72" rx="6"/>
+<text class="n" x="356" y="348">actionlint</text>
+<text class="m" x="356" y="366">.github/workflows/*.yml</text>
+<text class="m" x="356" y="381">check only</text>
+
+<rect class="box" x="340" y="412" width="280" height="72" rx="6"/>
+<text class="n" x="356" y="440">zizmor</text>
+<text class="m" x="356" y="458">workflows, action.yml, dependabot</text>
+<text class="m" x="356" y="473">check + fix (zizmor --fix)</text>
+
+<rect class="opt" x="700" y="136" width="260" height="72" rx="6"/>
+<text class="n" x="716" y="164">repo-markdown-fixer</text>
+<text class="m" x="716" y="182">omp agent, runs after rumdl --fix</text>
+<text class="m" x="716" y="197">off under CI or RUMDL_AGENT=0</text>
+
+<rect class="bin" x="700" y="228" width="260" height="72" rx="6"/>
+<text class="n" x="716" y="256">tsrs-lint</text>
+<text class="m" x="716" y="274">~/.local/bin/tsrs-lint</text>
+<text class="m" x="716" y="289">named by OXLINT_TSGOLINT_PATH</text>
+
+<text class="i" x="700" y="72">No step depends on another.</text>
+<text class="i" x="700" y="90">hk runs all five in parallel.</text>
+
+<line x1="40" y1="516" x2="960" y2="516" stroke="var(--rule)" stroke-width="1"/>
+<text class="m" x="40" y="536" style="font-size:10px;letter-spacing:.16em">LEGEND</text>
+<rect class="inp" x="40" y="548" width="16" height="11" rx="2"/>
+<text x="64" y="558">Input</text>
+<rect class="box" x="150" y="548" width="16" height="11" rx="2"/>
+<text x="174" y="558">hk step</text>
+<rect class="foc" x="270" y="548" width="16" height="11" rx="2"/>
+<text x="294" y="558">Markdown step</text>
+<rect class="bin" x="430" y="548" width="16" height="11" rx="2"/>
+<text x="454" y="558">Backend binary</text>
+<rect class="opt" x="600" y="548" width="16" height="11" rx="2"/>
+<text x="624" y="558">Optional agent, local only</text>
+</svg>
