@@ -2,6 +2,17 @@
 
 Each repo carries its own copy of these workflows; this directory is the canonical source.
 
+## hk.yml
+
+Runs `hk check --all` on pull requests and pushes to `main`, so a commit made with `--no-verify`, `HK=0` or without hooks installed still gets checked.
+
+1. `jdx/mise-action` installs every tool pinned in `mise.toml` and applies its `[env]`, including `OXLINT_TSGOLINT_PATH`.
+2. `npm install -g tsrs@<version>` provides `tsrs-lint`, linked to `~/.local/bin/tsrs-lint` where `OXLINT_TSGOLINT_PATH` points. The npm package is fine in CI; locally the kit builds tsrs with cargo ([../mise](../mise/README.md)).
+3. The dependency install step lets type-aware lint resolve imports. Replace `bun install` with the repo's own install.
+4. `hk check --all` runs the `check` hook: no fixes, no agent (`rumdl-fix.sh` is a fix command, and it skips the agent under `CI` anyway).
+
+Adopt: copy `hk.yml` to `.github/workflows/`, match the `tsrs` version to the local build (`~/.local/bin/tsrs --version`), and make the `check` job a required status check on `main`.
+
 ## release.yml
 
 Runs on every push to `main`, so merging a PR is the release trigger. It needs `.cz.toml` from `../commitizen`.

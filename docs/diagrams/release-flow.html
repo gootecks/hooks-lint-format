@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Release on every push to main</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Serif+TC:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #2d3142;   /* deep warm charcoal */
+      --color-ink:     #f5f5f5;   /* warm off-white */
+      --color-muted:   #bfc0c0;
+      --color-accent:  #f08a59;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', 'Noto Serif', 'Noto Serif KR', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .frame { max-width: 1200px; width: 100%; }
+    /* The SVG holds its readable width (min-width == the viewBox width, so the
+       type ramp is never silently scaled down). This wrapper lets a narrow
+       screen scroll the diagram instead of the whole page. */
+    .diagram-container { width: 100%; overflow-x: auto; }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+
+    svg { width: 100%; min-width: 1000px; display: block; }
+    /* Paper has no scrollbar, so the local scroller would clip instead of
+       scroll. Let the diagram scale down to the sheet: smaller but whole
+       beats sharp but cut off. Must come after the svg rule above - a media
+       query adds no specificity, so a later plain rule would win. */
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Flowchart · Release</p>
+    <h1>Release on every push to main</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="release-flow-title release-flow-desc">
+        <title id="release-flow-title">Release on every push to main</title>
+        <desc id="release-flow-desc">Flowchart showing how the release workflow turns Conventional Commits on main into a tagged GitHub Release, or exits with nothing to release.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#f08a59"/></marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#739fdf"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#2d3142"/>
+
+        <!-- Arrows -->
+        <line x1="200" y1="100" x2="260" y2="100" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="460" y1="100" x2="540" y2="100" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="700" y1="100" x2="760" y2="100" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="360" y1="156" x2="360" y2="252" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="860" y1="148" x2="860" y2="348" stroke="#f08a59" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+        <line x1="760" y1="380" x2="680" y2="380" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="480" y1="380" x2="400" y2="380" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- Arrow labels -->
+        <rect x="484" y="80" width="32" height="12" rx="2" fill="#2d3142"/>
+        <text x="500" y="89" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YES</text>
+        <rect x="374" y="196" width="44" height="12" rx="2" fill="#2d3142"/>
+        <text x="396" y="205" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">EXIT 21</text>
+
+        <!-- 1 Push to main (input oval) -->
+        <rect x="40" y="76" width="160" height="48" rx="20" fill="#2d3142"/>
+        <rect x="40" y="76" width="160" height="48" rx="20" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.30)" stroke-width="1"/>
+        <text x="120" y="98" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Push to main</text>
+        <text x="120" y="112" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">merge a PR</text>
+
+        <!-- 2 Decision -->
+        <polygon points="360,44 460,100 360,156 260,100" fill="#2d3142"/>
+        <polygon points="360,44 460,100 360,156 260,100" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="360" y="92" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Release-worthy</text>
+        <text x="360" y="106" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">commit?</text>
+        <text x="360" y="122" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">cz bump --get-next</text>
+
+        <!-- 3 Terminal: nothing to release -->
+        <rect x="280" y="252" width="160" height="48" rx="20" fill="#2d3142"/>
+        <rect x="280" y="252" width="160" height="48" rx="20" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.30)" stroke-width="1"/>
+        <text x="360" y="274" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Nothing to release</text>
+        <text x="360" y="288" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">run ends green</text>
+
+        <!-- 4 Capture notes -->
+        <rect x="540" y="76" width="160" height="48" rx="6" fill="#2d3142"/>
+        <rect x="540" y="76" width="160" height="48" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="620" y="98" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Capture notes</text>
+        <text x="620" y="112" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">cz changelog --dry-run</text>
+
+        <!-- 5 Bump (focal) -->
+        <rect x="760" y="52" width="200" height="96" rx="6" fill="#2d3142"/>
+        <rect x="760" y="52" width="200" height="96" rx="6" fill="rgba(240,138,89,0.10)" stroke="#f08a59" stroke-width="1"/>
+        <text x="860" y="74" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Bump</text>
+        <text x="860" y="90" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">cz bump --yes</text>
+        <text x="860" y="108" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">version files + CHANGELOG.md</text>
+        <text x="860" y="121" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">commit chore(release): vX.Y.Z</text>
+        <text x="860" y="134" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">tag vX.Y.Z</text>
+
+        <!-- 6 Build assets (optional) -->
+        <rect x="760" y="348" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="760" y="348" width="200" height="64" rx="6" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="860" y="370" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Build assets</text>
+        <text x="860" y="386" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">bun run build:bin</text>
+        <text x="860" y="400" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">failure leaves no pushed tag</text>
+
+        <!-- 7 Atomic push -->
+        <rect x="480" y="348" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="480" y="348" width="200" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="580" y="374" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Atomic push</text>
+        <text x="580" y="392" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">git push --atomic main + tag</text>
+
+        <!-- 8 GitHub Release -->
+        <rect x="200" y="348" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="200" y="348" width="200" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="300" y="370" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">GitHub Release</text>
+        <text x="300" y="386" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">gh release create --verify-tag</text>
+        <text x="300" y="400" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">notes + tarball assets</text>
+
+        <!-- Callout -->
+        <text x="200" y="468" fill="#bfc0c0" font-size="14" font-style="italic" font-family="'Instrument Serif', 'Noto Serif', serif">Pushes made with GITHUB_TOKEN start no other workflow,</text>
+        <text x="200" y="486" fill="#bfc0c0" font-size="14" font-style="italic" font-family="'Instrument Serif', 'Noto Serif', serif">so the bump commit cannot loop.</text>
+
+        <!-- Legend -->
+        <line x1="40" y1="540" x2="960" y2="540" stroke="rgba(245,245,245,0.10)" stroke-width="0.8"/>
+        <text x="40" y="556" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+        <rect x="40" y="572" width="24" height="12" rx="6" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.30)" stroke-width="1"/>
+        <text x="72" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Start / end</text>
+        <rect x="200" y="572" width="24" height="12" rx="2" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="232" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Step</text>
+        <polygon points="344,578 356,572 368,578 356,584" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="376" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Decision</text>
+        <rect x="500" y="572" width="24" height="12" rx="2" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="532" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Optional</text>
+        <rect x="660" y="572" width="24" height="12" rx="2" fill="rgba(240,138,89,0.10)" stroke="#f08a59" stroke-width="1"/>
+        <text x="692" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Focal</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

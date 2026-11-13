@@ -1,0 +1,63 @@
+// Canonical hk config from gootecks/hooks-lint-format/hk. Copies extend exclude and drop unused steps.
+amends "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
+
+exclude = List(
+    ".omp/**",
+    ".agents/**",
+    "dist/**",
+    "CHANGELOG.md"
+)
+
+steps {
+    ["actionlint"] = Builtins.actionlint
+    ["oxfmt"] = Builtins.oxfmt
+    ["oxlint"] = (Builtins.ox_lint) {
+        check = "oxlint --type-aware --type-check --deny-warnings {{files}}"
+        fix = "oxlint --type-aware --type-check --deny-warnings --fix {{files}}"
+    }
+    ["rumdl"] {
+        glob = "**/*.md"
+        depends = "oxfmt"
+        check = "rumdl check {{files}}"
+        fix = "hooks/rumdl-fix.sh {{files}}"
+    }
+    ["zizmor"] = Builtins.zizmor
+}
+
+hooks {
+    ["check"] {
+        fix = false
+        stage = false
+        stash = "none"
+    }
+    ["fix"] {
+        fix = true
+        stage = false
+        stash = "none"
+    }
+    ["pre-commit"] {
+        fix = true
+        stage = true
+        stash = "git"
+    }
+    ["commit-msg"] {
+        steps {
+            ["conventional-commit"] = Builtins.check_conventional_commit
+        }
+    }
+    ["prepare-commit-msg"] {
+        steps {
+            ["czg"] {
+                interactive = true
+                check = #"""
+                    [ -z "{{source}}" ] || exit 0
+                    [ -z "${CI:-}" ] && [ -z "${HK_AGENT:-}" ] || exit 0
+                    ( : < /dev/tty ) 2>/dev/null || exit 0
+                    exec < /dev/tty
+                    czg --hook || true
+                    """#
+            }
+        }
+    }
+}

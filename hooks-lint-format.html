@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hooks-lint-format</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Serif+TC:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--color-paper:#2d3142;--color-ink:#f5f5f5;--color-muted:#bfc0c0;--color-accent:#f08a59;--raise:#393e53;--rule:rgba(245,245,245,.14);--code:#232635;
+--font-sans:'Geist',system-ui,sans-serif;--font-serif:'Instrument Serif','Noto Serif',serif;--font-mono:'Geist Mono',ui-monospace,monospace}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--color-paper);color:var(--color-ink);line-height:1.6;font-size:1rem;padding:3rem 1.5rem 5rem}
+.frame{max-width:1100px;margin:0 auto}
+.eyebrow{font-family:var(--font-mono);font-size:.66rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--color-muted);margin-bottom:.5rem}
+h1{font-family:var(--font-serif);font-weight:400;font-size:clamp(2.4rem,4vw+1rem,3.6rem);letter-spacing:-.02em;line-height:1.08;margin-bottom:1rem}
+h2{font-family:var(--font-serif);font-weight:400;font-size:clamp(1.6rem,2vw+1rem,2.2rem);letter-spacing:-.02em;line-height:1.15;margin-bottom:1rem}
+h3{font-family:var(--font-serif);font-weight:400;font-size:1.5rem;letter-spacing:-.01em;line-height:1.2}
+.lede{font-size:1.15rem;color:var(--color-muted);max-width:46rem}
+nav{margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em}
+nav a{color:var(--color-muted);text-decoration:none;border-bottom:1px solid var(--rule)}
+nav a:hover{color:var(--color-ink);border-color:var(--color-accent)}
+section{margin-top:3.5rem;padding-top:2rem;border-top:1px solid var(--rule)}
+header{padding-bottom:.5rem}
+p{margin-bottom:.8rem;max-width:50rem}
+ul,ol{margin:0 0 1rem 1.3rem;max-width:50rem}
+li{margin-bottom:.4rem}
+li::marker{color:var(--color-muted)}
+a{color:var(--color-ink);text-decoration-color:var(--color-accent);text-underline-offset:3px}
+a:hover{color:var(--color-accent)}
+code{font-family:var(--font-mono);font-size:.84em;background:var(--code);border:1px solid var(--rule);border-radius:3px;padding:.08em .35em;color:var(--color-ink)}
+pre{background:var(--code);border:1px solid var(--rule);border-left:2px solid var(--color-accent);border-radius:4px;padding:.9rem 1.1rem;overflow-x:auto;margin:.4rem 0 1.1rem;line-height:1.5}
+pre code{background:none;border:0;padding:0;font-size:.82rem;color:var(--color-ink)}
+.tbl{overflow-x:auto;margin:.4rem 0 1.2rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th{font-family:var(--font-mono);font-size:.66rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--color-muted);text-align:left;padding:.55rem .8rem;border-bottom:1px solid var(--color-muted);white-space:nowrap}
+td{padding:.55rem .8rem;border-bottom:1px solid var(--rule);vertical-align:top}
+tbody tr:hover td{background:rgba(245,245,245,.03)}
+.diagram-container{width:100%;overflow-x:auto;margin:1rem 0 1.5rem;border:1px solid var(--rule);border-radius:6px}
+svg{width:100%;min-width:1000px;display:block}
+.cards{display:grid;grid-template-columns:1fr;gap:1rem}
+.card{background:var(--raise);border:1px solid var(--rule);border-radius:6px;padding:1.2rem 1.4rem}
+.card.focal{border-color:var(--color-accent)}
+.card header{display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem .9rem;margin-bottom:.7rem;padding:0}
+.card .ver{font-family:var(--font-mono);font-size:.72rem;color:var(--color-muted);letter-spacing:.06em}
+.card .src{margin-left:auto;font-family:var(--font-mono);font-size:.72rem}
+.card p,.card ul,.card ol{max-width:none}
+.card pre,.card code{background:var(--code)}
+.card ul:last-child,.card p:last-child,.card pre:last-child{margin-bottom:0}
+.note{font-family:var(--font-mono);font-size:.72rem;color:var(--color-muted);letter-spacing:.04em}
+footer{margin-top:3.5rem;padding-top:1.2rem;border-top:1px solid var(--rule)}
+footer p{font-size:.85rem;color:var(--color-muted)}
+@media print{.diagram-container{overflow-x:visible}svg{min-width:0}}
+</style>
+</head>
+<body>
+<div class="frame">
+<header>
+<p class="eyebrow">Reference · gootecks</p>
+<h1>hooks-lint-format</h1>
+<p class="lede">Shared git hooks, linters, formatters and release automation for gootecks repos: each directory holds a canonical config and a README, and repos carry copies.</p>
+<nav><a href="#glance">At a glance</a><a href="#lifecycle">Commit lifecycle</a><a href="#steps">Steps</a><a href="#tools">Tools</a><a href="#ci">CI</a><a href="#release">Release</a><a href="#adopt">Adopt</a></nav>
+</header>
+
+<section id="glance">
+<h2>At a glance</h2>
+<div class="tbl"><table><thead><tr><th>Tool</th><th>Version</th><th>What it does</th></tr></thead><tbody>
+<tr><td><a href="hk/README.md">hk</a></td><td>2.12.0</td><td>Runs every step as git hooks, <code>hk check</code> and <code>hk fix</code></td></tr>
+<tr><td><a href="mise/README.md">mise</a></td><td>n/a</td><td>Pins every tool; builds tsrs-lint</td></tr>
+<tr><td><a href="oxfmt/README.md">oxfmt</a></td><td>0.77.0</td><td>Formats code, config and Markdown</td></tr>
+<tr><td><a href="oxlint/README.md">oxlint</a> + tsrs-lint</td><td>1.92.0 + 0.25.0</td><td>Lints JS/TS with type-aware rules and type errors</td></tr>
+<tr><td><a href="rumdl/README.md">rumdl</a></td><td>0.3.2</td><td>Lints Markdown structure; an agent fixes the leftovers</td></tr>
+<tr><td><a href="actionlint/README.md">actionlint</a></td><td>1.7.12</td><td>Checks workflow syntax and expressions</td></tr>
+<tr><td><a href="zizmor/README.md">zizmor</a></td><td>1.30.1</td><td>Audits workflow security</td></tr>
+<tr><td><a href="czg/README.md">czg</a></td><td>1.14.0</td><td>Prompts for a Conventional Commit message</td></tr>
+<tr><td><a href="commitizen/README.md">commitizen</a></td><td>4.19.3</td><td>Bumps the version, writes the changelog, tags</td></tr>
+<tr><td><a href="github/README.md">github</a></td><td>GitHub Actions</td><td><code>hk check</code> in CI; release on every push to <code>main</code></td></tr>
+</tbody></table></div>
+<p>Versions change in this repo first, then in each repo. Every copied file keeps a first-line comment naming its source directory, where the format allows comments. Type-aware linting uses tsrs-lint only.</p>
+</section>
+
+<section id="lifecycle">
+<h2>Commit lifecycle</h2>
+<div class="diagram-container">
+<svg viewBox="0 0 1000 796" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="hk-commit-lifecycle-title hk-commit-lifecycle-desc">
+        <title id="hk-commit-lifecycle-title">What happens on git commit</title>
+        <desc id="hk-commit-lifecycle-desc">The sequence of git hooks hk runs during a commit.</desc>
+        <defs>
+          <marker id="life-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker>
+          <marker id="life-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#f08a59"/></marker>
+          <marker id="life-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#739fdf"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#2d3142"/>
+
+      <rect x="88" y="472" width="568" height="88" rx="4" fill="rgba(245,245,245,0.04)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <rect x="88" y="472" width="40" height="16" rx="2" fill="#2d3142" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <text x="108" y="484" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">OPT</text>
+      <text x="156" y="504" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.04em">[NO -M, TTY]</text>
+      <text x="236" y="504" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace">not CI / HK_AGENT</text>
+      <line x1="140" y1="112" x2="140" y2="716" stroke="rgba(245,245,245,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="380" y1="112" x2="380" y2="716" stroke="rgba(245,245,245,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="620" y1="112" x2="620" y2="716" stroke="rgba(245,245,245,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="860" y1="112" x2="860" y2="716" stroke="rgba(245,245,245,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <rect x="136" y="136" width="8" height="572" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="376" y="136" width="8" height="572" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="616" y="180" width="8" height="216" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="616" y="444" width="8" height="104" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="616" y="596" width="8" height="64" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="856" y="268" width="8" height="72" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <line x1="144" y1="144" x2="376" y2="144" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#life-arrow)"/>
+      <rect x="227" y="124" width="66" height="12" rx="2" fill="#2d3142"/>
+      <text x="260" y="133" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GIT COMMIT</text>
+      <line x1="384" y1="184" x2="616" y2="184" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#life-arrow)"/>
+      <rect x="467" y="164" width="66" height="12" rx="2" fill="#2d3142"/>
+      <text x="500" y="173" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PRE-COMMIT</text>
+      <path d="M624 212 H640 a8 8 0 0 1 8 8 V228 a8 8 0 0 1 -8 8 H626" fill="none" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#life-arrow)"/>
+      <text x="660" y="221" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.08em">STASH UNSTAGED</text>
+      <text x="660" y="233" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace">stash = "git"</text>
+      <line x1="624" y1="272" x2="856" y2="272" stroke="#f08a59" stroke-width="1.4" marker-end="url(#life-arrow-accent)"/>
+      <rect x="710" y="252" width="61" height="12" rx="2" fill="#2d3142"/>
+      <text x="740" y="261" fill="#f08a59" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">RUN STEPS</text>
+      <text x="740" y="296" fill="#bfc0c0" font-size="11" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="middle">fix = true · parallel · rumdl after oxfmt</text>
+      <line x1="856" y1="336" x2="626" y2="336" stroke="#bfc0c0" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#life-arrow)"/>
+      <rect x="700" y="316" width="81" height="12" rx="2" fill="#2d3142"/>
+      <text x="740" y="325" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">FIXES / FAILS</text>
+      <line x1="616" y1="392" x2="388" y2="392" stroke="#f08a59" stroke-width="1.4" marker-end="url(#life-arrow-accent)"/>
+      <rect x="467" y="372" width="71" height="12" rx="2" fill="#2d3142"/>
+      <text x="502" y="381" fill="#f08a59" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STAGE FIXES</text>
+      <text x="502" y="410" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">stage = true · restore stash</text>
+      <text x="366" y="396" fill="#bfc0c0" font-size="11" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="end">on failure the commit aborts</text>
+      <line x1="384" y1="448" x2="616" y2="448" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#life-arrow)"/>
+      <rect x="465" y="428" width="71" height="12" rx="2" fill="#2d3142"/>
+      <text x="500" y="437" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PREPARE-MSG</text>
+      <line x1="616" y1="536" x2="146" y2="536" stroke="#bfc0c0" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#life-arrow)"/>
+      <rect x="467" y="516" width="66" height="12" rx="2" fill="#2d3142"/>
+      <text x="500" y="525" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CZG PROMPT</text>
+      <line x1="384" y1="600" x2="616" y2="600" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#life-arrow)"/>
+      <rect x="467" y="580" width="66" height="12" rx="2" fill="#2d3142"/>
+      <text x="500" y="589" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">COMMIT-MSG</text>
+      <path d="M624 624 H640 a8 8 0 0 1 8 8 V640 a8 8 0 0 1 -8 8 H626" fill="none" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#life-arrow)"/>
+      <text x="660" y="633" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.08em">CHECK MESSAGE</text>
+      <text x="660" y="645" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace">check_conventional_commit</text>
+      <text x="660" y="657" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace">rejects non-Conventional</text>
+      <line x1="376" y1="700" x2="146" y2="700" stroke="#bfc0c0" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#life-arrow)"/>
+      <rect x="218" y="680" width="86" height="12" rx="2" fill="#2d3142"/>
+      <text x="261" y="689" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">COMMIT CREATED</text>
+      <rect x="60" y="40" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="60" y="40" width="160" height="72" rx="6" fill="rgba(245,245,245,0.04)" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="68" y="48" width="32" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.30)" stroke-width="0.8"/>
+      <text x="84" y="57" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">USER</text>
+      <text x="140" y="78" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Developer</text>
+      <rect x="300" y="40" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="300" y="40" width="160" height="72" rx="6" fill="rgba(245,245,245,0.04)" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="308" y="48" width="28" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.30)" stroke-width="0.8"/>
+      <text x="322" y="57" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">VCS</text>
+      <text x="380" y="78" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">git</text>
+      <rect x="540" y="40" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="540" y="40" width="160" height="72" rx="6" fill="rgba(245,245,245,0.04)" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="548" y="48" width="36" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.30)" stroke-width="0.8"/>
+      <text x="566" y="57" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HOOKS</text>
+      <text x="620" y="78" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">hk</text>
+      <rect x="780" y="40" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="780" y="40" width="160" height="72" rx="6" fill="rgba(245,245,245,0.04)" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="788" y="48" width="36" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.30)" stroke-width="0.8"/>
+      <text x="806" y="57" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEPS</text>
+      <text x="860" y="78" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Steps</text>
+      <text x="860" y="92" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">oxfmt oxlint rumdl</text>
+      <text x="860" y="104" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">actionlint zizmor</text>
+      <line x1="56" y1="740" x2="944" y2="740" stroke="rgba(245,245,245,0.12)" stroke-width="0.8"/>
+      <text x="56" y="756" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+      <line x1="56" y1="776" x2="84" y2="776" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#life-arrow)"/>
+      <text x="92" y="780" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Call</text>
+      <line x1="200" y1="776" x2="228" y2="776" stroke="#bfc0c0" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#life-arrow)"/>
+      <text x="236" y="780" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Return</text>
+      <rect x="340" y="767" width="28" height="18" rx="2" fill="rgba(245,245,245,0.04)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <text x="348" y="779" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace">OPT</text>
+      <text x="376" y="780" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Optional, guarded</text>
+      <line x1="540" y1="776" x2="568" y2="776" stroke="#f08a59" stroke-width="1.4" marker-end="url(#life-arrow-accent)"/>
+      <text x="576" y="780" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Focal: fix and stage</text>
+      </svg>
+</div>
+<ul>
+<li><code>pre-commit</code> applies fixes and stages them. <code>stash = "git"</code> stashes unstaged changes first, so fixes only touch what is being committed.</li>
+<li><code>prepare-commit-msg</code> opens the czg prompt for a plain <code>git commit</code>. It does nothing when a message already exists, under <code>CI</code> or <code>HK_AGENT</code>, or without a terminal.</li>
+<li><code>commit-msg</code> runs <code>Builtins.check_conventional_commit</code> and rejects messages that are not Conventional Commits. commitizen reads those messages to pick the next version.</li>
+<li><code>check</code> makes no fixes, no staging and no stash; CI runs it. <code>fix</code> applies fixes to the working tree and stages nothing.</li>
+</ul>
+</section>
+
+<section id="steps">
+<h2>Steps</h2>
+<div class="diagram-container">
+<svg viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="hk-step-graph-title hk-step-graph-desc">
+        <title id="hk-step-graph-title">hk steps: which files go where</title>
+        <desc id="hk-step-graph-desc">Each hk step receives only its own file family from the staged files: oxfmt all text, rumdl Markdown only after oxfmt has formatted it, oxlint TypeScript through the tsrs-lint backend, and actionlint and zizmor the GitHub workflows, with an optional agent handling rumdl leftovers.</desc>
+        <defs>
+          <marker id="steps-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker>
+          <marker id="steps-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#f08a59"/></marker>
+          <marker id="steps-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#739fdf"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#2d3142"/>
+
+        <!-- Arrows first -->
+        <line x1="200" y1="72" x2="340" y2="72" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#steps-arrow)"/>
+        <line x1="200" y1="168" x2="340" y2="168" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#steps-arrow)"/>
+        <line x1="200" y1="264" x2="340" y2="264" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#steps-arrow)"/>
+        <line x1="200" y1="360" x2="340" y2="360" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#steps-arrow)"/>
+        <path d="M 130,376 V 412 Q 130,420 138,420 H 812 Q 820,420 820,412 V 392" fill="none" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#steps-arrow)"/>
+        <line x1="440" y1="104" x2="440" y2="136" stroke="#f08a59" stroke-width="1.4" marker-end="url(#steps-arrow-accent)"/>
+        <line x1="540" y1="168" x2="720" y2="168" stroke="#bfc0c0" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#steps-arrow)"/>
+        <line x1="540" y1="264" x2="720" y2="264" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#steps-arrow)"/>
+
+        <!-- Arrow labels -->
+        <rect x="246.0" y="52" width="48" height="12" rx="2" fill="#2d3142"/>
+        <text x="270" y="61" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">ALL TEXT</text>
+        <rect x="256.0" y="148" width="28" height="12" rx="2" fill="#2d3142"/>
+        <text x="270" y="157" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">*.MD</text>
+        <rect x="256.0" y="244" width="28" height="12" rx="2" fill="#2d3142"/>
+        <text x="270" y="253" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">*.TS</text>
+        <rect x="244.0" y="340" width="52" height="12" rx="2" fill="#2d3142"/>
+        <text x="270" y="349" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">WORKFLOWS</text>
+        <rect x="454.0" y="428" width="52" height="12" rx="2" fill="#2d3142"/>
+        <text x="480" y="437" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">WORKFLOWS</text>
+        <rect x="450" y="114" width="44" height="12" rx="2" fill="#2d3142"/>
+        <text x="472" y="123" fill="#f08a59" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">DEPENDS</text>
+        <rect x="602.0" y="148" width="56" height="12" rx="2" fill="#2d3142"/>
+        <text x="630" y="157" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LEFTOVERS</text>
+        <rect x="608.0" y="244" width="44" height="12" rx="2" fill="#2d3142"/>
+        <text x="630" y="253" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">BACKEND</text>
+
+        <!-- Nodes -->
+        <rect x="60" y="56" width="140" height="320" rx="6" fill="#2d3142"/>
+        <rect x="60" y="56" width="140" height="320" rx="6" fill="rgba(191,192,192,0.10)" stroke="#949eb2" stroke-width="1"/>
+        <rect x="68" y="64" width="20" height="12" rx="2" fill="transparent" stroke="rgba(148,158,178,0.50)" stroke-width="0.8"/>
+        <text x="78.0" y="73" fill="#949eb2" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">IN</text>
+        <text x="130.0" y="216" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Staged files</text>
+        <text x="130.0" y="232" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">git diff --cached</text>
+        <rect x="340" y="40" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="340" y="40" width="200" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <rect x="348" y="48" width="28" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.40)" stroke-width="0.8"/>
+        <text x="362.0" y="57" fill="#f5f5f5" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">FMT</text>
+        <text x="440.0" y="78" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">oxfmt</text>
+        <text x="440.0" y="94" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">ts json yaml toml md</text>
+        <rect x="340" y="136" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="340" y="136" width="200" height="64" rx="6" fill="rgba(240,138,89,0.08)" stroke="#f08a59" stroke-width="1"/>
+        <rect x="348" y="144" width="20" height="12" rx="2" fill="transparent" stroke="rgba(240,138,89,0.50)" stroke-width="0.8"/>
+        <text x="358.0" y="153" fill="#f08a59" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">MD</text>
+        <text x="440.0" y="174" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">rumdl</text>
+        <text x="440.0" y="190" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">**/*.md</text>
+        <rect x="340" y="232" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="340" y="232" width="200" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <rect x="348" y="240" width="28" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.40)" stroke-width="0.8"/>
+        <text x="362.0" y="249" fill="#f5f5f5" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">LINT</text>
+        <text x="440.0" y="270" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">oxlint</text>
+        <text x="440.0" y="286" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">--type-aware --type-check</text>
+        <rect x="340" y="328" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="340" y="328" width="200" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <rect x="348" y="336" width="20" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.40)" stroke-width="0.8"/>
+        <text x="358.0" y="345" fill="#f5f5f5" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CI</text>
+        <text x="440.0" y="366" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">actionlint</text>
+        <text x="440.0" y="382" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">.github/workflows</text>
+        <rect x="720" y="136" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="720" y="136" width="200" height="64" rx="6" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect x="728" y="144" width="36" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.30)" stroke-width="0.8"/>
+        <text x="746.0" y="153" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">ASYNC</text>
+        <text x="820.0" y="174" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">repo-markdown-fixer</text>
+        <text x="820.0" y="190" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">omp agent · local only</text>
+        <rect x="720" y="232" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="720" y="232" width="200" height="64" rx="6" fill="rgba(245,245,245,0.05)" stroke="#bfc0c0" stroke-width="1"/>
+        <rect x="728" y="240" width="28" height="12" rx="2" fill="transparent" stroke="rgba(191,192,192,0.50)" stroke-width="0.8"/>
+        <text x="742.0" y="249" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">BIN</text>
+        <text x="820.0" y="270" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">tsrs-lint</text>
+        <text x="820.0" y="286" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">~/.local/bin/tsrs-lint</text>
+        <rect x="720" y="328" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="720" y="328" width="200" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <rect x="728" y="336" width="28" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.40)" stroke-width="0.8"/>
+        <text x="742.0" y="345" fill="#f5f5f5" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SEC</text>
+        <text x="820.0" y="366" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">zizmor</text>
+        <text x="820.0" y="382" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">.github/workflows</text>
+
+        <!-- Legend strip -->
+        <line x1="60" y1="464" x2="940" y2="464" stroke="rgba(245,245,245,0.10)" stroke-width="0.8"/>
+        <text x="60" y="480" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+        <rect x="60" y="496" width="14" height="10" rx="2" fill="rgba(191,192,192,0.10)" stroke="#949eb2" stroke-width="1"/>
+        <text x="80" y="504" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Input</text>
+        <rect x="180" y="496" width="14" height="10" rx="2" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="200" y="504" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">hk step</text>
+        <rect x="300" y="496" width="14" height="10" rx="2" fill="rgba(240,138,89,0.08)" stroke="#f08a59" stroke-width="1"/>
+        <text x="320" y="504" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Focal step</text>
+        <rect x="440" y="496" width="14" height="10" rx="2" fill="rgba(245,245,245,0.05)" stroke="#bfc0c0" stroke-width="1"/>
+        <text x="460" y="504" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Backend binary</text>
+        <rect x="600" y="496" width="14" height="10" rx="2" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="620" y="504" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Optional agent (never in CI)</text>
+      </svg>
+</div>
+<div class="tbl"><table><thead><tr><th>Step</th><th>Files</th><th>Check / fix</th></tr></thead><tbody>
+<tr><td><code>actionlint</code></td><td><code>.github/workflows/*.yml</code></td><td>builtin, check only (<a href="actionlint/README.md">actionlint</a>)</td></tr>
+<tr><td><code>oxfmt</code></td><td>JS/TS, JSON, YAML, TOML, Markdown, more</td><td>builtin (<a href="oxfmt/README.md">oxfmt</a>)</td></tr>
+<tr><td><code>oxlint</code></td><td>JS/TS</td><td>builtin with <code>--type-aware --type-check --deny-warnings</code> (<a href="oxlint/README.md">oxlint</a>)</td></tr>
+<tr><td><code>rumdl</code></td><td><code>**/*.md</code></td><td><code>rumdl check</code>, fix with <code>hooks/rumdl-fix.sh</code> (<a href="rumdl/README.md">rumdl</a>)</td></tr>
+<tr><td><code>zizmor</code></td><td>workflows, <code>action.yml</code>, dependabot</td><td>builtin, check only (<a href="zizmor/README.md">zizmor</a>)</td></tr>
+</tbody></table></div>
+<p>hk runs steps in parallel. <code>rumdl</code> has <code>depends = "oxfmt"</code>, so it only sees Markdown that oxfmt has already formatted; otherwise the two fight over list markers and tables.</p>
+</section>
+
+<section id="tools">
+<h2>Tools</h2>
+<div class="cards">
+<article class="card" id="t-hk">
+<header><h3>hk</h3><span class="ver">2.12.0</span><a class="src" href="hk/README.md">hk/README.md</a></header>
+<p>Runs every linter and formatter as git hooks and as <code>hk check</code> / <code>hk fix</code>. <code>hk.pkl</code> is the canonical config; <code>hooks/rumdl-fix.sh</code> is the Markdown fix command.</p>
+<ul>
+<li><code>exclude</code> hides agent state (<code>.omp</code>, <code>.agents</code>), build output, generated files and <code>CHANGELOG.md</code>. A failing Markdown check on the changelog would leave a half-done version bump.</li>
+<li><code>rumdl</code> has <code>depends = "oxfmt"</code>, so it only sees formatted Markdown. Otherwise the two fight over list markers and tables.</li>
+<li><code>rumdl-fix.sh</code> runs <code>rumdl check --fix</code>, then launches the <code>repo-markdown-fixer</code> agent once for the leftovers. <code>RUMDL_AGENT=0</code> or <code>CI</code> skips the agent.</li>
+<li><code>HK=0</code> disables hk for one command (use it for <code>cz bump</code>). <code>HK_SKIP_STEPS=oxfmt git commit ...</code> skips named steps.</li>
+</ul>
+</article>
+<article class="card" id="t-mise">
+<header><h3>mise</h3><span class="ver">pins all tools</span><a class="src" href="mise/README.md">mise/README.md</a></header>
+<p>Pins every tool hk runs, so a clone, a teammate and CI get the same versions. <code>mise.toml</code> holds the pins.</p>
+<ul>
+<li>oxfmt and oxlint come from mise rather than <code>devDependencies</code>: lint versions change in one file and <code>bun install</code> stays out of the hook path.</li>
+<li>The hk pkl <code>amends</code> URL pins hk's config schema separately. Keep it on the same version as the <code>hk</code> pin.</li>
+<li><code>[env]</code> sets <code>OXLINT_TSGOLINT_PATH</code> to <code>~/.local/bin/tsrs-lint</code>. A shell-level <code>export</code> does not win: mise shims apply <code>[env]</code> when they run oxlint.</li>
+<li>Tasks: <code>tsrs:install</code>, <code>pre-commit</code>, <code>release:preview</code>. commitizen runs through <code>uvx</code> with a pinned version because mise's pipx backend is off on these machines.</li>
+</ul>
+</article>
+<article class="card" id="t-oxfmt">
+<header><h3>oxfmt</h3><span class="ver">0.77.0</span><a class="src" href="oxfmt/README.md">oxfmt/README.md</a></header>
+<p>Prettier-compatible formatter in Rust, run on JS/TS, JSON, YAML, TOML, Markdown, CSS, HTML and more. It replaced a Prettier hook: same output style, one native binary, no <code>node_modules</code> needed to format.</p>
+<ul>
+<li><code>printWidth: 120</code> fits a side-by-side diff on a laptop and avoids wrapping long literals and type signatures.</li>
+<li><code>singleQuote: true</code> matches the existing TS style; a quote flip would touch every file.</li>
+<li><code>sortPackageJson: false</code> keeps <code>package.json</code> key order. The default sort makes a noisy first-adoption diff.</li>
+<li><code>ignorePatterns</code> lists files it must not touch: third-party text, <code>**/*.icon/**</code>, fixtures whose bytes matter.</li>
+</ul>
+</article>
+<article class="card focal" id="t-oxlint">
+<header><h3>oxlint + tsrs-lint</h3><span class="ver">oxlint 1.92.0 · tsrs-lint 0.25.0</span><a class="src" href="oxlint/README.md">oxlint/README.md</a></header>
+<p>The hk step runs:</p>
+<pre><code>oxlint --type-aware --type-check --deny-warnings {{files}}</code></pre>
+<ul>
+<li><code>--type-aware</code> enables rules that need types, such as <code>typescript/no-floating-promises</code>.</li>
+<li><code>--type-check</code> also reports TypeScript compiler errors, replacing a separate <code>tsc --noEmit</code> hook.</li>
+<li><code>--deny-warnings</code> fails on warnings, so nothing stays at "warn" forever.</li>
+</ul>
+<p><strong>Backend: tsrs-lint only.</strong> The type-aware backend is <code>tsrs-lint</code> from <a href="https://github.com/oxc-project/tsrs">oxc-project/tsrs</a>, a Rust port of the TypeScript 7 checker. There is no tsgolint anywhere in the kit.</p>
+<ul>
+<li><strong>Local:</strong> <code>mise run tsrs:install</code> builds tsrs with cargo into <code>~/.local/bin</code>.</li>
+<li><strong>CI:</strong> the npm <code>tsrs</code> package is installed and its <code>tsrs-lint</code> launcher is linked to the same path.</li>
+<li><code>OXLINT_TSGOLINT_PATH</code> names the binary. If it is set and the file is missing, oxlint hard-fails instead of searching <code>PATH</code>, so a machine without tsrs-lint fails loudly.</li>
+<li>Measured on icon-composer-mcp <code>src/</code>: <strong>0.18 s</strong> with tsrs-lint against <strong>1.0 s</strong> with tsgolint.</li>
+<li><code>.oxlintrc.json</code> has one override: <code>typescript/await-thenable</code> is off for <code>**/*.test.ts</code>. Bun's types make <code>expect(promise).rejects</code> look non-thenable, and removing the needed <code>await</code> would make those tests pass vacuously.</li>
+<li>On an existing codebase <code>--type-check</code> surfaces a backlog (399 errors at first, 339 from <code>noUncheckedIndexedAccess</code>). Count errors by code with <code>-f json</code> and decide per flag, not per line.</li>
+</ul>
+</article>
+<article class="card" id="t-rumdl">
+<header><h3>rumdl</h3><span class="ver">0.3.2</span><a class="src" href="rumdl/README.md">rumdl/README.md</a></header>
+<p>Shared <code>.rumdl.toml</code> for Markdown formatted by oxfmt.</p>
+<ul>
+<li>Formatting rules follow rumdl's <code>prettier-compatible</code> example, because oxfmt rewrites that output: <code>MD004</code>, <code>MD007</code>, <code>MD029</code>, <code>MD049</code>, <code>MD050</code>, <code>MD060</code>.</li>
+<li>Structure rules follow <code>google-style</code> where the formatter has no say: <code>MD003</code> ATX headings, <code>MD046</code> fenced code, <code>MD009</code>. Google's bullets and indent are not used; oxfmt would rewrite them.</li>
+<li><code>MD076</code> is off: oxfmt sets list looseness per item, so mixed lists are valid.</li>
+<li><code>MD013</code> is off: oxfmt does not wrap prose, so line length would only flag existing text.</li>
+</ul>
+</article>
+<article class="card" id="t-actionlint">
+<header><h3>actionlint</h3><span class="ver">1.7.12</span><a class="src" href="actionlint/README.md">actionlint/README.md</a></header>
+<p>Checks workflow YAML structure, <code>${{ }}</code> expressions and types, <code>needs</code>/<code>matrix</code> references, runner labels and action inputs. With <code>shellcheck</code> on <code>PATH</code> it also checks <code>run:</code> scripts.</p>
+<ul>
+<li>Check-only builtin; no fixer and no config file. Add <code>.github/actionlint.yaml</code> only for self-hosted runner labels.</li>
+<li>actionlint answers "will it run"; zizmor answers "is it safe". Both run on the same files.</li>
+</ul>
+</article>
+<article class="card" id="t-zizmor">
+<header><h3>zizmor</h3><span class="ver">1.30.1</span><a class="src" href="zizmor/README.md">zizmor/README.md</a></header>
+<p>Audits workflows, composite actions and <code>dependabot.yml</code> for security problems. Check-only builtin; <code>zizmor --fix</code> applies safe fixes by hand.</p>
+<ul>
+<li>Actions are pinned by commit SHA with the tag as a comment (<code>unpinned-uses</code>).</li>
+<li><code>actions/checkout</code> uses <code>persist-credentials: false</code>, so the token is not left in <code>.git/config</code> (<code>artipacked</code>).</li>
+<li><code>permissions: contents: read</code> at the top; wider grants only on the job that needs them.</li>
+<li><code>${{ }}</code> values reach <code>run:</code> through <code>env:</code>, never inline (<code>template-injection</code>).</li>
+<li>Suppress with <code># zizmor: ignore[&lt;audit&gt;]</code> and a reason, placed after <code>run: |</code>, not inside the block.</li>
+</ul>
+</article>
+<article class="card" id="t-czg">
+<header><h3>czg</h3><span class="ver">1.14.0</span><a class="src" href="czg/README.md">czg/README.md</a></header>
+<p>Interactive prompt that writes a Conventional Commit message, opened by hk's <code>prepare-commit-msg</code> for a plain <code>git commit</code>.</p>
+<ul>
+<li>It exits without prompting when a message exists, when <code>CI</code> or <code>HK_AGENT</code> is set (automation never blocks), or when there is no <code>/dev/tty</code>.</li>
+<li>It is a personal tool, not pinned in <code>mise.toml</code>. Install once per machine: <code>bun add -g czg@1.14.0</code>. Without it the commit continues with the normal editor.</li>
+<li>It writes messages only. Versioning belongs to commitizen, which reads a different config.</li>
+</ul>
+</article>
+<article class="card" id="t-cz">
+<header><h3>commitizen</h3><span class="ver">4.19.3</span><a class="src" href="commitizen/README.md">commitizen/README.md</a></header>
+<p>Python <code>cz</code> bumps the version, writes <code>CHANGELOG.md</code> and tags, from <code>.cz.toml</code>.</p>
+<ul>
+<li><code>version_provider = "npm"</code> reads and writes <code>package.json</code>. Use <code>cargo</code>, <code>pep621</code> or <code>uv</code> elsewhere.</li>
+<li><code>tag_format = "v$version"</code> matches existing <code>vX.Y.Z</code> tags.</li>
+<li><code>update_changelog_on_bump</code> with <code>changelog_incremental</code> adds one section per release and leaves older ones alone.</li>
+<li><code>bump_message = "chore(release): v$new_version"</code> keeps the bump commit valid and unable to trigger another bump.</li>
+<li><code>cz bump --get-next</code> exits 21 when no commit is a <code>fix</code>, <code>feat</code> or breaking change. Set <code>HK=0</code> for local <code>cz bump</code>.</li>
+</ul>
+</article>
+</div>
+</section>
+
+<section id="ci">
+<h2>CI</h2>
+<p><code>hk.yml</code> runs <code>hk check --all</code> on pull requests and pushes to <code>main</code>, so a commit made with <code>--no-verify</code>, <code>HK=0</code> or without hooks installed is still checked. See <a href="github/README.md">github/README.md</a>.</p>
+<ol>
+<li><code>jdx/mise-action</code> installs every tool pinned in <code>mise.toml</code> and applies its <code>[env]</code>, including <code>OXLINT_TSGOLINT_PATH</code>.</li>
+<li><code>npm install -g tsrs@&lt;version&gt;</code> provides <code>tsrs-lint</code>, linked to <code>~/.local/bin/tsrs-lint</code>. Match the version to the local build.</li>
+<li>The repo's own dependency install lets type-aware lint resolve imports.</li>
+<li><code>hk check --all</code> runs the <code>check</code> hook: no fixes, no agent.</li>
+</ol>
+<p>Make the <code>check</code> job a required status check on <code>main</code>.</p>
+</section>
+
+<section id="release">
+<h2>Release</h2>
+<div class="diagram-container">
+<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="release-flow-title release-flow-desc">
+        <title id="release-flow-title">Release on every push to main</title>
+        <desc id="release-flow-desc">Flowchart showing how the release workflow turns Conventional Commits on main into a tagged GitHub Release, or exits with nothing to release.</desc>
+        <defs>
+          <marker id="rel-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker>
+          <marker id="rel-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#f08a59"/></marker>
+          <marker id="rel-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#739fdf"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#2d3142"/>
+
+        <!-- Arrows -->
+        <line x1="200" y1="100" x2="260" y2="100" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#rel-arrow)"/>
+        <line x1="460" y1="100" x2="540" y2="100" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#rel-arrow)"/>
+        <line x1="700" y1="100" x2="760" y2="100" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#rel-arrow)"/>
+        <line x1="360" y1="156" x2="360" y2="252" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#rel-arrow)"/>
+        <line x1="860" y1="148" x2="860" y2="348" stroke="#f08a59" stroke-width="1.4" marker-end="url(#rel-arrow-accent)"/>
+        <line x1="760" y1="380" x2="680" y2="380" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#rel-arrow)"/>
+        <line x1="480" y1="380" x2="400" y2="380" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#rel-arrow)"/>
+
+        <!-- Arrow labels -->
+        <rect x="484" y="80" width="32" height="12" rx="2" fill="#2d3142"/>
+        <text x="500" y="89" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">YES</text>
+        <rect x="374" y="196" width="44" height="12" rx="2" fill="#2d3142"/>
+        <text x="396" y="205" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">EXIT 21</text>
+
+        <!-- 1 Push to main (input oval) -->
+        <rect x="40" y="76" width="160" height="48" rx="20" fill="#2d3142"/>
+        <rect x="40" y="76" width="160" height="48" rx="20" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.30)" stroke-width="1"/>
+        <text x="120" y="98" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Push to main</text>
+        <text x="120" y="112" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">merge a PR</text>
+
+        <!-- 2 Decision -->
+        <polygon points="360,44 460,100 360,156 260,100" fill="#2d3142"/>
+        <polygon points="360,44 460,100 360,156 260,100" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="360" y="92" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Release-worthy</text>
+        <text x="360" y="106" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">commit?</text>
+        <text x="360" y="122" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">cz bump --get-next</text>
+
+        <!-- 3 Terminal: nothing to release -->
+        <rect x="280" y="252" width="160" height="48" rx="20" fill="#2d3142"/>
+        <rect x="280" y="252" width="160" height="48" rx="20" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.30)" stroke-width="1"/>
+        <text x="360" y="274" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Nothing to release</text>
+        <text x="360" y="288" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">run ends green</text>
+
+        <!-- 4 Capture notes -->
+        <rect x="540" y="76" width="160" height="48" rx="6" fill="#2d3142"/>
+        <rect x="540" y="76" width="160" height="48" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="620" y="98" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Capture notes</text>
+        <text x="620" y="112" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">cz changelog --dry-run</text>
+
+        <!-- 5 Bump (focal) -->
+        <rect x="760" y="52" width="200" height="96" rx="6" fill="#2d3142"/>
+        <rect x="760" y="52" width="200" height="96" rx="6" fill="rgba(240,138,89,0.10)" stroke="#f08a59" stroke-width="1"/>
+        <text x="860" y="74" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Bump</text>
+        <text x="860" y="90" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">cz bump --yes</text>
+        <text x="860" y="108" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">version files + CHANGELOG.md</text>
+        <text x="860" y="121" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">commit chore(release): vX.Y.Z</text>
+        <text x="860" y="134" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">tag vX.Y.Z</text>
+
+        <!-- 6 Build assets (optional) -->
+        <rect x="760" y="348" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="760" y="348" width="200" height="64" rx="6" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="860" y="370" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Build assets</text>
+        <text x="860" y="386" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">bun run build:bin</text>
+        <text x="860" y="400" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">failure leaves no pushed tag</text>
+
+        <!-- 7 Atomic push -->
+        <rect x="480" y="348" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="480" y="348" width="200" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="580" y="374" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Atomic push</text>
+        <text x="580" y="392" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">git push --atomic main + tag</text>
+
+        <!-- 8 GitHub Release -->
+        <rect x="200" y="348" width="200" height="64" rx="6" fill="#2d3142"/>
+        <rect x="200" y="348" width="200" height="64" rx="6" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="300" y="370" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">GitHub Release</text>
+        <text x="300" y="386" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">gh release create --verify-tag</text>
+        <text x="300" y="400" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">notes + tarball assets</text>
+
+        <!-- Callout -->
+        <text x="200" y="468" fill="#bfc0c0" font-size="14" font-style="italic" font-family="'Instrument Serif', 'Noto Serif', serif">Pushes made with GITHUB_TOKEN start no other workflow,</text>
+        <text x="200" y="486" fill="#bfc0c0" font-size="14" font-style="italic" font-family="'Instrument Serif', 'Noto Serif', serif">so the bump commit cannot loop.</text>
+
+        <!-- Legend -->
+        <line x1="40" y1="540" x2="960" y2="540" stroke="rgba(245,245,245,0.10)" stroke-width="0.8"/>
+        <text x="40" y="556" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+        <rect x="40" y="572" width="24" height="12" rx="6" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.30)" stroke-width="1"/>
+        <text x="72" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Start / end</text>
+        <rect x="200" y="572" width="24" height="12" rx="2" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="232" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Step</text>
+        <polygon points="344,578 356,572 368,578 356,584" fill="#393e53" stroke="#f5f5f5" stroke-width="1"/>
+        <text x="376" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Decision</text>
+        <rect x="500" y="572" width="24" height="12" rx="2" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="532" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Optional</text>
+        <rect x="660" y="572" width="24" height="12" rx="2" fill="rgba(240,138,89,0.10)" stroke="#f08a59" stroke-width="1"/>
+        <text x="692" y="582" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Focal</text>
+      </svg>
+</div>
+<p><code>release.yml</code> runs on every push to <code>main</code>, so merging a PR is the release trigger. It needs <code>.cz.toml</code> from <a href="commitizen/README.md">commitizen</a>.</p>
+<ol>
+<li><code>cz bump --get-next</code> reads the Conventional Commits since the last tag. Exit code 21 means nothing to release and the run ends green.</li>
+<li><code>cz changelog --dry-run --unreleased-version</code> produces the release notes. <code>cz bump --yes</code> then updates version files and <code>CHANGELOG.md</code>, commits <code>chore(release): vX.Y.Z</code> and tags <code>vX.Y.Z</code>.</li>
+<li><code>git push --atomic</code> sends the commit and tag to <code>main</code> together.</li>
+<li><code>gh release create --verify-tag</code> publishes the GitHub Release with the notes.</li>
+</ol>
+<ul>
+<li>Only the default <code>GITHUB_TOKEN</code> is used, with <code>contents: write</code> on the job. Its pushes do not start other workflows, so the bump commit cannot loop and <code>on: release</code> workflows do not fire. Use a PAT or GitHub App token when a release must trigger another workflow.</li>
+<li><code>main</code> must accept pushes from <code>github-actions[bot]</code>; a protected branch needs a bypass.</li>
+<li><code>concurrency: release</code> runs one release at a time. If <code>main</code> moves during a run the push fails and the next run releases everything.</li>
+</ul>
+</section>
+
+<section id="adopt">
+<h2>Adopt</h2>
+<ol>
+<li>Copy the configs: <code>hk.pkl</code>, <code>hooks/rumdl-fix.sh</code> (<code>chmod +x</code>), <code>.oxfmtrc.json</code>, <code>.oxlintrc.json</code>, <code>.rumdl.toml</code>, <code>.cz.toml</code>. Extend <code>exclude</code> and <code>ignorePatterns</code>; delete steps the repo has no files for.</li>
+<li>Merge <code>[tools]</code>, <code>[env]</code> and the tasks from <code>mise/mise.toml</code> into the repo's <code>mise.toml</code>, then run <code>mise install</code>.</li>
+<li>Run <code>mise run tsrs:install</code> once per machine and confirm <code>~/.local/bin/tsrs-lint --version</code> works.</li>
+<li>Run <code>hk install</code> once per clone.</li>
+<li>Run <code>hk check --all</code>. It must pass before the first commit with hooks; fix the backlog first.</li>
+<li>Copy <code>github/hk.yml</code> and <code>github/release.yml</code> to <code>.github/workflows/</code>.</li>
+</ol>
+<p>To do this on a repo, use the <code>hooks-lint-format</code> skill: <a href="skills/hooks-lint-format/SKILL.md"><code>skills/hooks-lint-format/SKILL.md</code></a>.</p>
+</section>
+
+<footer><p>Source: <a href="README.md">README.md</a> and the per-tool READMEs. Diagrams: <code>docs/diagrams/</code>.</p></footer>
+</div>
+</body>
+</html>
