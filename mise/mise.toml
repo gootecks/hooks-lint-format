@@ -25,3 +25,7 @@ run = "hk run pre-commit"
 [tasks."release:preview"]
 description = "Print the next version and its changelog section (commitizen dry run)"
 run = "uvx --from commitizen==4.19.3 cz bump --dry-run --changelog-to-stdout"
+
+[tasks.unslop]
+description = "Optional, run by hand: rewrite changed Markdown prose with an omp agent; arguments are file names (hooks/unslop.sh)"
+run = "hooks/unslop.sh"
