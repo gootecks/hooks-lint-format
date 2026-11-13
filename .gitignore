@@ -1,2 +1,4 @@
 .DS_Store
 skills/*-workspace/
+.rumdl-docs/
+.rumdl_cache/

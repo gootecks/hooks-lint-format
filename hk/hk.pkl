@@ -1,4 +1,3 @@
-// Canonical hk config from gootecks/hooks-lint-format/hk. Copies extend exclude and drop unused steps.
 amends "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Config.pkl"
 import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
 
@@ -17,9 +16,8 @@ steps {
         fix = "oxlint --type-aware --type-check --deny-warnings --fix {{files}}"
     }
     ["rumdl"] {
-        glob = "**/*.md"
-        depends = "oxfmt"
-        check = "rumdl check {{files}}"
+        glob = List("**/*.md", "**/*.markdown", "**/*.mdx")
+        check = "rumdl check --deny-config-warnings {{files}}"
         fix = "hooks/rumdl-fix.sh {{files}}"
     }
     ["zizmor"] = Builtins.zizmor

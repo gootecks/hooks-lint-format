@@ -1,27 +1,69 @@
-# rumdl config
+# Shared rumdl config
 
-`.rumdl.toml` is the shared rumdl 0.3.2 config for repos whose Markdown is formatted by oxfmt (Prettier-compatible).
+`.rumdl.toml` is the shared rumdl config. rumdl formats and lints every Markdown file in the repository; oxfmt does not touch Markdown. The hk step runs `rumdl check --deny-config-warnings` to check and `hooks/rumdl-fix.sh` to fix.
 
-## Sources
+## Config layout
 
-- Formatting rules come from rumdl's `prettier-compatible` example, because oxfmt rewrites that output:
-  - `MD004` consistent markers, `MD007` indent 2, `MD029` one_or_ordered
-  - `MD049` underscore emphasis, `MD050` asterisk strong
-  - `MD060` aligned tables (oxfmt's table output satisfies it)
-- Structure rules come from the `google-style` example, where the formatter has no say:
-  - `MD003` ATX headings, `MD046` fenced code, `MD009` strict trailing spaces
-  - `MD040`, `MD025`, `MD033` stay at their defaults (language on fences, single H1, no inline HTML)
-- Google's `*` bullets, 4-space indent and `MD030` spacing are not used; oxfmt would rewrite them.
-- `MD076` is disabled: oxfmt sets list looseness per item, so mixed lists are valid output.
-- `MD013` is disabled: oxfmt does not wrap prose, so line length would only flag existing text.
+The file is ordered so it can be scanned top to bottom:
+
+- Global settings: `flavor = "standard"` and the `unfixable` list.
+- Style choices: the one allowed form for headings, lists, emphasis, fences, tables, line breaks and inline HTML. Prose stays on one line per paragraph (`MD013` with reflow), as explained in [docs/markdown-convention.md](../docs/markdown-convention.md).
+- Opt-in rules that the kit turns on.
+- Disabled fixes: `unfixable` and `fix = false` entries. The rule still reports; only its auto-fix is off. Each entry carries the reason.
+- Rules that stay off, each with its reason.
+
+[docs/rumdl-rules.md](../docs/rumdl-rules.md) lists every rule with its state, fix availability and reason. A rule is turned off only when it is wrong for the repository, never because it reports many findings: [docs/lint-policy.md](../docs/lint-policy.md).
+
+## Findings without an auto-fix
+
+rumdl fixes what it can. The remaining findings (for example `MD063` heading case, `MD034` bare URLs, `MD057` broken links) are handed to the fixer agent, which edits the Markdown by hand and never changes this config or adds suppression comments. The flow is described in [hk/README.md](../hk/README.md).
+
+## Obsidian vaults
+
+A repository that is also an Obsidian vault maps the vault's files to the `obsidian` flavor in `[per-file-flavor]`, keeping `standard` for everything else:
+
+```toml
+[per-file-flavor]
+"vault/**" = "obsidian"
+```
+
+The key is a path glob relative to the config file. Under `obsidian`, a line that starts with a tag such as `#project-tag` is not reported as a heading without a space (`MD018`), and `%%comments%%` are skipped. Without it, the fix rewrites the tag line into `## project-tag`.
 
 ## Adopt
 
-1. Copy `.rumdl.toml` to the repo root.
-2. Add `exclude` (third-party text, fixtures, generated dirs) and `[per-file-ignores]` (for example `MD033` on a README with deliberate HTML).
-3. Keep the first-line comment naming this directory as the source.
+Copy `.rumdl.toml` to the repository root, then follow the adopt steps in [skills/hooks-lint-format/SKILL.md](../skills/hooks-lint-format/SKILL.md). Repository-specific additions go in `exclude`, `[per-file-ignores]`, `[MD063] ignore-words` and `[MD044] names`. rumdl writes a cache to `.rumdl_cache/` in the repository root; add it to `.gitignore`.
 
-## hk pairing
+rumdl looks for the config upward from each file and stops at the first directory that holds `.git`. A nested repository or submodule does not get the outer config and needs its own.
 
-Run the oxfmt step first, then the rumdl step with `depends = "oxfmt"`, so rumdl only sees formatted files.
-Use `rumdl check --fix` for repairs and `rumdl check --output-format json` for machine-readable findings.
+## Heading case
+
+`MD063` reports a heading that is not in sentence case. Three settings keep the reports to real findings:
+
+- `sentence-case-restart-after = ["."]` keeps the word after a list-style number capitalised, so `## 1. Survey` passes.
+- `ignore-words` holds the repository's proper nouns. A word listed there keeps its case in headings and is not checked anywhere else. Add the product, tool and project names of the repository.
+- `[MD044] names` also protects a name in headings, and in addition reports every other spelling of it in the whole file. Use it only for a name that has one correct spelling everywhere (`GitHub`). A common word (`Core`, `Mini`) belongs in `ignore-words`.
+
+Put a file name or command in a heading in backticks (`` ## `hk.yml` ``); rumdl does not check code spans.
+
+rumdl 0.3.2 reports these headings even when the words are listed:
+
+- A decimal section number: `## 2.1 Addressing` is reported, `## 2.1. Addressing` passes.
+- A listed word directly after an opening bracket: `(Q1)`.
+- A listed word joined to the next word by a slash: `Slicer/stems`.
+- A capitalised word after a number and a dash: `## 00 — User brief`.
+- A listed lower-case word with a possessive at the start: `## 2. djay's cache`.
+
+Measured on a research corpus of 12 files: 78 findings with the bare rule, 46 with the restart setting, 23 after listing the corpus's proper nouns. Of those 23, 17 are the five cases above and 6 are real: title-case headings, a lower-case first word and names that were not listed.
+
+## Reading the rumdl docs
+
+`fetch-docs.sh` copies the rumdl documentation for the installed version into `.rumdl-docs/` in the current directory, replacing an earlier copy, and prints the path. It needs only `git` and network access. Add `.rumdl-docs/` to `.gitignore`.
+
+## Regenerating the rule table
+
+`rules-table.py` writes [docs/rumdl-rules.md](../docs/rumdl-rules.md) from `rumdl rule`, the fetched docs and `.rumdl.toml`. It stops when a rule that is off or a disabled fix has no reason in the config. Run it in the kit after changing the config or the rumdl pin:
+
+```sh
+rumdl/fetch-docs.sh
+uv run rumdl/rules-table.py
+```
