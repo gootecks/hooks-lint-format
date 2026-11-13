@@ -74,7 +74,7 @@ Choose a callout over bold text or a `Note:` paragraph when the reader would be 
 
 A callout is noise when it repeats the paragraph above it, holds a nice-to-have, or competes with another callout on the same screen. GitHub's own guidance is one or two alerts per article and none back to back. This convention allows more in long documents, but no more than one per section, and a file with more than about five needs a second look: promote the content to a heading or cut it.
 
-rumdl fixes spacing inside alerts. It cannot see the alert type, so `[!NOET]` passes; check types in review.
+rumdl fixes spacing inside alerts and leaves the line breaks inside quotes and alerts as written. It cannot see the alert type, so `[!NOET]` passes; check types in review.
 
 ## Links
 

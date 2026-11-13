@@ -39,6 +39,9 @@ strict = false
 line-length = 0
 reflow = true
 reflow-mode = "normalize"
+# Fix corrupts content: reflow joins the body of a titled callout (`> [!note] Title`) into the marker line,
+# which changes the title in Obsidian. Quotes and callouts keep the line breaks the author wrote.
+blockquotes = false
 code-blocks = false
 # Wide tables must stay aligned (MD060), so MD013 never measures them.
 tables = false

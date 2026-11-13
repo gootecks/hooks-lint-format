@@ -7,7 +7,7 @@
 The file is ordered so it can be scanned top to bottom:
 
 - Global settings: `flavor = "standard"` and the `unfixable` list.
-- Style choices: the one allowed form for headings, lists, emphasis, fences, tables, line breaks and inline HTML. Prose stays on one line per paragraph (`MD013` with reflow), as explained in [docs/markdown-convention.md](../docs/markdown-convention.md).
+- Style choices: the one allowed form for headings, lists, emphasis, fences, tables, line breaks and inline HTML. Prose stays on one line per paragraph (`MD013` with reflow), as explained in [docs/markdown-convention.md](../docs/markdown-convention.md). Quotes and callouts keep the line breaks the author wrote (`blockquotes = false`): rumdl 0.3.2 reflow joins the body of a titled callout such as `> [!note] Title` into the marker line, which changes the title in Obsidian.
 - Opt-in rules that the kit turns on.
 - Disabled fixes: `unfixable` and `fix = false` entries. The rule still reports; only its auto-fix is off. Each entry carries the reason.
 - Rules that stay off, each with its reason.
@@ -44,6 +44,8 @@ rumdl looks for the config upward from each file and stops at the first director
 - `[MD044] names` also protects a name in headings, and in addition reports every other spelling of it in the whole file. Use it only for a name that has one correct spelling everywhere (`GitHub`). A common word (`Core`, `Mini`) belongs in `ignore-words`.
 
 Put a file name or command in a heading in backticks (`` ## `hk.yml` ``); rumdl does not check code spans.
+
+In a vault the first heading is often the note's title and repeats the file name. `MD063` reports such a title when it is not in sentence case. Do not raise `min-level` or change another `MD063` setting to hide these reports. Show the user the count and let them choose: re-case the titles, which changes what the notes are called, or list the names that must keep their capitals in `ignore-words`.
 
 rumdl 0.3.2 reports these headings even when the words are listed:
 
