@@ -6,15 +6,38 @@ To add it to a repository, follow the [adopt skill](../skills/hooks-lint-format/
 
 ## Settings
 
-- `version_provider = "npm"` reads and writes `version` in `package.json`. Use `cargo`, `pep621` or `uv` for other ecosystems.
+- `version_provider` names the file that owns the version, and the template's `npm` is only the default. `adopt.sh --release` sets it from the repository files:
+
+  | Ecosystem   | Provider | Reads and writes                                                 | Chosen when            |
+  | ----------- | -------- | ---------------------------------------------------------------- | ---------------------- |
+  | npm, bun    | `npm`    | `version` in `package.json`                                      | `package.json`         |
+  | uv          | `uv`     | `version` in `pyproject.toml` and the package entry in `uv.lock` | `uv.lock`              |
+  | Python, pip | `pep621` | `version` in `pyproject.toml` only                               | `pyproject.toml` alone |
+  | Rust        | `cargo`  | `version` in `Cargo.toml`                                        | `Cargo.toml` alone     |
+
+  Use `uv` for every uv project. `pep621` bumps `pyproject.toml` but leaves the project's entry in `uv.lock` on the old version.
 - `tag_format = "v$version"` matches existing `vX.Y.Z` tags.
-- `update_changelog_on_bump` with `changelog_incremental` adds one section per release to `CHANGELOG.md` and keeps older sections untouched.
+- `update_changelog_on_bump` with `changelog_incremental` adds one section per release to `CHANGELOG.md` and keeps older sections untouched, provided the file already has a version heading ([Before the first release](#before-the-first-release)).
 - `bump_message = "chore(release): v$new_version"` keeps the bump commit a valid Conventional Commit that never triggers another bump.
 
 ## Per-repo settings
 
 - `version_files` lists every other place that hardcodes the version, for example `version_files = ["src/cli.ts:version"]`. Each file must already contain the current version.
 - `CHANGELOG.md` stays in hk's `exclude`. It is generated, and a Markdown finding in it (for example `MD041`) would fail the commit in the middle of a version bump.
+
+## Before the first release
+
+Two files must agree with commitizen before `cz bump` runs, or it fails or damages the repository.
+
+### Changelog heading
+
+With `changelog_incremental = true`, commitizen finds the place to insert the new section by looking for a heading that holds a version, such as `## v1.2.3 (2026-01-02)`. A hand-written `CHANGELOG.md` whose headings are dated or say `## Unreleased` has none. `cz bump` and `cz changelog` then regenerate the whole file from the commit history and delete the hand-written text (reproduced with commitizen 4.19.3).
+
+Before the first release, add a `## vX.Y.Z (date)` heading for the latest existing release tag above the hand-written history. When the history sits under `## Unreleased`, rename that heading. The check is that `cz changelog --dry-run` prints a file that still contains every line of the current one; the [adopt skill](../skills/hooks-lint-format/SKILL.md#release-preparation) gives the command.
+
+### Version field and tag
+
+The version field must equal the latest release tag reachable from the default branch (`git tag --merged origin/<default>`). When it does not, `cz bump --get-next` fails with `No tag matching configuration`. In a fork with an `upstream` remote, fetched upstream tags can shadow origin's tags of the same name. Run `git fetch --force --tags origin` and `git config remote.upstream.tagOpt --no-tags`.
 
 ## Where `cz` is installed
 

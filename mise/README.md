@@ -37,6 +37,7 @@ oxfmt and oxlint come from mise rather than `devDependencies`, so lint versions 
 ## Tasks
 
 - `tsrs:install`: builds the type-aware backend (above).
+- `ty-check` (Python and uv repositories, added per repository): `uv run ty check`. ruff and ty are uv dev dependencies, not `[tools]` entries ([../hk](../hk/README.md#python-repositories)).
 - `pre-commit`: `hk run pre-commit` without committing.
 - `release:preview`: `cz bump --dry-run --changelog-to-stdout`. commitizen runs through `uvx` with a pinned version, because mise's pipx backend is off on these machines; CI uses the runner's `pipx` ([../commitizen](../commitizen/README.md#where-cz-is-installed)).
 - `unslop`: runs `hooks/unslop.sh`, which asks an agent to clean up the prose of changed Markdown files and leaves the result unstaged. Optional, run by hand, not part of the hooks; details in [../unslop](../unslop/README.md). File names after the task name are passed through.

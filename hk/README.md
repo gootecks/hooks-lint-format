@@ -4,18 +4,44 @@
 
 ## Steps
 
-| Step         | Files                                        | Check                                                                          | Fix                     |
-| ------------ | -------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------- |
-| `actionlint` | `.github/workflows/*.yml`                    | builtin ([../actionlint](../actionlint/README.md))                             | none                    |
-| `oxfmt`      | JS/TS, JSON, YAML, TOML, CSS, HTML, and more | builtin ([../oxfmt](../oxfmt/README.md))                                       | builtin                 |
-| `oxlint`     | JS/TS                                        | `--type-aware --type-check --deny-warnings` ([../oxlint](../oxlint/README.md)) | same flags plus `--fix` |
-| `rumdl`      | `**/*.md`, `**/*.markdown`, `**/*.mdx`       | `rumdl check --deny-config-warnings` ([../rumdl](../rumdl/README.md))          | `hooks/rumdl-fix.sh`    |
-| `zizmor`     | workflows, `action.yml`, dependabot          | builtin ([../zizmor](../zizmor/README.md))                                     | builtin, `zizmor --fix` |
+| Step          | Files                                        | Check                                                                          | Fix                     |
+| ------------- | -------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------- |
+| `actionlint`  | `.github/workflows/*.yml`                    | builtin ([../actionlint](../actionlint/README.md))                             | none                    |
+| `oxfmt`       | JS/TS, JSON, YAML, TOML, CSS, HTML, and more | builtin ([../oxfmt](../oxfmt/README.md))                                       | builtin                 |
+| `oxlint`      | JS/TS                                        | `--type-aware --type-check --deny-warnings` ([../oxlint](../oxlint/README.md)) | same flags plus `--fix` |
+| `rumdl`       | `**/*.md`, `**/*.markdown`, `**/*.mdx`       | `rumdl check --deny-config-warnings` ([../rumdl](../rumdl/README.md))          | `hooks/rumdl-fix.sh`    |
+| `zizmor`      | workflows, `action.yml`, dependabot          | builtin ([../zizmor](../zizmor/README.md))                                     | builtin, `zizmor --fix` |
+| `ruff`        | Python (added per repository, below)         | builtin through `uv run`                                                       | builtin                 |
+| `ruff-format` | Python (added per repository, below)         | builtin through `uv run`                                                       | builtin                 |
+| `ty`          | Python (added per repository, below)         | builtin through `uv run`                                                       | none                    |
 
 hk runs steps in parallel. The steps share no files: oxfmt ignores Markdown through `ignorePatterns` in `.oxfmtrc.json`, so rumdl alone formats and lints Markdown and no step depends on another. `--deny-config-warnings` makes a misspelled key in `.rumdl.toml` fail the step instead of being ignored.
 
 > [!NOTE]
 > The `zizmor` fix command rewrites workflow files. In the `fix` and `pre-commit` hooks it runs on every workflow change, and `pre-commit` stages the result.
+
+## Python repositories
+
+`hk.pkl` carries no Python steps, because most repositories have none. A Python repository that uses uv adds ruff, ruff-format and ty and keeps the tools in the project environment, so the hook runs the versions the lockfile pins:
+
+1. `uv add --dev ruff ty`. Neither tool goes in `mise.toml`.
+2. Add the three steps to `steps` in `hk.pkl`. `prefix = List("uv", "run")` makes hk run each builtin as `uv run ruff ...`:
+
+   ```pkl
+   ["ruff"] = (Builtins.ruff) {
+       prefix = List("uv", "run")
+   }
+   ["ruff-format"] = (Builtins.ruff_format) {
+       prefix = List("uv", "run")
+   }
+   ["ty"] = (Builtins.ty) {
+       prefix = List("uv", "run")
+   }
+   ```
+
+3. Add a `ty-check` task to `mise.toml` (`run = "uv run ty check"`) next to the repository's other check tasks, so the type check runs by hand with the same command.
+
+ty findings are fixed in code. A `# ty: ignore`, an `[tool.ty]` rule set to `ignore` or an `exclude` entry to reach a green run breaks [../docs/lint-policy.md](../docs/lint-policy.md), like `ts-ignore` does for TypeScript.
 
 ## Hooks
 
