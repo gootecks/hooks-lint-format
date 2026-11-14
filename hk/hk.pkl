@@ -1,5 +1,5 @@
 amends "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl" as KitBuiltins
 
 exclude = List(
     ".omp/**",
@@ -10,9 +10,9 @@ exclude = List(
 )
 
 steps {
-    ["actionlint"] = Builtins.actionlint
-    ["oxfmt"] = Builtins.oxfmt
-    ["oxlint"] = (Builtins.ox_lint) {
+    ["actionlint"] = KitBuiltins.actionlint
+    ["oxfmt"] = KitBuiltins.oxfmt
+    ["oxlint"] = (KitBuiltins.ox_lint) {
         check = "oxlint --type-aware --type-check --deny-warnings {{files}}"
         fix = "oxlint --type-aware --type-check --deny-warnings --fix {{files}}"
     }
@@ -21,7 +21,7 @@ steps {
         check = "rumdl check --deny-config-warnings {{files}} && hlf-rumdl-docs-check {{files}}"
         fix = "hlf-rumdl-fix {{files}}"
     }
-    ["zizmor"] = Builtins.zizmor
+    ["zizmor"] = KitBuiltins.zizmor
 }
 
 hooks {
@@ -42,7 +42,7 @@ hooks {
     }
     ["commit-msg"] {
         steps {
-            ["conventional-commit"] = Builtins.check_conventional_commit
+            ["conventional-commit"] = KitBuiltins.check_conventional_commit
         }
     }
 }

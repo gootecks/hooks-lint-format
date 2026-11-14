@@ -19,7 +19,7 @@ steps {
 }
 ```
 
-The `import` line is needed only when the repository adds steps from hk's builtins. hk does not resolve `PklProject` dependencies, so the package imports hk's `Config.pkl` and `Builtins.pkl` by absolute `package://` URL.
+The `import` line is needed only when the repository adds steps from hk's builtins. hk does not resolve `PklProject` dependencies, so the package imports hk's `Config.pkl` and `Builtins.pkl` by absolute `package://` URL. The base imports hk's builtins as `KitBuiltins`, so a consumer can use the bare name `Builtins`.
 
 The steps call `hlf-rumdl-fix` and `hlf-rumdl-docs-check` by name. The repository's `mise.toml` installs them with the `github:gootecks/hooks-lint-format` tool, which puts the release's `bin` directory on `PATH` ([../mise](../mise/README.md)). The docs check script starts with `uv run --script`, so `uv` is pinned in the same file.
 
@@ -81,7 +81,7 @@ ty findings are fixed in code. A `# ty: ignore`, an `[tool.ty]` rule set to `ign
 - `check` (`hk check`): no fixes, no staging, no stash. This is what CI runs ([../github/hk.yml](../github/hk.yml)).
 - `fix` (`hk fix`): applies fixes to the working tree, stages nothing.
 - `pre-commit`: applies fixes and stages them. `stash = "git"` stashes unstaged changes first, so fixes only touch what is being committed.
-- `commit-msg`: `Builtins.check_conventional_commit` rejects messages that are not [Conventional Commits](https://www.conventionalcommits.org). commitizen reads those messages to pick the next version ([../commitizen](../commitizen/README.md)).
+- `commit-msg`: `KitBuiltins.check_conventional_commit` rejects messages that are not [Conventional Commits](https://www.conventionalcommits.org). commitizen reads those messages to pick the next version ([../commitizen](../commitizen/README.md)).
 
 The base has no `prepare-commit-msg` hook. An interactive commit prompt (czg) is personal and belongs in the user's hk config, `~/.config/hk/config.pkl`, which hk merges with the project `hk.pkl`.
 

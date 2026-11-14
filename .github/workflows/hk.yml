@@ -26,3 +26,6 @@ jobs:
 
       - name: hk check
         run: hk check --all
+
+      - name: hk-base consumer check
+        run: mise run check:hk-base-consumer
