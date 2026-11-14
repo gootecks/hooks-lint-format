@@ -13,3 +13,27 @@ _.path = ["{{config_root}}/bin"]
 
 [task_config]
 includes = ["tasks"]
+
+[tasks."check:hk-base-consumer"]
+description = "Validate a consumer hk.pkl that amends the local hk/hk.pkl and imports Builtins"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+root=$PWD
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+git init -q
+cat > hk.pkl <<PKL
+amends "file://$root/hk/hk.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
+
+steps {
+    ["ruff"] = (Builtins.ruff) {
+        prefix = List("uv", "run")
+    }
+}
+PKL
+hk validate
+'''
