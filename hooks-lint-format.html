@@ -262,7 +262,8 @@
         <h1>hooks-lint-format</h1>
         <p class="lede">
           Shared git hooks, linters, formatters and release automation for gootecks repos. Each directory holds a
-          canonical config and a README; repos carry copies.
+          canonical config and a README. Repos consume the kit by version (tag <code>v0.1.0</code>): the Pkl package
+          <code>hk-base</code>, the script tool and the task include.
         </p>
         <nav>
           <a href="#glance">At a glance</a><a href="#lifecycle">Commit lifecycle</a><a href="#steps">Steps</a
@@ -288,7 +289,9 @@
               </tr>
               <tr>
                 <td><a href="mise/README.md">mise</a></td>
-                <td>Pins hk, actionlint, zizmor, rumdl, oxfmt and oxlint; builds tsrs-lint locally</td>
+                <td>
+                  Pins hk, actionlint, zizmor, rumdl, uv, oxfmt, oxlint and the script tool; includes shared tasks
+                </td>
               </tr>
               <tr>
                 <td><a href="oxfmt/README.md">oxfmt</a></td>
@@ -311,10 +314,6 @@
                 <td>Audits workflow security and applies safe fixes</td>
               </tr>
               <tr>
-                <td><a href="czg/README.md">czg</a></td>
-                <td>Prompts for a Conventional Commit message</td>
-              </tr>
-              <tr>
                 <td><a href="commitizen/README.md">commitizen</a></td>
                 <td>Bumps the version, writes the changelog, tags</td>
               </tr>
@@ -327,8 +326,7 @@
         </div>
         <p>
           Tool versions are in <a href="mise/mise.toml">mise/mise.toml</a>; the hk version also appears in the URLs of
-          <a href="hk/hk.pkl">hk/hk.pkl</a>. Every copied file keeps a first-line comment naming its source directory,
-          where the format allows comments. Type-aware linting uses tsrs-lint only.
+          <a href="hk/hk.pkl">hk/hk.pkl</a>. Type-aware linting uses tsrs-lint only.
         </p>
       </section>
 
@@ -339,7 +337,7 @@
             src="docs/diagrams/hk-commit-lifecycle.svg"
             width="1000"
             height="800"
-            alt="Sequence diagram of git commit: the developer commits, git calls hk for pre-commit, hk stashes unstaged changes, runs the steps in parallel and stages the fixes, then prepare-commit-msg optionally opens czg and commit-msg rejects non-Conventional messages."
+            alt="Sequence diagram of git commit: the developer commits, git calls hk for pre-commit, hk stashes unstaged changes, runs the steps in parallel and stages the fixes, then prepare-commit-msg optionally opens the czg prompt from the user's personal hk config and commit-msg rejects non-Conventional messages."
           />
         </div>
         <ul>
@@ -348,8 +346,8 @@
             first, so fixes only touch what is being committed.
           </li>
           <li>
-            <code>prepare-commit-msg</code> opens the czg prompt for a plain <code>git commit</code>. It does nothing
-            when a message already exists, under <code>CI</code> or <code>HK_AGENT</code>, or without a terminal.
+            <code>commit-msg</code> is the only commit message hook in the shared config. The czg prompt for a plain
+            <code>git commit</code> comes from the user's own <code>~/.config/hk/config.pkl</code>.
           </li>
           <li>
             <code>commit-msg</code> runs <code>Builtins.check_conventional_commit</code> and rejects messages that are
@@ -404,8 +402,8 @@
               <tr>
                 <td><code>rumdl</code></td>
                 <td><code>**/*.md</code>, <code>**/*.markdown</code>, <code>**/*.mdx</code></td>
-                <td><code>rumdl check --deny-config-warnings</code> and <code>hooks/rumdl-docs-check.py</code></td>
-                <td><code>hooks/rumdl-fix.sh</code></td>
+                <td><code>rumdl check --deny-config-warnings</code> and <code>hlf-rumdl-docs-check</code></td>
+                <td><code>hlf-rumdl-fix</code></td>
               </tr>
               <tr>
                 <td><code>zizmor</code></td>
@@ -441,8 +439,8 @@
               <a class="src" href="hk/README.md">hk/README.md</a>
             </header>
             <p>
-              Runs every step as git hooks and as <code>hk check</code> / <code>hk fix</code>. <code>hk.pkl</code> is
-              the canonical config; <code>hooks/rumdl-fix.sh</code> is the Markdown fix command.
+              Runs every step as git hooks and as <code>hk check</code> / <code>hk fix</code>. The shared base
+              <code>hk.pkl</code> ships as the <code>hk-base</code> Pkl package; a repository amends it.
             </p>
             <ul>
               <li>
@@ -451,7 +449,7 @@
                 Markdown check on the changelog would leave a half-done version bump.
               </li>
               <li>
-                <code>rumdl-fix.sh</code> runs <code>rumdl check --fix</code> and the docs check, then launches the
+                <code>hlf-rumdl-fix</code> runs <code>rumdl check --fix</code> and the docs check, then launches the
                 <code>repo-markdown-fixer</code> agent once for the leftovers and checks again.
                 <code>RUMDL_AGENT=0</code> or <code>CI</code> runs no agent; findings still fail the step.
               </li>
@@ -481,10 +479,15 @@
                 the same version as the <code>hk</code> pin.
               </li>
               <li>
-                <code>[env]</code> sets <code>OXLINT_TSGOLINT_PATH</code> to <code>~/.local/bin/tsrs-lint</code>. A
+                The global mise config sets <code>OXLINT_TSGOLINT_PATH</code> to <code>~/.local/bin/tsrs-lint</code>. A
                 shell-level <code>export</code> does not win: mise shims apply <code>[env]</code> when they run oxlint.
               </li>
-              <li>Tasks: <code>tsrs:install</code>, <code>pre-commit</code>, <code>release:preview</code>.</li>
+              <li>
+                The script tool <code>"github:gootecks/hooks-lint-format"</code> provides <code>hlf-rumdl-fix</code> and
+                <code>hlf-rumdl-docs-check</code>. Shared tasks <code>pre-commit</code> and
+                <code>release:preview</code> come from the task include
+                <code>git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.0</code>.
+              </li>
             </ul>
           </article>
           <article class="card" id="t-oxfmt">
@@ -546,9 +549,9 @@
             </p>
             <ul>
               <li>
-                Local: <code>mise run tsrs:install</code> builds tsrs with cargo into <code>~/.local/bin</code>. CI
-                installs the npm <code>tsrs</code> package and links its <code>tsrs-lint</code> launcher to the same
-                path.
+                Local: the global mise task <code>tsrs:install</code> (in <code>~/.config/mise</code>) builds tsrs with
+                cargo into <code>~/.local/bin</code>. CI installs the npm <code>tsrs</code> package and links its
+                <code>tsrs-lint</code> launcher to the same path.
               </li>
               <li>
                 If <code>OXLINT_TSGOLINT_PATH</code> is set and the file is missing, oxlint fails instead of searching
@@ -577,10 +580,10 @@
             </header>
             <p>
               The only tool that formats and lints Markdown. The shared <code>.rumdl.toml</code> sets the rules;
-              <code>hooks/rumdl-docs-check.py</code> adds the kit's callout and stale-reference checks;
-              <code>hooks/rumdl-fix.sh</code> applies the auto-fix, then asks <code>repo-markdown-fixer</code> to fix
-              what is left. Style rules: <a href="docs/markdown-convention.md">docs/markdown-convention.md</a>. Every
-              rule and its setting: <a href="docs/rumdl-rules.md">docs/rumdl-rules.md</a>.
+              <code>hlf-rumdl-docs-check</code> adds the kit's callout and stale-reference checks;
+              <code>hlf-rumdl-fix</code> applies the auto-fix, then asks <code>repo-markdown-fixer</code> to fix what is
+              left. Style rules: <a href="docs/markdown-convention.md">docs/markdown-convention.md</a>. Every rule and
+              its setting: <a href="docs/rumdl-rules.md">docs/rumdl-rules.md</a>.
             </p>
           </article>
           <article class="card" id="t-actionlint">
@@ -631,26 +634,14 @@
               </li>
             </ul>
           </article>
-          <article class="card" id="t-czg">
+          <article class="card" id="t-commit-prompt">
             <header>
-              <h3>czg</h3>
-              <a class="src" href="czg/README.md">czg/README.md</a>
+              <h3>Commit prompt</h3>
             </header>
             <p>
-              Interactive prompt that writes a Conventional Commit message, opened by hk's
-              <code>prepare-commit-msg</code> for a plain <code>git commit</code>.
+              The czg prompt is not part of the shared config. It lives in the user's
+              <code>~/.config/hk/config.pkl</code>; the shared <code>commit-msg</code> check applies either way.
             </p>
-            <ul>
-              <li>
-                It exits without prompting when a message exists, when <code>CI</code> or <code>HK_AGENT</code> is set
-                (automation never blocks), or when there is no <code>/dev/tty</code>.
-              </li>
-              <li>
-                It is a personal tool, not pinned in <code>mise.toml</code>; install it once per machine. Without it the
-                commit continues with the normal editor.
-              </li>
-              <li>It writes messages only. Versioning belongs to commitizen, which reads a different config.</li>
-            </ul>
           </article>
           <article class="card" id="t-cz">
             <header>
@@ -704,13 +695,8 @@
             and the reason.
           </li>
           <li>
-            <a href="unslop/README.md">unslop</a>: an on-demand <code>mise</code> task for prose cleanup. The author
-            runs it and reviews the diff; it is not a hook step and not a check.
-          </li>
-          <li>
-            <a href="docs-drift/README.md">docs-drift</a>: an on-demand <code>mise</code> task that asks an agent which
-            docs the branch's code changes made stale. The author runs it before a pull request and reviews the diff; it
-            is not a hook step and not a check.
+            <code>docs-drift</code> and <code>unslop</code> are personal global mise tasks documented in the
+            maintainer's <code>~/.config/mise</code>, not part of the kit.
           </li>
         </ul>
       </section>
@@ -725,7 +711,7 @@
         <ol>
           <li>
             <code>jdx/mise-action</code> installs every tool in the <code>[tools]</code> table of
-            <code>mise.toml</code> and applies its <code>[env]</code>, including <code>OXLINT_TSGOLINT_PATH</code>.
+            <code>mise.toml</code>, including the script tool, and applies its <code>[env]</code>.
           </li>
           <li>
             <code>npm install -g tsrs@&lt;version&gt;</code> provides <code>tsrs-lint</code>, linked to
@@ -786,8 +772,8 @@
             push fails and the next run releases everything.
           </li>
           <li>
-            A tag matching <code>tag_format</code> must already exist; create the first tag by hand. Copies that build
-            release assets add build steps between the bump and the push.
+            A tag matching <code>tag_format</code> must already exist; create the first tag by hand. Repositories that
+            build release assets add build steps between the bump and the push.
           </li>
         </ul>
       </section>
@@ -795,9 +781,13 @@
       <section id="adopt">
         <h2>Adopt</h2>
         <p>
-          The ordered procedure for adding the kit to a repository is in
-          <a href="skills/hooks-lint-format/SKILL.md">skills/hooks-lint-format/SKILL.md</a>. Use the
-          <code>hooks-lint-format</code> skill to run it.
+          Use the maintainer's global <code>repo-adopt</code> task, which is interactive, asks per norm and only adds.
+          It writes an <code>hk.pkl</code> amending the <code>hk-base</code> package, the <code>mise.toml</code> pins
+          including the script tool and <code>uv</code>, the task include, and optional commitizen and CI files.
+          <code>--dry-run</code> shows the changes; <code>--yes norm1,norm2</code> accepts named norms for agents. A
+          repository with an older kit copy is moved to the versioned form by the same task. The ordered procedure is in
+          <a href="skills/hooks-lint-format/SKILL.md">skills/hooks-lint-format/SKILL.md</a>; the
+          <code>hooks-lint-format</code> skill runs it.
         </p>
       </section>
 

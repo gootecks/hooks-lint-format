@@ -21,7 +21,7 @@ fail() {
 }
 indent() { sed 's/^/        /'; }
 
-[[ -f hk.pkl ]] || die "no hk.pkl in $TARGET; run adopt.sh first"
+[[ -f hk.pkl ]] || die "no hk.pkl in $TARGET; run mise run repo-adopt first"
 git rev-parse --verify -q HEAD > /dev/null || die "the repository has no commit yet; the rejection tests need one"
 
 WT=""

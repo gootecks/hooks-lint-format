@@ -4,7 +4,7 @@
 # ///
 """Docs check for the rumdl step: callout format (callout/*) and stale references (ref/*).
 
-Usage: rumdl-docs-check.py [--json] FILE...
+Usage: hlf-rumdl-docs-check [--json] FILE...
 Exit 0 clean, 1 findings, 2 tool error; with --json exit 0 unless a tool fails.
 """
 
@@ -323,8 +323,10 @@ def local_tasks():
     names = set()
     for item in items:
         source = item.get("source")
-        if source and not Path(source).resolve().is_relative_to(root):
-            continue
+        if source:
+            path = Path(source).resolve()
+            if not path.is_relative_to(root) and "remote-git-tasks-cache" not in path.parts:
+                continue
         names.add(item["name"])
         names.update(item.get("aliases") or [])
     return names

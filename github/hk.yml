@@ -29,6 +29,7 @@ jobs:
           npm install -g tsrs@0.25.0-ts7.1.0-beta
           mkdir -p ~/.local/bin
           ln -sf "$(npm prefix -g)/bin/tsrs-lint" ~/.local/bin/tsrs-lint
+          echo "OXLINT_TSGOLINT_PATH=$HOME/.local/bin/tsrs-lint" >> "$GITHUB_ENV"
 
       - name: Install dependencies
         run: bun install

@@ -1,4 +1,4 @@
-# Adapted copy of github/hk.yml for this repository: no JS or TS, so no tsrs-lint and no dependency install.
+# Adapted copy of github/hk.yml for this repository: no JS or TS, so no tsrs-lint and no dependency install. mise installs uv and puts bin/ on PATH (root mise.toml), so hk finds hlf-rumdl-fix and hlf-rumdl-docs-check.
 name: hk
 
 on:

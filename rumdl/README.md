@@ -20,7 +20,7 @@ rumdl fixes what it can. The remaining findings (for example `MD063` heading cas
 
 ## Callout and reference checks
 
-rumdl 0.3.2 cannot see alert types or check that a code-span path exists. The hk step therefore also runs `hooks/rumdl-docs-check.py`, which reads rumdl's parsed elements (`rumdl experimental export-elements`) and reports through `rumdl experimental report-diagnostics`. It checks the alert format, `Note:` label paragraphs, repository paths in code spans and `mise run` tasks. The rules, their exceptions and the exit codes are in [hk/README.md](../hk/README.md#rumdl-docs-checkpy); the convention is in [docs/markdown-convention.md](../docs/markdown-convention.md#callouts). Known miss: `ref/path` checks a path only when its first segment exists, so a top-level directory that disappears entirely goes unreported, while a rename inside an existing directory is caught. `[per-file-flavor]` also decides which files skip the Obsidian-allowed alert checks. Its glob keys are anchored to the config file's directory, `*` does not cross `/` and `**/` matches zero or more directories, so `"**/*.md"` matches a top-level `README.md` and `"*.md"` matches only top-level files.
+rumdl 0.3.2 cannot see alert types or check that a code-span path exists. The hk step therefore also runs `hlf-rumdl-docs-check`, which reads rumdl's parsed elements (`rumdl experimental export-elements`) and reports through `rumdl experimental report-diagnostics`. It checks the alert format, `Note:` label paragraphs, repository paths in code spans and `mise run` tasks. The rules, their exceptions and the exit codes are in [hk/README.md](../hk/README.md#hlf-rumdl-docs-check); the convention is in [docs/markdown-convention.md](../docs/markdown-convention.md#callouts). Known miss: `ref/path` checks a path only when its first segment exists, so a top-level directory that disappears entirely goes unreported, while a rename inside an existing directory is caught. `[per-file-flavor]` also decides which files skip the Obsidian-allowed alert checks. Its glob keys are anchored to the config file's directory, `*` does not cross `/` and `**/` matches zero or more directories, so `"**/*.md"` matches a top-level `README.md` and `"*.md"` matches only top-level files.
 
 ## Obsidian vaults
 
@@ -35,7 +35,7 @@ The key is a path glob relative to the config file. Under `obsidian`, a line tha
 
 ## Adopt
 
-Copy `.rumdl.toml` to the repository root, then follow the adopt steps in [skills/hooks-lint-format/SKILL.md](../skills/hooks-lint-format/SKILL.md). Repository-specific additions go in `exclude`, `[per-file-ignores]`, `[MD063] ignore-words` and `[MD044] names`. rumdl writes a cache to `.rumdl_cache/` in the repository root; add it to `.gitignore`.
+The maintainer's global `repo-adopt` task (in `~/.config/mise`) writes `.rumdl.toml` to the repository root (its `rumdl` norm); see [skills/hooks-lint-format/SKILL.md](../skills/hooks-lint-format/SKILL.md). Repository-specific additions go in `exclude`, `[per-file-ignores]`, `[MD063] ignore-words` and `[MD044] names`. rumdl writes a cache to `.rumdl_cache/` in the repository root; add it to `.gitignore`.
 
 rumdl looks for the config upward from each file and stops at the first directory that holds `.git`. A nested repository or submodule does not get the outer config and needs its own.
 

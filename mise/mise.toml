@@ -1,4 +1,4 @@
-# Canonical tool pins from gootecks/hooks-lint-format/mise. Merge into the repo's mise.toml.
+# Consumer template from gootecks/hooks-lint-format/mise. Merge into the repo's mise.toml.
 [tools]
 hk = "2.12.0"
 actionlint = "1.7.12"
@@ -7,30 +7,7 @@ rumdl = "0.3.2"
 "npm:oxfmt" = "0.77.0"
 "npm:oxlint" = "1.92.0"
 uv = "0.11.26"
+"github:gootecks/hooks-lint-format" = { version = "0.1.0", asset_pattern = "hooks-lint-format-scripts-*.tar.gz", bin_path = "bin" }
 
-[env]
-OXLINT_TSGOLINT_PATH = "{{env.HOME}}/.local/bin/tsrs-lint"
-
-[tasks."tsrs:install"]
-description = "Build tsrs and tsrs-lint from a local oxc-project/tsrs checkout into ~/.local/bin (TSRS_DIR, default ../../tsrs)"
-run = [
-  "cargo install --locked --path ${TSRS_DIR:-../../tsrs}/crates/tsrs_cli --root ~/.local",
-  "cargo install --locked --path ${TSRS_DIR:-../../tsrs}/crates/tsrs_lint --root ~/.local",
-  "~/.local/bin/tsrs --version",
-]
-
-[tasks.pre-commit]
-description = "Run the hk pre-commit hooks"
-run = "hk run pre-commit"
-
-[tasks."release:preview"]
-description = "Print the next version and its changelog section (commitizen dry run)"
-run = "uvx --from commitizen==4.19.3 cz bump --dry-run --changelog-to-stdout"
-
-[tasks.unslop]
-description = "Optional, run by hand: rewrite changed Markdown prose with an omp agent; arguments are file names (hooks/unslop.sh)"
-run = "hooks/unslop.sh"
-
-[tasks.docs-drift]
-description = "Optional, run by hand: find docs made stale by the branch's code changes with an omp agent; --report only lists them (hooks/docs-drift.sh)"
-run = "hooks/docs-drift.sh"
+[task_config]
+includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.0"]

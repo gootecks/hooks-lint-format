@@ -1,15 +1,15 @@
 # GitHub workflows
 
-Each repo carries its own copy of these workflows; this directory is the canonical source. To add them to a repository, follow the [adopt skill](../skills/hooks-lint-format/SKILL.md).
+Each repo carries its own copy of these workflows; this directory is the canonical source. The scripts and shared hk config the workflows rely on are not copied: they come from the versioned release through `mise.toml` ([../mise](../mise/README.md)). To add the workflows to a repository, use the maintainer's global `repo-adopt` task (in `~/.config/mise`), or follow the [adopt skill](../skills/hooks-lint-format/SKILL.md).
 
 ## `hk.yml`
 
-Runs `hk check --all` on pull requests and pushes to `main`, so a commit made without hooks installed still gets checked. It is recommended and optional: `adopt.sh --no-ci` leaves it out when the user declines, and the adoption report then says the pull request has no `check` job and `hk check` runs only in local hooks. `--no-verify` and `HK=0` are not a way to skip the gate where it exists: CI is the backstop, not the plan. See [../docs/lint-policy.md](../docs/lint-policy.md).
+Runs `hk check --all` on pull requests and pushes to `main`, so a commit made without hooks installed still gets checked. It is recommended and optional: the global `repo-adopt` task leaves it out when the user declines, and the adoption report then says the pull request has no `check` job and `hk check` runs only in local hooks. `--no-verify` and `HK=0` are not a way to skip the gate where it exists: CI is the backstop, not the plan. See [../docs/lint-policy.md](../docs/lint-policy.md).
 
-1. `jdx/mise-action` installs every tool in the `[tools]` table of `mise.toml` and applies its `[env]`, including `OXLINT_TSGOLINT_PATH`. Runtimes such as bun or node come from the repo's own `mise.toml`.
-2. `npm install -g tsrs@<version>` provides `tsrs-lint`, linked to `~/.local/bin/tsrs-lint` where `OXLINT_TSGOLINT_PATH` points. The npm package is fine in CI; locally the kit builds tsrs with cargo ([../mise](../mise/README.md)). The pin lives in `hk.yml` because `mise.toml` has no tsrs entry.
+1. `jdx/mise-action` installs every tool in the `[tools]` table of `mise.toml`, including `uv` and the `github:gootecks/hooks-lint-format` script tool that provides `hlf-rumdl-fix` and `hlf-rumdl-docs-check` on `PATH`. Runtimes such as bun or node come from the repo's own `mise.toml`.
+2. `npm install -g tsrs@<version>` provides `tsrs-lint`, linked to `~/.local/bin/tsrs-lint`; the step exports `OXLINT_TSGOLINT_PATH` to that path through `GITHUB_ENV`. The npm package is fine in CI; locally the global `tsrs:install` task builds tsrs with cargo. The pin lives in `hk.yml` because `mise.toml` has no tsrs entry.
 3. The dependency install step lets type-aware lint resolve imports. `bun install` is a placeholder for the repo's own install command.
-4. `hk check --all` runs the `check` hook: no fixes, no agent (`rumdl-fix.sh` is a fix command, and it skips the agent under `CI` anyway).
+4. `hk check --all` runs the `check` hook: no fixes, no agent (`hlf-rumdl-fix` is a fix command, and it skips the agent under `CI` anyway).
 
 ### Matching the tsrs version
 

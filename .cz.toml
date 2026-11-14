@@ -1,0 +1,11 @@
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "commitizen"
+version = "0.0.0"
+version_scheme = "semver2"
+major_version_zero = true
+tag_format = "v$version"
+update_changelog_on_bump = true
+changelog_incremental = true
+bump_message = "chore(release): v$new_version"
+version_files = ["hk/PklProject:^    version =", "mise/mise.toml:hooks-lint-format"]

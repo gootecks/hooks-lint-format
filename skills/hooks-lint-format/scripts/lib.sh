@@ -3,21 +3,6 @@ set -euo pipefail
 
 KIT=$(cd -P "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)
 
-MAP=(
-    "hk/hk.pkl|hk.pkl|hk"
-    "hk/rumdl-fix.sh|hooks/rumdl-fix.sh|markdown"
-    "hk/rumdl-docs-check.py|hooks/rumdl-docs-check.py|markdown"
-    "mise/mise.toml|mise.toml|mise"
-    "oxfmt/.oxfmtrc.json|.oxfmtrc.json|format"
-    "oxlint/.oxlintrc.json|.oxlintrc.json|js"
-    "rumdl/.rumdl.toml|.rumdl.toml|markdown"
-    "github/hk.yml|.github/workflows/hk.yml|ci"
-    "commitizen/.cz.toml|.cz.toml|release"
-    "github/release.yml|.github/workflows/release.yml|release"
-    "unslop/unslop.sh|hooks/unslop.sh|unslop"
-    "docs-drift/docs-drift.sh|hooks/docs-drift.sh|docs-drift"
-)
-
 say() { printf '%s\n' "$*"; }
 note() { printf '%s\n' "$*" >&2; }
 die() {
@@ -26,12 +11,7 @@ die() {
 }
 
 check_kit() {
-    local entry src
     [[ -d $KIT/hk && -d $KIT/skills/hooks-lint-format ]] || die "kit not found at $KIT (this script must stay at skills/hooks-lint-format/scripts/ inside the kit)"
-    for entry in "${MAP[@]}"; do
-        src=${entry%%|*}
-        [[ -f $KIT/$src ]] || die "kit file missing: $KIT/$src"
-    done
 }
 
 enter_target() {
@@ -117,17 +97,6 @@ hk_excludes() {
     local src=${1:-hk.pkl}
     [[ -f $src ]] || return 0
     awk '/^exclude *= *List\(/ { on = 1; next } on && /\)/ { exit } on { gsub(/[ ,"]/, ""); if ($0 != "") print }' "$src"
-}
-
-file_state() {
-    local src=$1 dest=$2
-    if [[ ! -e $dest ]]; then
-        printf 'absent'
-    elif cmp -s "$src" "$dest"; then
-        printf 'identical'
-    else
-        printf 'differs'
-    fi
 }
 
 # Version heading commitizen can anchor an incremental changelog on, such as "## v1.2.3 (2026-01-02)" or "## [1.2.3]".

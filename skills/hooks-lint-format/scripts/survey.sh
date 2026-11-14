@@ -138,12 +138,21 @@ say "  version tags (v*): $tags"
 say "  release signal: $([[ $tags -gt 0 || -f .cz.toml || -f .github/workflows/release.yml ]] && echo 'yes, ask the user whether to adopt releases' || echo 'none found')"
 release_warnings | sed 's/^/  /'
 
-say ""
-say "kit files against this repository (kit file -> repo file: state):"
-for entry in "${MAP[@]}"; do
-    IFS='|' read -r src dest fam <<< "$entry"
-    say "  $src -> $dest: $(file_state "$KIT/$src" "$dest")"
+say "kit delivery in this repository:"
+if [[ -f hk.pkl ]]; then
+    amends=$(grep -E '^amends ' hk.pkl | head -n1 || true)
+    case $amends in
+        *hooks-lint-format/releases/download/*) say "  hk.pkl: amends the kit package ($amends)" ;;
+        *) say "  hk.pkl: standalone copy (repo-adopt offers to switch it to amends)" ;;
+    esac
+else
+    say "  hk.pkl: absent"
+fi
+for f in hooks/*; do
+    [[ -f $f ]] && say "  $f: possible kit copy (repo-adopt offers to replace the rumdl scripts with the hlf-rumdl-* script tool)"
 done
+grep -qs 'github:gootecks/hooks-lint-format' mise.toml .mise.toml 2> /dev/null && say "  script tool pin: present" || say "  script tool pin: absent"
+grep -qs 'hooks-lint-format.git//tasks' mise.toml .mise.toml 2> /dev/null && say "  task include: present" || say "  task include: absent"
 
 say ""
 say "kit tools (run from the repository, through mise when it has a config):"
@@ -155,7 +164,7 @@ else
         say "  mise config: not usable here: $(mise exec -- true 2>&1 | grep -v -E '^mise WARN' | head -n1)"
     fi
 fi
-for t in hk actionlint zizmor rumdl oxfmt oxlint czg cz; do
+for t in hk actionlint zizmor rumdl oxfmt oxlint uv cz; do
     if tool_available "$t"; then
         say "  $t: $(tool_version "$t")"
     elif tx command -v "$t" > /dev/null 2>&1 || command -v "$t" > /dev/null 2>&1; then
@@ -167,7 +176,7 @@ done
 tsl="${OXLINT_TSGOLINT_PATH:-}"
 [[ -z $tsl ]] && tsl=$(tx sh -c 'printf %s "${OXLINT_TSGOLINT_PATH:-}"' 2> /dev/null || true)
 if [[ -z $tsl ]]; then
-    say "  OXLINT_TSGOLINT_PATH: not set in this directory (the kit's mise.toml sets it)"
+    say "  OXLINT_TSGOLINT_PATH: not set in this directory (the global mise config sets it)"
     tsl="$HOME/.local/bin/tsrs-lint"
 fi
 if [[ -x $tsl ]]; then
@@ -182,7 +191,7 @@ say "steps the kit would keep for this repository:"
 [[ $N_JS -gt 0 ]] && say "  oxlint, tsrs-lint: keep (TypeScript/JavaScript files: $N_JS)" || say "  oxlint, tsrs-lint: drop (no TypeScript/JavaScript files)"
 [[ $N_FMT -gt 0 ]] && say "  oxfmt: keep (formattable files: $N_FMT)" || say "  oxfmt: drop (no formattable files)"
 [[ $N_MD -gt 0 ]] && say "  rumdl: keep (Markdown files: $N_MD)" || say "  rumdl: drop (no Markdown files)"
-say "  actionlint, zizmor: keep (workflows are linted wherever they exist; the hk.yml CI gate is recommended but optional, adopt.sh --no-ci leaves it out)"
+say "  actionlint, zizmor: keep (workflows are linted wherever they exist; the hk.yml CI gate is recommended but optional, mise run repo-adopt offers it per norm)"
 [[ $N_MD -gt 0 && $N_JS -eq 0 ]] && say "  profile: Markdown-only (hk, rumdl, mise; no package.json install step in CI)" || true
 [[ -f pyproject.toml || -f uv.lock ]] && say "  ruff, ruff-format, ty: add (Python project; uv run prefix, see the hk README)" || true
 exit 0
