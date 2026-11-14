@@ -1,3 +1,9 @@
+## v0.1.1 (2026-11-13)
+
+### Fix
+
+- **hk**: import Builtins as KitBuiltins so consumers can use the bare name (#19)
+
 ## v0.1.0 (2026-11-13)
 
 ### BREAKING CHANGE

@@ -2,7 +2,7 @@ amends "pkl:Project"
 
 package {
     name = "hk-base"
-    version = "0.1.0"
+    version = "0.1.1"
     baseUri = "package://github.com/gootecks/hooks-lint-format/releases/download/v\(version)/hk-base"
     packageZipUrl = "https://github.com/gootecks/hooks-lint-format/releases/download/v\(version)/hk-base@\(version).zip"
     description = "Shared hk base configuration of gootecks/hooks-lint-format"

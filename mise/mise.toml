@@ -7,7 +7,7 @@ rumdl = "0.3.2"
 "npm:oxfmt" = "0.77.0"
 "npm:oxlint" = "1.92.0"
 uv = "0.11.26"
-"github:gootecks/hooks-lint-format" = { version = "0.1.0", asset_pattern = "hooks-lint-format-scripts-*.tar.gz", bin_path = "bin" }
+"github:gootecks/hooks-lint-format" = { version = "0.1.1", asset_pattern = "hooks-lint-format-scripts-*.tar.gz", bin_path = "bin" }
 
 [task_config]
-includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.0"]
+includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.1"]
