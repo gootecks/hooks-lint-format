@@ -1,0 +1,79 @@
+[
+  {
+    "query": "set up pre-commit hooks for stream-machine, same lint/format setup as my other repos (hk, oxfmt etc). its a bun + ts project",
+    "should_trigger": true
+  },
+  {
+    "query": "husky keeps breaking on the klab-site repo after the node upgrade. rip it out and give it whatever I use everywhere else",
+    "should_trigger": true
+  },
+  {
+    "query": "i want PRs on this repo to fail in CI if formatting or lint is off, like I did on invoicegen. can you wire that up",
+    "should_trigger": true
+  },
+  {
+    "query": "migrate this repo off prettier and eslint to the oxc tools via hk, with type-aware linting through tsrs-lint instead of tsgolint",
+    "should_trigger": true
+  },
+  {
+    "query": "enforce conventional commits here and give me the czg prompt on plain git commit, same as the kit",
+    "should_trigger": true
+  },
+  {
+    "query": "bring hutch in line with the hooks-lint-format kit, I think its hk.pkl and mise pins have drifted",
+    "should_trigger": true
+  },
+  {
+    "query": "add actionlint and zizmor to this repo so workflow changes get checked on commit and in CI",
+    "should_trigger": true
+  },
+  {
+    "query": "set up releases from conventional commits with commitizen and a github release workflow like my other npm packages",
+    "should_trigger": true
+  },
+  {
+    "query": "this vault repo is all markdown, hook it up with rumdl on commit the way my other repos do",
+    "should_trigger": true
+  },
+  {
+    "query": "replace the tsc --noEmit step in my lefthook config with oxlint --type-check and whatever backend I standardised on",
+    "should_trigger": true
+  },
+  {
+    "query": "fix the 12 oxlint errors in src/cli.ts, the repo is already set up with hk and everything",
+    "should_trigger": false
+  },
+  {
+    "query": "what does rumdl MD013 actually check and should line length be 80 or 120 for readmes?",
+    "should_trigger": false
+  },
+  {
+    "query": "update the zizmor section of the hooks-lint-format kit README, the unpinned-uses explanation is wrong",
+    "should_trigger": false
+  },
+  {
+    "query": "my pre-push hook runs the whole vitest suite and takes 4 minutes, make it only run tests for changed files",
+    "should_trigger": false
+  },
+  {
+    "query": "the cloudflare deploy step in .github/workflows/deploy.yml fails with a 403, can you look at the log",
+    "should_trigger": false
+  },
+  {
+    "query": "client's repo requires eslint flat config with the airbnb ruleset, add the config and fix the react-hooks warnings",
+    "should_trigger": false
+  },
+  { "query": "write a conventional commit message for the staged changes", "should_trigger": false },
+  {
+    "query": "bump package.json to 2.4.0, tag it and push the tag, no release automation needed",
+    "should_trigger": false
+  },
+  {
+    "query": "run prettier over scripts/ one time, it's a throwaway folder in a repo that uses prettier already",
+    "should_trigger": false
+  },
+  {
+    "query": "tsc says Promise<void> is not assignable to type void in my deno task runner, how do I fix the types",
+    "should_trigger": false
+  }
+]

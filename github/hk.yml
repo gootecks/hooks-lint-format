@@ -1,4 +1,4 @@
-# Canonical hk check workflow from gootecks/hooks-lint-format/github. Copies replace the dependency install step.
+# hk check workflow from gootecks/hooks-lint-format/github. Copies replace the dependency install step; repos without JS/TS drop the tsrs and dependency steps.
 name: hk
 
 on:

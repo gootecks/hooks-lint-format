@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" role="img" aria-labelledby="t d">
+<title id="t">Release on every push to main</title>
+<desc id="d">Flowchart of the release workflow: a push to main runs cz bump --get-next; exit code 21 ends the run with nothing to release; otherwise it captures release notes, bumps the version, commits and tags, optionally builds assets, pushes the commit and tag atomically, and creates the GitHub Release.</desc>
+<style>
+:root{--paper:#faf8f5;--ink:#1f2430;--mut:#545a6a;--acc:#b8460f;--raise:#fff;--rule:#bdb8ae;--tint:#f3ede4}
+@media (prefers-color-scheme:dark){:root{--paper:#2d3142;--ink:#f5f5f5;--mut:#c6c8d0;--acc:#f08a59;--raise:#393e53;--rule:#646a82;--tint:#363b50}}
+text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;fill:var(--mut)}
+.m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10.5px}
+.h{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.n{font-size:13px;font-weight:600;fill:var(--ink)}
+.c{text-anchor:middle}
+.i{font-style:italic;font-size:13px}
+.bg{fill:var(--paper)}
+.box{fill:var(--raise);stroke:var(--ink);stroke-width:1}
+.foc{fill:var(--tint);stroke:var(--acc);stroke-width:1.4}
+.end{fill:var(--tint);stroke:var(--mut);stroke-width:1}
+.opt{fill:none;stroke:var(--mut);stroke-width:1;stroke-dasharray:4 3}
+.ln{stroke:var(--mut);stroke-width:1.3;fill:none}
+.fl{stroke:var(--acc);stroke-width:1.6;fill:none}
+.arr{fill:var(--mut)}
+.arra{fill:var(--acc)}
+</style>
+<defs>
+<marker id="ar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="arr" points="0 0,8 3,0 6"/></marker>
+<marker id="aa" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="arra" points="0 0,8 3,0 6"/></marker>
+</defs>
+<rect class="bg" width="1000" height="600"/>
+
+<line class="ln" x1="200" y1="100" x2="238" y2="100" marker-end="url(#ar)"/>
+<line class="ln" x1="480" y1="100" x2="538" y2="100" marker-end="url(#ar)"/>
+<line class="ln" x1="700" y1="100" x2="758" y2="100" marker-end="url(#ar)"/>
+<line class="ln" x1="360" y1="168" x2="360" y2="250" marker-end="url(#ar)"/>
+<line class="fl" x1="860" y1="148" x2="860" y2="346" marker-end="url(#aa)"/>
+<line class="ln" x1="758" y1="380" x2="682" y2="380" marker-end="url(#ar)"/>
+<line class="ln" x1="478" y1="380" x2="402" y2="380" marker-end="url(#ar)"/>
+
+<text class="m c h" x="509" y="92">yes</text>
+<text class="m h" x="372" y="212">exit code 21</text>
+
+<rect class="end" x="40" y="76" width="160" height="48" rx="22"/>
+<text class="n c" x="120" y="98">Push to main</text>
+<text class="m c" x="120" y="113">merge a PR</text>
+
+<polygon class="box" points="360,32 480,100 360,168 240,100"/>
+<text class="n c" x="360" y="88">Release-worthy</text>
+<text class="n c" x="360" y="103">commit?</text>
+<text class="m c" x="360" y="125" style="font-size:10px">cz bump --get-next</text>
+
+<rect class="end" x="270" y="252" width="180" height="48" rx="22"/>
+<text class="n c" x="360" y="274">Nothing to release</text>
+<text class="m c" x="360" y="289">run ends green</text>
+
+<rect class="box" x="540" y="76" width="160" height="48" rx="6"/>
+<text class="n c" x="620" y="98">Capture notes</text>
+<text class="m c" x="620" y="113">cz changelog --dry-run</text>
+
+<rect class="foc" x="760" y="52" width="200" height="96" rx="6"/>
+<text class="n c" x="860" y="72">Bump</text>
+<text class="m c" x="860" y="88">cz bump --yes</text>
+<text class="m c" x="860" y="106">version files + CHANGELOG.md</text>
+<text class="m c" x="860" y="120">commit chore(release): vX.Y.Z</text>
+<text class="m c" x="860" y="134">tag vX.Y.Z</text>
+
+<rect class="opt" x="760" y="348" width="200" height="64" rx="6"/>
+<text class="n c" x="860" y="370">Build assets</text>
+<text class="m c" x="860" y="386">copies with binaries only</text>
+<text class="m c" x="860" y="400">failure leaves no pushed tag</text>
+
+<rect class="box" x="480" y="348" width="200" height="64" rx="6"/>
+<text class="n c" x="580" y="374">Atomic push</text>
+<text class="m c" x="580" y="392">git push --atomic</text>
+<text class="m c" x="580" y="405">commit + tag to main</text>
+
+<rect class="box" x="200" y="348" width="200" height="64" rx="6"/>
+<text class="n c" x="300" y="370">GitHub Release</text>
+<text class="m c" x="300" y="386">gh release create --verify-tag</text>
+<text class="m c" x="300" y="400">notes + assets</text>
+
+<text class="i" x="200" y="466">Pushes made with GITHUB_TOKEN start no other workflow,</text>
+<text class="i" x="200" y="486">so the bump commit cannot loop.</text>
+
+<line x1="40" y1="530" x2="960" y2="530" stroke="var(--rule)" stroke-width="1"/>
+<text class="m" x="40" y="550" style="font-size:10px;letter-spacing:.16em">LEGEND</text>
+<rect class="end" x="40" y="566" width="26" height="13" rx="6"/>
+<text x="74" y="577">Start or end</text>
+<rect class="box" x="200" y="566" width="26" height="13" rx="2"/>
+<text x="234" y="577">Step</text>
+<polygon class="box" points="344,572 357,565 370,572 357,579"/>
+<text x="378" y="577">Decision</text>
+<rect class="opt" x="500" y="566" width="26" height="13" rx="2"/>
+<text x="534" y="577">Optional</text>
+<rect class="foc" x="660" y="566" width="26" height="13" rx="2"/>
+<text x="694" y="577">Focal</text>
+</svg>

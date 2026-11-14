@@ -1,4 +1,4 @@
-# Canonical release workflow. Copies add a build step and release assets.
+# Release workflow from gootecks/hooks-lint-format/github. Copies add a build step and release assets; change runs-on for macOS builds.
 name: Release
 
 on:
@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   release:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:

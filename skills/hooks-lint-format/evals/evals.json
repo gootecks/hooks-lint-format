@@ -1,0 +1,23 @@
+{
+  "skill_name": "hooks-lint-format",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "my repo icon-composer-mcp has husky + prettier + eslint and a tsc --noEmit pre-commit. replace all that with the same hooks and lint setup I use everywhere else, and it publishes to npm from main so I want releases from conventional commits too",
+      "expected_output": "Runs scripts/survey.sh first and reports TS, Markdown and workflows present; husky, Prettier, ESLint and the tsc hook found; the package manager; release signals. Summarises and gets agreement before editing, on a branch. Removes husky, Prettier, ESLint and the tsc hook in the same change, following references/legacy-tools.md, and tells the user which ESLint rules or Prettier plugins have no equivalent. Runs adopt.sh (dry run, then --release), merges mise.toml by hand, runs mise install, checks the tsrs-lint build. Oxfmt does not format Markdown; rumdl does. Runs backlog.sh and shows counts per rule; does not edit tsconfig flags, add ts-ignore or narrow globs. Every commit passes the pre-commit hook as configured: no --no-verify, HK=0 or HK_SKIP_STEPS. The formatting-only commit holds files with no findings left and is recorded in .git-blame-ignore-revs; files with findings are committed with their fixes; agent edits are reviewed separately. Tells the user to make the check job required and to let github-actions[bot] push to main. Ends with verify.sh output showing the bad commit message and the lint-finding commit rejected.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have a git repo that is just my obsidian notes, about 400 markdown files with callouts and wikilinks, no code. hook it up so notes get linted and formatted on commit like in my other repos",
+      "expected_output": "Survey shows Markdown only. Result keeps hk, rumdl and mise; no oxlint, no tsrs-lint, no dependency install step, no commitizen unless asked; actionlint and zizmor only if workflows exist. hk.pkl excludes .obsidian and other app state. rumdl is the only Markdown tool and oxfmt does not touch .md. Callouts and wikilinks are not handled by disabling rules wholesale; any per-file-ignores entry has a reason beside it. After the fix run every callout still has its marker line, title and body lines as written. Note titles reported by MD063 are shown to the user as a count with the choice left to them; min-level is not changed. First-run findings are counted with backlog.sh and reported; the fixer agent handles leftovers and its diff is reviewed separately from the mechanical commit. Every commit passes the pre-commit hook as configured: no --no-verify, HK=0 or HK_SKIP_STEPS. Does not stage unrelated files. verify.sh passes using a Markdown finding for the rejected-commit test.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "klab-site was set up with the hooks-lint-format kit a while ago and CI is red: hk check --all fails in oxlint with ~300 type errors, almost all noUncheckedIndexedAccess. bring it back in line with the kit and just get it green, I don't care how",
+      "expected_output": "Recognises an already adopted repository and re-aligns instead of re-copying: runs survey.sh, shows the diff for each file that differs from the kit, and keeps only deliberate local differences with a reason. Runs backlog.sh and shows counts by rule. Does not edit tsconfig.json strictness flags, add ts-ignore, widen to any, or narrow the hk glob, despite 'I don't care how'; states that the policy in docs/lint-policy.md forbids it. A compiler configuration error that blocks the check (such as a missing rootDir) is fixed with the smallest change and listed in the report. Runs oxlint --fix first, then fixes the dominant error class in code at its shared cause, and reports remaining counts with a plan for the user to prioritise. Every commit passes the pre-commit hook as configured: no --no-verify, HK=0 or HK_SKIP_STEPS. Confirms the CI log shows OXLINT_TSGOLINT_PATH set.",
+      "files": []
+    }
+  ]
+}

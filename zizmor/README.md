@@ -1,6 +1,18 @@
 # zizmor
 
-[zizmor](https://docs.zizmor.sh) 1.30.1 audits GitHub Actions workflows, composite actions and `dependabot.yml` for security problems. The hk builtin runs it check-only; `zizmor --fix` applies the safe fixes by hand.
+[zizmor](https://docs.zizmor.sh) audits GitHub Actions workflows, composite actions and `dependabot.yml` for security problems.
+
+## Check and fix
+
+The hk builtin defines both commands: `zizmor --no-progress <files>` for `check`, and `zizmor --no-progress --fix <files>` for `fix`. With `fix = true` in the `fix` and `pre-commit` hooks of `hk.pkl`, every commit that touches a workflow runs `zizmor --fix` and stages the result.
+
+What `--fix` does and does not change, from `zizmor --help` and the [zizmor usage docs](https://docs.zizmor.sh/usage/#auto-fixing-results):
+
+- It applies only safe fixes (`--fix` equals `--fix=safe`). Unsafe fixes need `--fix=all` or `--fix=unsafe-only`, which hk never passes.
+- It fixes only findings marked "this finding has an auto-fix". Everything else stays in the output and fails the step.
+- It edits files in place and tries to keep indentation and comments, but the patch may not match the file's style exactly; review the staged diff.
+- Some fixes need network access and a GitHub token. For example, pinning an unpinned action needs the latest commit SHA from GitHub.
+- It does not fix remote inputs (for example `zizmor owner/repo`).
 
 ## What the kit's workflows do to pass
 
@@ -12,9 +24,6 @@
 
 ## Suppressions
 
-Write a YAML comment `# zizmor: ignore[<audit>]` on the flagged line, with the reason after it. A `#` inside a `run: |` block is shell text, not YAML, so it does not count; put the comment after `run: |` instead.
-zizmor's summary separates "ignored" (these comments) from "suppressed" (findings below the default persona's confidence).
+A suppression is a last resort. Fix the cause first; see [../docs/lint-policy.md](../docs/lint-policy.md). Write a YAML comment `# zizmor: ignore[<audit>]` on the flagged line, with the reason after it. A `#` inside a `run: |` block is shell text, not YAML, so it does not count; put the comment after `run: |` instead. zizmor's summary separates "ignored" (these comments) from "suppressed" (findings below the default persona's confidence).
 
-## Adopt
-
-Pin it in `mise.toml`, keep `["zizmor"] = Builtins.zizmor` in `hk.pkl`, and run `zizmor .github/workflows` once to clear existing findings.
+To add zizmor to a repository, follow the [adopt skill](../skills/hooks-lint-format/SKILL.md). Run `zizmor .github/workflows` on the existing workflows and fix the findings it reports.

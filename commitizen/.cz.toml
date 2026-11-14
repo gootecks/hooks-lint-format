@@ -1,4 +1,4 @@
-# Canonical commitizen config. Copies add repo-specific version_files.
+# Commitizen config from gootecks/hooks-lint-format/commitizen. Copies add repo-specific version_files.
 [tool.commitizen]
 name = "cz_conventional_commits"
 version_provider = "npm"

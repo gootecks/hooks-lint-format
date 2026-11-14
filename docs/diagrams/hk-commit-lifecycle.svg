@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" role="img" aria-labelledby="t d">
+<title id="t">What happens on git commit</title>
+<desc id="d">Sequence of git hooks hk runs during a commit: pre-commit stashes unstaged changes, runs the steps in parallel with fixes enabled and stages the fixes; prepare-commit-msg optionally opens the czg prompt; commit-msg rejects messages that are not Conventional Commits.</desc>
+<style>
+:root{--paper:#faf8f5;--ink:#1f2430;--mut:#545a6a;--acc:#b8460f;--raise:#fff;--rule:#bdb8ae;--tint:#f3ede4}
+@media (prefers-color-scheme:dark){:root{--paper:#2d3142;--ink:#f5f5f5;--mut:#c6c8d0;--acc:#f08a59;--raise:#393e53;--rule:#646a82;--tint:#363b50}}
+text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:11px;fill:var(--mut)}
+.m{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px}
+.h{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+.n{font-size:13px;font-weight:600;fill:var(--ink)}
+.c{text-anchor:middle}
+.e{text-anchor:end}
+.i{font-style:italic}
+.k{fill:var(--ink)}
+.a{fill:var(--acc)}
+.bg{fill:var(--paper)}
+.box{fill:var(--raise);stroke:var(--ink);stroke-width:1}
+.life{stroke:var(--rule);stroke-width:1;stroke-dasharray:3 3}
+.act{fill:var(--tint);stroke:var(--mut);stroke-width:1}
+.ln{stroke:var(--mut);stroke-width:1.3;fill:none}
+.ret{stroke:var(--mut);stroke-width:1.3;fill:none;stroke-dasharray:5 4}
+.foc{stroke:var(--acc);stroke-width:1.6;fill:none}
+.frame{fill:none;stroke:var(--rule);stroke-width:1}
+.tab{fill:var(--paper);stroke:var(--rule);stroke-width:1}
+.arr{fill:var(--mut)}
+.arra{fill:var(--acc)}
+</style>
+<defs>
+<marker id="ar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="arr" points="0 0,8 3,0 6"/></marker>
+<marker id="aa" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon class="arra" points="0 0,8 3,0 6"/></marker>
+</defs>
+<rect class="bg" width="1000" height="800"/>
+
+<rect class="frame" x="88" y="424" width="752" height="136" rx="4"/>
+<rect class="tab" x="88" y="424" width="40" height="17" rx="2"/>
+<text class="m c" x="108" y="436">opt</text>
+<text class="m" x="668" y="466">[plain git commit]</text>
+<text class="m" x="668" y="481">[a terminal is attached]</text>
+<text class="m" x="668" y="496">[not CI, not HK_AGENT]</text>
+
+<line class="life" x1="140" y1="120" x2="140" y2="716"/>
+<line class="life" x1="380" y1="120" x2="380" y2="716"/>
+<line class="life" x1="620" y1="120" x2="620" y2="716"/>
+<line class="life" x1="860" y1="120" x2="860" y2="716"/>
+<rect class="act" x="136" y="136" width="8" height="572"/>
+<rect class="act" x="376" y="136" width="8" height="572"/>
+<rect class="act" x="616" y="180" width="8" height="216"/>
+<rect class="act" x="616" y="444" width="8" height="104"/>
+<rect class="act" x="616" y="596" width="8" height="68"/>
+<rect class="act" x="856" y="268" width="8" height="72"/>
+
+<line class="ln" x1="144" y1="150" x2="376" y2="150" marker-end="url(#ar)"/>
+<text class="m c h" x="260" y="144">git commit</text>
+<line class="ln" x1="384" y1="190" x2="616" y2="190" marker-end="url(#ar)"/>
+<text class="m c h" x="500" y="184">pre-commit</text>
+<path class="ln" d="M624 212H640a8 8 0 0 1 8 8V228a8 8 0 0 1-8 8H626" marker-end="url(#ar)"/>
+<text class="m k" x="662" y="220">stash unstaged changes</text>
+<text class="m" x="662" y="234">stash = "git"</text>
+<line class="foc" x1="624" y1="272" x2="856" y2="272" marker-end="url(#aa)"/>
+<text class="m c a h" x="740" y="266">run steps</text>
+<text class="i c" x="740" y="298">fix = true, steps run in parallel</text>
+<line class="ret" x1="856" y1="336" x2="626" y2="336" marker-end="url(#ar)"/>
+<text class="m c h" x="740" y="330">fixes or failures</text>
+<line class="foc" x1="616" y1="392" x2="388" y2="392" marker-end="url(#aa)"/>
+<text class="m c a h" x="502" y="386">stage fixes</text>
+<text class="m c" x="502" y="410">stage = true, then restore stash</text>
+<text class="i e" x="366" y="396">a failed step aborts the commit</text>
+
+<line class="ln" x1="384" y1="448" x2="616" y2="448" marker-end="url(#ar)"/>
+<text class="m c h" x="500" y="442">prepare-commit-msg</text>
+<line class="ret" x1="616" y1="536" x2="146" y2="536" marker-end="url(#ar)"/>
+<text class="m c h" x="500" y="530">czg prompt writes the message</text>
+
+<line class="ln" x1="384" y1="600" x2="616" y2="600" marker-end="url(#ar)"/>
+<text class="m c h" x="500" y="594">commit-msg</text>
+<path class="ln" d="M624 624H640a8 8 0 0 1 8 8V640a8 8 0 0 1-8 8H626" marker-end="url(#ar)"/>
+<text class="m k" x="662" y="632">check message</text>
+<text class="m" x="662" y="646">conventional-commit step</text>
+<text class="m" x="662" y="660">rejects non-Conventional</text>
+<line class="ret" x1="376" y1="700" x2="146" y2="700" marker-end="url(#ar)"/>
+<text class="m c h" x="260" y="694">commit created</text>
+
+<rect class="box" x="60" y="36" width="160" height="84" rx="6"/>
+<text class="m" x="72" y="54" style="font-size:10px">USER</text>
+<text class="n c" x="140" y="84">Developer</text>
+<rect class="box" x="300" y="36" width="160" height="84" rx="6"/>
+<text class="m" x="312" y="54" style="font-size:10px">VCS</text>
+<text class="n c" x="380" y="84">git</text>
+<rect class="box" x="540" y="36" width="160" height="84" rx="6"/>
+<text class="m" x="552" y="54" style="font-size:10px">HOOKS</text>
+<text class="n c" x="620" y="84">hk</text>
+<rect class="box" x="780" y="36" width="160" height="84" rx="6"/>
+<text class="m" x="792" y="54" style="font-size:10px">STEPS</text>
+<text class="n c" x="860" y="76">Steps</text>
+<text class="m c" x="860" y="92" style="font-size:10px">oxfmt oxlint rumdl</text>
+<text class="m c" x="860" y="106" style="font-size:10px">actionlint zizmor</text>
+
+<line x1="56" y1="740" x2="944" y2="740" stroke="var(--rule)" stroke-width="1"/>
+<text class="m" x="56" y="760" style="font-size:10px;letter-spacing:.16em">LEGEND</text>
+<line class="ln" x1="56" y1="778" x2="88" y2="778" marker-end="url(#ar)"/>
+<text x="96" y="782">Call</text>
+<line class="ret" x1="190" y1="778" x2="222" y2="778" marker-end="url(#ar)"/>
+<text x="230" y="782">Return</text>
+<rect class="frame" x="334" y="769" width="32" height="18" rx="2"/>
+<text class="m c" x="350" y="782" style="font-size:10px">opt</text>
+<text x="376" y="782">Runs only when its condition holds</text>
+<line class="foc" x1="640" y1="778" x2="672" y2="778" marker-end="url(#aa)"/>
+<text x="680" y="782">Fix and stage</text>
+</svg>

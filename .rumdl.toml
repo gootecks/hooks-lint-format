@@ -1,0 +1,25 @@
+extends = "rumdl/.rumdl.toml"
+
+[MD063]
+ignore-words = [
+  "hk",
+  "oxlint",
+  "oxfmt",
+  "rumdl",
+  "czg",
+  "zizmor",
+  "actionlint",
+  "mise",
+  "tsrs-lint",
+  "unslop",
+  "commitizen",
+  "husky",
+  "lefthook",
+  "lint-staged",
+  "pre-commit",
+  "markdownlint",
+  "tsc",
+  "hooks-lint-format",
+  "Python",
+  "TypeScript",
+]
