@@ -1,6 +1,6 @@
 # Shared rumdl config
 
-`.rumdl.toml` is the shared rumdl config. rumdl formats and lints every Markdown file in the repository; oxfmt does not touch Markdown. The hk step runs `rumdl check --deny-config-warnings` to check and `hooks/rumdl-fix.sh` to fix.
+`.rumdl.toml` is the shared rumdl config. rumdl formats and lints every Markdown file in the repository; oxfmt does not touch Markdown. The hk step runs `rumdl check --deny-config-warnings` and the kit docs check `hooks/rumdl-docs-check.py` to check, and `hooks/rumdl-fix.sh` to fix.
 
 ## Config layout
 
@@ -17,6 +17,10 @@ The file is ordered so it can be scanned top to bottom:
 ## Findings without an auto-fix
 
 rumdl fixes what it can. The remaining findings (for example `MD063` heading case, `MD034` bare URLs, `MD057` broken links) are handed to the fixer agent, which edits the Markdown by hand and never changes this config or adds suppression comments. The flow is described in [hk/README.md](../hk/README.md).
+
+## Callout and reference checks
+
+rumdl 0.3.2 cannot see alert types or check that a code-span path exists. The hk step therefore also runs `hooks/rumdl-docs-check.py`, which reads rumdl's parsed elements (`rumdl experimental export-elements`) and reports through `rumdl experimental report-diagnostics`. It checks the alert format, `Note:` label paragraphs, repository paths in code spans and `mise run` tasks. The rules, their exceptions and the exit codes are in [hk/README.md](../hk/README.md#rumdl-docs-checkpy); the convention is in [docs/markdown-convention.md](../docs/markdown-convention.md#callouts). Known miss: `ref/path` checks a path only when its first segment exists, so a top-level directory that disappears entirely goes unreported, while a rename inside an existing directory is caught. `[per-file-flavor]` also decides which files skip the Obsidian-allowed alert checks. Its glob keys are anchored to the config file's directory, `*` does not cross `/` and `**/` matches zero or more directories, so `"**/*.md"` matches a top-level `README.md` and `"*.md"` matches only top-level files.
 
 ## Obsidian vaults
 

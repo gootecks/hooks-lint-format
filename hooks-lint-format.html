@@ -404,7 +404,7 @@
               <tr>
                 <td><code>rumdl</code></td>
                 <td><code>**/*.md</code>, <code>**/*.markdown</code>, <code>**/*.mdx</code></td>
-                <td><code>rumdl check --deny-config-warnings</code></td>
+                <td><code>rumdl check --deny-config-warnings</code> and <code>hooks/rumdl-docs-check.py</code></td>
                 <td><code>hooks/rumdl-fix.sh</code></td>
               </tr>
               <tr>
@@ -451,7 +451,7 @@
                 Markdown check on the changelog would leave a half-done version bump.
               </li>
               <li>
-                <code>rumdl-fix.sh</code> runs <code>rumdl check --fix</code>, then launches the
+                <code>rumdl-fix.sh</code> runs <code>rumdl check --fix</code> and the docs check, then launches the
                 <code>repo-markdown-fixer</code> agent once for the leftovers and checks again.
                 <code>RUMDL_AGENT=0</code> or <code>CI</code> runs no agent; findings still fail the step.
               </li>
@@ -577,6 +577,7 @@
             </header>
             <p>
               The only tool that formats and lints Markdown. The shared <code>.rumdl.toml</code> sets the rules;
+              <code>hooks/rumdl-docs-check.py</code> adds the kit's callout and stale-reference checks;
               <code>hooks/rumdl-fix.sh</code> applies the auto-fix, then asks <code>repo-markdown-fixer</code> to fix
               what is left. Style rules: <a href="docs/markdown-convention.md">docs/markdown-convention.md</a>. Every
               rule and its setting: <a href="docs/rumdl-rules.md">docs/rumdl-rules.md</a>.
@@ -705,6 +706,11 @@
           <li>
             <a href="unslop/README.md">unslop</a>: an on-demand <code>mise</code> task for prose cleanup. The author
             runs it and reviews the diff; it is not a hook step and not a check.
+          </li>
+          <li>
+            <a href="docs-drift/README.md">docs-drift</a>: an on-demand <code>mise</code> task that asks an agent which
+            docs the branch's code changes made stale. The author runs it before a pull request and reviews the diff; it
+            is not a hook step and not a check.
           </li>
         </ul>
       </section>

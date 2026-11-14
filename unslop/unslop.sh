@@ -85,12 +85,13 @@ omp -p --no-session --no-title --no-skills --no-rules \
 Apply the rules in your instructions to the files listed below, one per line, and to no other file.
 Hard limits. They override every rule:
 - Change wording only.
-- Keep every number, name, link, URL, code span, code block, table and quotation exactly as written.
+- Keep every number, name, link, URL, code span, code block, table and quotation exactly as written. An alert ('> [!NOTE]') is not a quotation.
 - Do not change heading text.
 - Do not add an actor or a claim the original does not state; keep a passive sentence when the original names no actor.
 - When a rule cannot be applied without changing meaning, leave the sentence as it is.
 - Keep each paragraph and each list item on one line.
 - Edit only the listed files.
+- Callouts: an alert suits a sentence or short passage that a skimming reader must not miss (a destructive step, a prerequisite, a behaviour that contradicts the obvious reading, a version or platform limit); it is noise when it repeats the paragraph above, holds a nice-to-have or competes with another alert, and a section has at most one. You may turn such a passage into one of the five alerts (NOTE, TIP, IMPORTANT, WARNING, CAUTION), and you may turn a noise alert or a 'Note:'-label paragraph into a plain sentence. Alert format: uppercase type alone on the marker line, no title text, no fold marker, no nesting, a blank line between two alerts, a bold first body line for a title. The wording inside an alert obeys the other hard limits.
 Files:
 $list" >&2 || agent_rc=$?
 ((agent_rc == 0)) || echo "unslop: the agent exited with status $agent_rc; showing what it left" >&2

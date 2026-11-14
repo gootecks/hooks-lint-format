@@ -6,6 +6,7 @@ zizmor = "1.30.1"
 rumdl = "0.3.2"
 "npm:oxfmt" = "0.77.0"
 "npm:oxlint" = "1.92.0"
+uv = "0.11.26"
 
 [env]
 OXLINT_TSGOLINT_PATH = "{{env.HOME}}/.local/bin/tsrs-lint"
@@ -29,3 +30,7 @@ run = "uvx --from commitizen==4.19.3 cz bump --dry-run --changelog-to-stdout"
 [tasks.unslop]
 description = "Optional, run by hand: rewrite changed Markdown prose with an omp agent; arguments are file names (hooks/unslop.sh)"
 run = "hooks/unslop.sh"
+
+[tasks.docs-drift]
+description = "Optional, run by hand: find docs made stale by the branch's code changes with an omp agent; --report only lists them (hooks/docs-drift.sh)"
+run = "hooks/docs-drift.sh"

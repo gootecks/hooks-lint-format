@@ -12,6 +12,7 @@ ignore-words = [
   "mise",
   "tsrs-lint",
   "unslop",
+  "docs-drift",
   "commitizen",
   "husky",
   "lefthook",

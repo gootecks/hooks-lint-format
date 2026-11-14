@@ -1,0 +1,1 @@
+../docs-drift/docs-drift.sh

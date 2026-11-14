@@ -1,6 +1,6 @@
 # Replacing legacy tools
 
-Remove the old tool in the same change that adds its kit equivalent, so two tools never act on the same file type. `scripts/survey.sh` lists which of these the repository has. Carry settings over by reading the old config and mapping each setting to the kit file, not by copying; a setting with no equivalent is reported to the user, not dropped silently.
+Remove the old tool in the same change that adds its kit equivalent, so two tools never act on the same file type. `../scripts/survey.sh` lists which of these the repository has. Carry settings over by reading the old config and mapping each setting to the kit file, not by copying; a setting with no equivalent is reported to the user, not dropped silently.
 
 Before deleting any config, record what the old tool enforced. If the old rules were stricter than the kit's in a way the user cares about, add the rule to the kit config and say so. Do not weaken the kit config to match the old behaviour; see `docs/lint-policy.md`.
 

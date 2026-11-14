@@ -6,6 +6,7 @@ KIT=$(cd -P "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)
 MAP=(
     "hk/hk.pkl|hk.pkl|hk"
     "hk/rumdl-fix.sh|hooks/rumdl-fix.sh|markdown"
+    "hk/rumdl-docs-check.py|hooks/rumdl-docs-check.py|markdown"
     "mise/mise.toml|mise.toml|mise"
     "oxfmt/.oxfmtrc.json|.oxfmtrc.json|format"
     "oxlint/.oxlintrc.json|.oxlintrc.json|js"
@@ -14,6 +15,7 @@ MAP=(
     "commitizen/.cz.toml|.cz.toml|release"
     "github/release.yml|.github/workflows/release.yml|release"
     "unslop/unslop.sh|hooks/unslop.sh|unslop"
+    "docs-drift/docs-drift.sh|hooks/docs-drift.sh|docs-drift"
 )
 
 say() { printf '%s\n' "$*"; }
