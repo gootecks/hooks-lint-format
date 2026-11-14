@@ -127,3 +127,59 @@ file_state() {
         printf 'differs'
     fi
 }
+
+# Version heading commitizen can anchor an incremental changelog on, such as "## v1.2.3 (2026-01-02)" or "## [1.2.3]".
+changelog_has_version_heading() {
+    grep -Eq '^#{1,6}[[:space:]]+\[?v?[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md
+}
+
+default_ref() {
+    local r
+    if r=$(git symbolic-ref -q --short refs/remotes/origin/HEAD 2> /dev/null); then
+        printf '%s' "$r"
+        return 0
+    fi
+    for r in origin/main origin/master main master; do
+        if git rev-parse --verify -q "$r" > /dev/null; then
+            printf '%s' "$r"
+            return 0
+        fi
+    done
+    printf 'HEAD'
+}
+
+# Latest v-tag reachable from the default branch, which is the tag cz bump starts from.
+latest_release_tag() {
+    git tag --merged "$(default_ref)" --list 'v[0-9]*' --sort=-v:refname 2> /dev/null | head -n1
+}
+
+# The version the project declares: package.json, pyproject.toml [project] or Cargo.toml [package]. Empty when none or dynamic.
+project_version() {
+    if [[ -f package.json ]]; then
+        jq -r '.version // empty' package.json 2> /dev/null || true
+    elif [[ -f pyproject.toml ]]; then
+        awk '/^\[/ { on = ($0 == "[project]") } on && /^version[ ]*=/ { gsub(/^[^"]*"|".*$/, ""); print; exit }' pyproject.toml
+    elif [[ -f Cargo.toml ]]; then
+        awk '/^\[/ { on = ($0 == "[package]") } on && /^version[ ]*=/ { gsub(/^[^"]*"|".*$/, ""); print; exit }' Cargo.toml
+    fi
+}
+
+# Prints one "warn" line per release hazard; prints nothing when there is none. Always succeeds.
+release_warnings() {
+    local tag ver
+    if [[ -f CHANGELOG.md ]] && ! changelog_has_version_heading; then
+        say "warn  CHANGELOG.md has no version heading (## vX.Y.Z (date)). With changelog_incremental = true, cz bump regenerates the whole file and deletes the hand-written history. Add a heading for the latest release tag above that history before the first release (SKILL.md, \"Release preparation\")."
+    fi
+    tag=$(latest_release_tag || true)
+    ver=$(project_version || true)
+    if [[ -n $tag && -n $ver && $tag != "v$ver" ]]; then
+        say "warn  version field is $ver but the latest release tag reachable from $(default_ref) is $tag. Align them, or cz bump --get-next fails with 'No tag matching configuration'."
+    fi
+    if [[ -z $tag && -n $(git tag --list 'v[0-9]*') ]]; then
+        say "warn  version tags exist but none is reachable from $(default_ref); cz bump finds no tag. Fetch tags from origin or check the default branch."
+    fi
+    if git remote get-url upstream > /dev/null 2>&1 && [[ $(git config --get remote.upstream.tagOpt || true) != "--no-tags" ]]; then
+        say "warn  remote 'upstream' fetches tags; upstream tags with the same names shadow origin's. Run: git fetch --force --tags origin && git config remote.upstream.tagOpt --no-tags"
+    fi
+    return 0
+}

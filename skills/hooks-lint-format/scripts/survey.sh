@@ -136,6 +136,7 @@ say "  version tags (v*): $tags"
 [[ -f .cz.toml ]] && say "  release config: .cz.toml"
 [[ -f .github/workflows/release.yml ]] && say "  release workflow: .github/workflows/release.yml"
 say "  release signal: $([[ $tags -gt 0 || -f .cz.toml || -f .github/workflows/release.yml ]] && echo 'yes, ask the user whether to adopt releases' || echo 'none found')"
+release_warnings | sed 's/^/  /'
 
 say ""
 say "kit files against this repository (kit file -> repo file: state):"
@@ -181,6 +182,7 @@ say "steps the kit would keep for this repository:"
 [[ $N_JS -gt 0 ]] && say "  oxlint, tsrs-lint: keep (TypeScript/JavaScript files: $N_JS)" || say "  oxlint, tsrs-lint: drop (no TypeScript/JavaScript files)"
 [[ $N_FMT -gt 0 ]] && say "  oxfmt: keep (formattable files: $N_FMT)" || say "  oxfmt: drop (no formattable files)"
 [[ $N_MD -gt 0 ]] && say "  rumdl: keep (Markdown files: $N_MD)" || say "  rumdl: drop (no Markdown files)"
-say "  actionlint, zizmor: keep (the kit adds .github/workflows/hk.yml)"
+say "  actionlint, zizmor: keep (workflows are linted wherever they exist; the hk.yml CI gate is recommended but optional, adopt.sh --no-ci leaves it out)"
 [[ $N_MD -gt 0 && $N_JS -eq 0 ]] && say "  profile: Markdown-only (hk, rumdl, mise; no package.json install step in CI)" || true
+[[ -f pyproject.toml || -f uv.lock ]] && say "  ruff, ruff-format, ty: add (Python project; uv run prefix, see the hk README)" || true
 exit 0

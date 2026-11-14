@@ -3,11 +3,12 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 usage() {
-    say "usage: adopt.sh [--dry-run] [--force] [--release] [--unslop] [REPO]"
+    say "usage: adopt.sh [--dry-run] [--force] [--release] [--no-ci] [--unslop] [REPO]"
     say "Copies the kit files into REPO (default: current directory). Nothing is staged or committed."
     say "  --dry-run  print what would happen, write nothing"
     say "  --force    overwrite files that differ from the kit (mise.toml is never overwritten: merge it by hand)"
-    say "  --release  also copy .cz.toml and .github/workflows/release.yml"
+    say "  --release  also copy .cz.toml (version_provider set from uv.lock, package.json, Cargo.toml or pyproject.toml) and .github/workflows/release.yml"
+    say "  --no-ci    do not copy .github/workflows/hk.yml: the hk check CI gate is recommended but optional"
     say "  --unslop   also copy hooks/unslop.sh, the optional prose-cleanup task"
 }
 
@@ -15,6 +16,7 @@ DRY=0
 FORCE=0
 RELEASE=0
 UNSLOP=0
+NOCI=0
 REPO_ARG=""
 for a in "$@"; do
     case $a in
@@ -22,6 +24,7 @@ for a in "$@"; do
         --force) FORCE=1 ;;
         --release) RELEASE=1 ;;
         --unslop) UNSLOP=1 ;;
+        --no-ci) NOCI=1 ;;
         -h | --help)
             usage
             exit 0
@@ -89,6 +92,21 @@ summarise_diff() {
     diff -u "$dest" "$desired" | sed -n '3,22p' | sed 's/^/    | /' || true
 }
 
+# commitizen version_provider for the ecosystem that owns the version field.
+cz_provider() {
+    if [[ -f uv.lock ]]; then
+        printf 'uv'
+    elif [[ -f package.json ]]; then
+        printf 'npm'
+    elif [[ -f Cargo.toml ]]; then
+        printf 'cargo'
+    elif [[ -f pyproject.toml ]]; then
+        printf 'pep621'
+    else
+        printf 'npm'
+    fi
+}
+
 for entry in "${MAP[@]}"; do
     IFS='|' read -r src dest fam <<< "$entry"
     reason=""
@@ -97,6 +115,7 @@ for entry in "${MAP[@]}"; do
         js) [[ $N_JS -eq 0 ]] && reason="no TypeScript or JavaScript files" ;;
         format) [[ $N_FMT -eq 0 ]] && reason="no files oxfmt formats" ;;
         release) [[ $RELEASE -eq 0 ]] && reason="releases not requested (pass --release)" ;;
+        ci) [[ $NOCI -eq 1 ]] && reason="CI gate declined (--no-ci)" ;;
         unslop) [[ $UNSLOP -eq 0 ]] && reason="prose cleanup not requested (pass --unslop)" ;;
     esac
     if [[ -n $reason ]]; then
@@ -115,6 +134,15 @@ for entry in "${MAP[@]}"; do
         }
         desired="$TMP/hk.pkl"
         say "note   hk.pkl: dropped steps for absent languages: ${drop_csv//,/, }"
+    fi
+
+    if [[ $dest == .cz.toml ]]; then
+        provider=$(cz_provider)
+        if [[ $provider != npm ]]; then
+            sed "s/^version_provider = .*/version_provider = \"$provider\"/" "$KIT/$src" > "$TMP/cz.toml"
+            desired="$TMP/cz.toml"
+        fi
+        say "note   .cz.toml: version_provider = \"$provider\", chosen from the repository files"
     fi
 
     state=$(file_state "$desired" "$dest")
@@ -160,6 +188,14 @@ done
 say ""
 say "summary: $COPIED written, $SAME unchanged, $CONFLICTS differing and left alone, $SKIPPED skipped, $FAILS failed"
 
+if [[ $RELEASE -eq 1 || -f .cz.toml ]]; then
+    warnings=$(release_warnings)
+    if [[ -n $warnings ]]; then
+        say ""
+        say "$warnings"
+    fi
+fi
+
 step=0
 next() {
     step=$((step + 1))
@@ -171,7 +207,9 @@ next "hk.pkl: extend exclude with generated and vendored paths; run: hk validate
 if [[ $N_MD -gt 0 ]]; then
     next ".rumdl.toml: list the repository's product, tool and project names in [MD063] ignore-words; add .rumdl_cache/ to .gitignore"
 fi
-if [[ -f .github/workflows/hk.yml || $DRY -eq 1 ]]; then
+if [[ $NOCI -eq 1 ]]; then
+    next "CI gate declined (--no-ci): .github/workflows/hk.yml was not copied; report to the user that the pull request has no check job, so hk check runs only in local hooks"
+elif [[ -f .github/workflows/hk.yml || $DRY -eq 1 ]]; then
     if [[ $N_JS -eq 0 ]]; then
         next ".github/workflows/hk.yml: replace the dependency install step with the repository's own and remove the tsrs-lint step (no TypeScript)"
     else
@@ -179,6 +217,12 @@ if [[ -f .github/workflows/hk.yml || $DRY -eq 1 ]]; then
     fi
 fi
 [[ $N_JS -gt 0 ]] && next "TypeScript: install tsrs-lint (see the mise README in the kit) and keep OXLINT_TSGOLINT_PATH from mise.toml"
+if [[ -f pyproject.toml || -f uv.lock ]]; then
+    next "Python: uv add --dev ruff ty; add the ruff, ruff-format and ty steps (prefix uv run) from the hk README to hk.pkl; add a ty-check mise task; fix ty findings in code, no ignores"
+fi
+if [[ $RELEASE -eq 1 ]]; then
+    next "release: before the first release, put a '## vX.Y.Z (date)' heading for the latest release tag above any hand-written CHANGELOG.md history, and align the version field with that tag (SKILL.md, Release preparation)"
+fi
 next "run: hk install, then hk check --all, then scripts/verify.sh"
 
 [[ $FAILS -eq 0 ]] || exit 1
