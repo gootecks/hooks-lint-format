@@ -339,7 +339,7 @@ def docs_findings(entries):
         missing = []
         for file, ref in wanted:
             forms = path_forms(file, ref[0], known)
-            if forms and not any(form in known for form in forms):
+            if forms and not any(form in known or os.path.lexists(form) for form in forms):
                 missing.append((file, ref, forms))
         ignored = ignored_paths(
             sorted({form for _, _, forms in missing for form in forms})
