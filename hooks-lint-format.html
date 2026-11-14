@@ -486,7 +486,9 @@
                 The script tool <code>"github:gootecks/hooks-lint-format"</code> provides <code>hlf-rumdl-fix</code> and
                 <code>hlf-rumdl-docs-check</code>. Shared tasks <code>pre-commit</code> and
                 <code>release:preview</code> come from the task include
-                <code>git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.0</code>.
+                <code>git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.0</code>. The consumer
+                <code>mise.toml</code> also needs <code>[settings] experimental = true</code>, because mise skips
+                <code>git::</code> includes otherwise and CI has no global setting.
               </li>
             </ul>
           </article>
