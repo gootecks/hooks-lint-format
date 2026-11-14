@@ -57,7 +57,7 @@ text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Aria
 <rect class="foc" x="340" y="136" width="280" height="72" rx="6"/>
 <text class="n" x="356" y="164">rumdl</text>
 <text class="m" x="356" y="182">**/*.md  **/*.markdown  **/*.mdx</text>
-<text class="m" x="356" y="197">check + fix via hooks/rumdl-fix.sh</text>
+<text class="m" x="356" y="197">check + fix via hlf-rumdl-fix</text>
 
 <rect class="box" x="340" y="228" width="280" height="72" rx="6"/>
 <text class="n" x="356" y="256">oxlint</text>

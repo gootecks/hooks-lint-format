@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+        with:
+          cache: false
+
+      - name: Check the tag matches hk/PklProject
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version=$(sed -n 's/^ *version = "\(.*\)"$/\1/p' hk/PklProject)
+          if [ "v$version" != "$TAG" ]; then
+            echo "Tag $TAG does not match version $version in hk/PklProject" >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Package hk-base
+        run: pkl project package hk/ --output-path ".out/%{name}@%{version}"
+
+      - name: Package the scripts
+        run: tar -czf ".out/hooks-lint-format-scripts-$VERSION.tar.gz" bin
+
+      - name: Create the GitHub Release
+        env:
+          TAG: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes \
+            ".out/hk-base@$VERSION/hk-base@$VERSION" \
+            ".out/hk-base@$VERSION/hk-base@$VERSION.sha256" \
+            ".out/hk-base@$VERSION/hk-base@$VERSION.zip" \
+            ".out/hk-base@$VERSION/hk-base@$VERSION.zip.sha256" \
+            ".out/hooks-lint-format-scripts-$VERSION.tar.gz"

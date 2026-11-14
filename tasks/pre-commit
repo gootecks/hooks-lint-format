@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Run the hk pre-commit hooks"
+set -euo pipefail
+exec hk run pre-commit

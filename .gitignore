@@ -2,3 +2,4 @@
 skills/*-workspace/
 .rumdl-docs/
 .rumdl_cache/
+.out/

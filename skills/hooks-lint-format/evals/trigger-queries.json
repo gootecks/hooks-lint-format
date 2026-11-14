@@ -16,7 +16,7 @@
     "should_trigger": true
   },
   {
-    "query": "enforce conventional commits here and give me the czg prompt on plain git commit, same as the kit",
+    "query": "enforce conventional commits here with a commit-msg hook that rejects bad messages, same as the kit",
     "should_trigger": true
   },
   {

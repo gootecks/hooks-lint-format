@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Print the next version and its changelog section (commitizen dry run)"
+set -euo pipefail
+exec uvx --from commitizen==4.19.3 cz bump --dry-run --changelog-to-stdout

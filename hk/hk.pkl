@@ -18,8 +18,8 @@ steps {
     }
     ["rumdl"] {
         glob = List("**/*.md", "**/*.markdown", "**/*.mdx")
-        check = "rumdl check --deny-config-warnings {{files}} && hooks/rumdl-docs-check.py {{files}}"
-        fix = "hooks/rumdl-fix.sh {{files}}"
+        check = "rumdl check --deny-config-warnings {{files}} && hlf-rumdl-docs-check {{files}}"
+        fix = "hlf-rumdl-fix {{files}}"
     }
     ["zizmor"] = Builtins.zizmor
 }
@@ -43,20 +43,6 @@ hooks {
     ["commit-msg"] {
         steps {
             ["conventional-commit"] = Builtins.check_conventional_commit
-        }
-    }
-    ["prepare-commit-msg"] {
-        steps {
-            ["czg"] {
-                interactive = true
-                check = #"""
-                    [ -z "{{source}}" ] || exit 0
-                    [ -z "${CI:-}" ] && [ -z "${HK_AGENT:-}" ] || exit 0
-                    ( : < /dev/tty ) 2>/dev/null || exit 0
-                    exec < /dev/tty
-                    czg --hook || true
-                    """#
-            }
         }
     }
 }

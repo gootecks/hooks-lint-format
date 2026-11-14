@@ -14,7 +14,7 @@ A disabled rule stops reporting new violations as well as old ones. A count of f
 1. Count findings by rule and keep the numbers: `rumdl check --output-format json`, `oxlint -f json`.
 2. Run the auto-fixes: `hk fix --all`, or the tool's own fix (`rumdl check --fix`, `oxlint --fix`, `oxfmt`).
 3. Commit what the tools changed as one formatting-only commit, with no other change in it. Add its full hash to `.git-blame-ignore-revs` in a following commit, so `git blame` skips it (`git config blame.ignoreRevsFile .git-blame-ignore-revs`; GitHub reads the file by name). The pre-commit hook checks this commit like any other, so a file that still has lint or type findings cannot go into it. Fix that file's findings and commit the file with its fix. Do not skip a step to force the split.
-4. Let the fixer agent handle what rumdl cannot fix. `hooks/rumdl-fix.sh` does this on `hk fix`.
+4. Let the fixer agent handle what rumdl cannot fix. `hlf-rumdl-fix` does this on `hk fix`.
 5. Fix the rest by hand.
 6. If step 5 cannot be finished in the same change, keep the rule on. Open an issue that lists the remaining count per rule and the files, and link it from the pull request.
 
@@ -87,7 +87,7 @@ For zizmor, write `# zizmor: ignore[<audit>]` on the flagged line with the reaso
 - `HK=0` turns hk off for one command. It exists for `cz bump`, whose generated changelog can fail Markdown checks mid-bump, and for merge commits made after the gate passed.
 - `HK_SKIP_STEPS=<step>` skips one named step for one commit. It exists for a step whose tool cannot run on the machine (for example a missing binary), not for a step that reports findings.
 - `git commit --no-verify` skips all hooks. It exists for recovering a broken working state, such as a work-in-progress commit on a private branch that will be fixed before it is pushed.
-- `RUMDL_AGENT=0` stops `rumdl-fix.sh` from launching the fixer agent. It exists for machines without `omp` and for runs that must not spawn an agent. The findings remain and the step still fails.
+- `RUMDL_AGENT=0` stops `hlf-rumdl-fix` from launching the fixer agent. It exists for machines without `omp` and for runs that must not spawn an agent. The findings remain and the step still fails.
 
 > [!CAUTION]
 > None of these is a way past findings. CI runs `hk check` without them, so a commit that skipped a check fails there, and the findings are still yours to fix.

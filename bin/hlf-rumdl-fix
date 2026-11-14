@@ -9,7 +9,7 @@ fail() {
 command -v jq > /dev/null || fail "jq is not installed; install jq, then run hk fix again"
 (($# > 0)) || exit 0
 
-docs_check="$(dirname "${BASH_SOURCE[0]}")/rumdl-docs-check.py"
+docs_check="$(dirname "${BASH_SOURCE[0]}")/hlf-rumdl-docs-check"
 findings=""
 fix_and_check() {
     local rc=0

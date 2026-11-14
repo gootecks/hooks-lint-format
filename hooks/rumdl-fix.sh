@@ -1,1 +1,0 @@
-../hk/rumdl-fix.sh
