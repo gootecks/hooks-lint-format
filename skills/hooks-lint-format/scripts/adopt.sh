@@ -3,19 +3,21 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 usage() {
-    say "usage: adopt.sh [--dry-run] [--force] [--release] [--no-ci] [--unslop] [REPO]"
+    say "usage: adopt.sh [--dry-run] [--force] [--release] [--no-ci] [--unslop] [--docs-drift] [REPO]"
     say "Copies the kit files into REPO (default: current directory). Nothing is staged or committed."
     say "  --dry-run  print what would happen, write nothing"
     say "  --force    overwrite files that differ from the kit (mise.toml is never overwritten: merge it by hand)"
     say "  --release  also copy .cz.toml (version_provider set from uv.lock, package.json, Cargo.toml or pyproject.toml) and .github/workflows/release.yml"
     say "  --no-ci    do not copy .github/workflows/hk.yml: the hk check CI gate is recommended but optional"
     say "  --unslop   also copy hooks/unslop.sh, the optional prose-cleanup task"
+    say "  --docs-drift  also copy hooks/docs-drift.sh, the optional stale-docs finder"
 }
 
 DRY=0
 FORCE=0
 RELEASE=0
 UNSLOP=0
+DRIFT=0
 NOCI=0
 REPO_ARG=""
 for a in "$@"; do
@@ -24,6 +26,7 @@ for a in "$@"; do
         --force) FORCE=1 ;;
         --release) RELEASE=1 ;;
         --unslop) UNSLOP=1 ;;
+        --docs-drift) DRIFT=1 ;;
         --no-ci) NOCI=1 ;;
         -h | --help)
             usage
@@ -117,6 +120,7 @@ for entry in "${MAP[@]}"; do
         release) [[ $RELEASE -eq 0 ]] && reason="releases not requested (pass --release)" ;;
         ci) [[ $NOCI -eq 1 ]] && reason="CI gate declined (--no-ci)" ;;
         unslop) [[ $UNSLOP -eq 0 ]] && reason="prose cleanup not requested (pass --unslop)" ;;
+        docs-drift) [[ $DRIFT -eq 0 ]] && reason="stale-docs finder not requested (pass --docs-drift)" ;;
     esac
     if [[ -n $reason ]]; then
         say "skip   $dest: $reason"
@@ -150,7 +154,7 @@ for entry in "${MAP[@]}"; do
         identical)
             say "same   $dest"
             SAME=$((SAME + 1))
-            [[ $dest == hooks/rumdl-fix.sh && ! -x $dest && $DRY -eq 0 ]] && chmod +x "$dest" && say "chmod  $dest"
+            [[ $dest == hooks/rumdl-fix.sh || $dest == hooks/rumdl-docs-check.py ]] && [[ ! -x $dest && $DRY -eq 0 ]] && chmod +x "$dest" && say "chmod  $dest"
             continue
             ;;
         differs)
@@ -176,7 +180,7 @@ for entry in "${MAP[@]}"; do
         continue
     fi
     if mkdir -p "$(dirname "$dest")" && cp "$desired" "$dest"; then
-        [[ $dest == *.sh ]] && chmod +x "$dest"
+        [[ $dest == *.sh || $dest == *.py ]] && chmod +x "$dest"
         say "${verb}$dest"
         COPIED=$((COPIED + 1))
     else

@@ -29,3 +29,7 @@ run = "uvx --from commitizen==4.19.3 cz bump --dry-run --changelog-to-stdout"
 [tasks.unslop]
 description = "Optional, run by hand: rewrite changed Markdown prose with an omp agent; arguments are file names (hooks/unslop.sh)"
 run = "hooks/unslop.sh"
+
+[tasks.docs-drift]
+description = "Optional, run by hand: find docs made stale by the branch's code changes with an omp agent; --report only lists them (hooks/docs-drift.sh)"
+run = "hooks/docs-drift.sh"

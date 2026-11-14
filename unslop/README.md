@@ -43,12 +43,13 @@ Check each hunk for a changed claim, an added actor, a changed heading and a cha
 The agent is told that these override every rule of the skill:
 
 - Change wording only.
-- Keep every number, name, link, URL, code span, code block, table and quotation exactly.
+- Keep every number, name, link, URL, code span, code block, table and quotation exactly. An alert (`> [!NOTE]`) is not a quotation.
 - Do not change heading text.
 - Do not add an actor or a claim the original does not state.
 - When a rule cannot be applied without changing meaning, leave the sentence as it is.
 - Keep each paragraph and list item on one line.
 - Edit only the listed files.
+- Callouts: an alert suits a sentence or short passage a skimming reader must not miss; it is noise when it repeats the paragraph above, holds a nice-to-have or competes with another alert, and a section has at most one. The agent may turn such a passage into one of the five alerts, and may turn a noise alert or a `Note:`-label paragraph into a plain sentence. Alert format: uppercase type alone on the marker line, no title text, no fold marker, no nesting, a blank line between two alerts, a bold first body line for a title. The wording inside an alert obeys the other limits.
 
 The agent can read, search and edit files. It has no shell.
 

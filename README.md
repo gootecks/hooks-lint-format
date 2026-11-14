@@ -4,19 +4,20 @@ Shared git hooks, linters, formatters and release automation for gootecks repos.
 
 Open [hooks-lint-format.html](hooks-lint-format.html) for the illustrated reference. To set a repo up, use the [`hooks-lint-format`](skills/hooks-lint-format/SKILL.md) skill; it holds the only ordered adopt procedure.
 
-| Directory                          | Tool           | What it does                                                                                  |
-| ---------------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
-| [hk](hk/README.md)                 | hk             | Runs every step as git hooks, `hk check` and `hk fix`                                         |
-| [mise](mise/README.md)             | mise           | Pins hk, actionlint, zizmor, rumdl, oxfmt and oxlint; builds tsrs-lint locally                |
-| [oxfmt](oxfmt/README.md)           | oxfmt          | Formats code and config (JS/TS, JSON, YAML, TOML, CSS, HTML); does not touch Markdown         |
-| [oxlint](oxlint/README.md)         | oxlint         | Lints JS/TS with type-aware rules and type errors through tsrs-lint                           |
-| [rumdl](rumdl/README.md)           | rumdl          | Formats and lints Markdown; an agent fixes what auto-fix leaves                               |
-| [actionlint](actionlint/README.md) | actionlint     | Checks workflow syntax and expressions                                                        |
-| [zizmor](zizmor/README.md)         | zizmor         | Audits workflow security and applies safe fixes                                               |
-| [czg](czg/README.md)               | czg            | Prompts for a Conventional Commit message                                                     |
-| [commitizen](commitizen/README.md) | commitizen     | Bumps the version, writes the changelog, tags                                                 |
-| [unslop](unslop/README.md)         | omp agent      | Optional, run by hand: cleans up the prose of changed Markdown and leaves the result unstaged |
-| [github](github/README.md)         | GitHub Actions | `hk check` in CI (optional); release on every push to `main`                                  |
+| Directory                          | Tool           | What it does                                                                                     |
+| ---------------------------------- | -------------- | ------------------------------------------------------------------------------------------------ |
+| [hk](hk/README.md)                 | hk             | Runs every step as git hooks, `hk check` and `hk fix`                                            |
+| [mise](mise/README.md)             | mise           | Pins hk, actionlint, zizmor, rumdl, oxfmt and oxlint; builds tsrs-lint locally                   |
+| [oxfmt](oxfmt/README.md)           | oxfmt          | Formats code and config (JS/TS, JSON, YAML, TOML, CSS, HTML); does not touch Markdown            |
+| [oxlint](oxlint/README.md)         | oxlint         | Lints JS/TS with type-aware rules and type errors through tsrs-lint                              |
+| [rumdl](rumdl/README.md)           | rumdl          | Formats and lints Markdown; an agent fixes what auto-fix leaves                                  |
+| [actionlint](actionlint/README.md) | actionlint     | Checks workflow syntax and expressions                                                           |
+| [zizmor](zizmor/README.md)         | zizmor         | Audits workflow security and applies safe fixes                                                  |
+| [czg](czg/README.md)               | czg            | Prompts for a Conventional Commit message                                                        |
+| [commitizen](commitizen/README.md) | commitizen     | Bumps the version, writes the changelog, tags                                                    |
+| [unslop](unslop/README.md)         | omp agent      | Optional, run by hand: cleans up the prose of changed Markdown and leaves the result unstaged    |
+| [docs-drift](docs-drift/README.md) | omp agent      | Optional, run by hand: finds docs the branch's code changes made stale and leaves fixes unstaged |
+| [github](github/README.md)         | GitHub Actions | `hk check` in CI (optional); release on every push to `main`                                     |
 
 Tool versions are stated in [mise/mise.toml](mise/mise.toml) and nowhere else in the READMEs. The hk version inside the URLs of [hk/hk.pkl](hk/hk.pkl) is the one other place.
 
@@ -42,7 +43,7 @@ Tool versions are stated in [mise/mise.toml](mise/mise.toml) and nowhere else in
 
 The kit checks itself with its own files, without second copies:
 
-- `hk.pkl`, `mise.toml`, `.oxfmtrc.json`, `hooks/rumdl-fix.sh` and `hooks/unslop.sh` at the root are symbolic links to the canonical files in the tool directories.
+- `hk.pkl`, `mise.toml`, `.oxfmtrc.json`, `hooks/rumdl-fix.sh`, `hooks/rumdl-docs-check.py`, `hooks/unslop.sh` and `hooks/docs-drift.sh` at the root are symbolic links to the canonical files in the tool directories.
 - `.rumdl.toml` at the root extends `rumdl/.rumdl.toml` and adds only the tool names that keep their case in headings.
 - `.github/workflows/hk.yml` is an adapted copy of `github/hk.yml` (GitHub does not follow links to workflows). It has no tsrs-lint and no dependency step, because the kit holds no JS or TS.
 

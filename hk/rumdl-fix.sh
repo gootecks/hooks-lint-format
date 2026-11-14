@@ -9,6 +9,7 @@ fail() {
 command -v jq > /dev/null || fail "jq is not installed; install jq, then run hk fix again"
 (($# > 0)) || exit 0
 
+docs_check="$(dirname "${BASH_SOURCE[0]}")/rumdl-docs-check.py"
 findings=""
 fix_and_check() {
     local rc=0
@@ -18,6 +19,11 @@ fix_and_check() {
     fi
     jq -e 'type == "array"' <<< "$findings" > /dev/null 2>&1 \
         || fail "rumdl printed output that is not a JSON findings list; run 'rumdl check' on the files by hand"
+    local extra rc_c=0
+    extra=$("$docs_check" --json "$@") || rc_c=$?
+    ((rc_c == 0)) || fail "the docs check exited with status $rc_c (message above); fix the file it names or run $docs_check by hand, then run hk fix again" 2
+    findings=$(jq -n --argjson a "$findings" --argjson b "$extra" '$a + $b' 2> /dev/null) \
+        || fail "the docs check printed output that is not a JSON findings list; run $docs_check --json on the files by hand"
     return 0
 }
 
@@ -52,7 +58,7 @@ RUMDL_AGENT_RUNNING=1 omp -p --no-session --no-title --no-skills --no-rules \
     ${model_args[@]+"${model_args[@]}"} --append-system-prompt "$prompt" \
     --tools read,edit,grep,glob,bash --max-time "${RUMDL_AGENT_MAX_TIME:-5m}" \
     "Repository root: $PWD
-Linter: rumdl
+Linter: rumdl, plus the kit docs check (rule IDs callout/* and ref/*)
 Findings per rule, after rumdl check --fix:
 $counts
 Files with findings, one per line:

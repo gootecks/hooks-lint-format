@@ -18,7 +18,7 @@ steps {
     }
     ["rumdl"] {
         glob = List("**/*.md", "**/*.markdown", "**/*.mdx")
-        check = "rumdl check --deny-config-warnings {{files}}"
+        check = "rumdl check --deny-config-warnings {{files}} && hooks/rumdl-docs-check.py {{files}}"
         fix = "hooks/rumdl-fix.sh {{files}}"
     }
     ["zizmor"] = Builtins.zizmor

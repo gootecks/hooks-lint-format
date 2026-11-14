@@ -4,16 +4,16 @@
 
 ## Steps
 
-| Step          | Files                                        | Check                                                                          | Fix                     |
-| ------------- | -------------------------------------------- | ------------------------------------------------------------------------------ | ----------------------- |
-| `actionlint`  | `.github/workflows/*.yml`                    | builtin ([../actionlint](../actionlint/README.md))                             | none                    |
-| `oxfmt`       | JS/TS, JSON, YAML, TOML, CSS, HTML, and more | builtin ([../oxfmt](../oxfmt/README.md))                                       | builtin                 |
-| `oxlint`      | JS/TS                                        | `--type-aware --type-check --deny-warnings` ([../oxlint](../oxlint/README.md)) | same flags plus `--fix` |
-| `rumdl`       | `**/*.md`, `**/*.markdown`, `**/*.mdx`       | `rumdl check --deny-config-warnings` ([../rumdl](../rumdl/README.md))          | `hooks/rumdl-fix.sh`    |
-| `zizmor`      | workflows, `action.yml`, dependabot          | builtin ([../zizmor](../zizmor/README.md))                                     | builtin, `zizmor --fix` |
-| `ruff`        | Python (added per repository, below)         | builtin through `uv run`                                                       | builtin                 |
-| `ruff-format` | Python (added per repository, below)         | builtin through `uv run`                                                       | builtin                 |
-| `ty`          | Python (added per repository, below)         | builtin through `uv run`                                                       | none                    |
+| Step          | Files                                        | Check                                                                                                  | Fix                     |
+| ------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------- |
+| `actionlint`  | `.github/workflows/*.yml`                    | builtin ([../actionlint](../actionlint/README.md))                                                     | none                    |
+| `oxfmt`       | JS/TS, JSON, YAML, TOML, CSS, HTML, and more | builtin ([../oxfmt](../oxfmt/README.md))                                                               | builtin                 |
+| `oxlint`      | JS/TS                                        | `--type-aware --type-check --deny-warnings` ([../oxlint](../oxlint/README.md))                         | same flags plus `--fix` |
+| `rumdl`       | `**/*.md`, `**/*.markdown`, `**/*.mdx`       | `rumdl check --deny-config-warnings` then `hooks/rumdl-docs-check.py` ([../rumdl](../rumdl/README.md)) | `hooks/rumdl-fix.sh`    |
+| `zizmor`      | workflows, `action.yml`, dependabot          | builtin ([../zizmor](../zizmor/README.md))                                                             | builtin, `zizmor --fix` |
+| `ruff`        | Python (added per repository, below)         | builtin through `uv run`                                                                               | builtin                 |
+| `ruff-format` | Python (added per repository, below)         | builtin through `uv run`                                                                               | builtin                 |
+| `ty`          | Python (added per repository, below)         | builtin through `uv run`                                                                               | none                    |
 
 hk runs steps in parallel. The steps share no files: oxfmt ignores Markdown through `ignorePatterns` in `.oxfmtrc.json`, so rumdl alone formats and lints Markdown and no step depends on another. `--deny-config-warnings` makes a misspelled key in `.rumdl.toml` fail the step instead of being ignored.
 
@@ -59,12 +59,12 @@ ty findings are fixed in code. A `# ty: ignore`, an `[tool.ty]` rule set to `ign
 
 hk fix command for Markdown. It takes the files hk passes and:
 
-1. Runs `rumdl check --fix --deny-config-warnings --output-format json` once. This fixes what rumdl can fix and reports what is left. No findings: exit 0.
+1. Runs `rumdl check --fix --deny-config-warnings --output-format json` once. This fixes what rumdl can fix and reports what is left. It then runs [`rumdl-docs-check.py`](#rumdl-docs-checkpy) with `--json` on the same files and merges its findings into the list. No findings: exit 0.
 2. Prints the remaining findings as `file:line:column: rule message`. File names with spaces are kept intact.
-3. Unless the agent is off, runs the `repo-markdown-fixer` agent (`omp -p`) once for all files that still have findings. The agent receives the repository root, the finding count per rule (for example `MD063: 12`), the file list one per line, and then the JSON findings.
-4. Runs the same `rumdl check --fix` command once more and exits non-zero while findings remain.
+3. Unless the agent is off, runs the `repo-markdown-fixer` agent (`omp -p`) once for all files that still have findings. The agent receives the repository root, the finding count per rule (for example `MD063: 12` or `callout/label: 2`), the file list one per line, and then the JSON findings.
+4. Runs the same two checks once more and exits non-zero while findings remain.
 
-rumdl runs once when nothing is left or the agent is off, and twice when the agent runs.
+The checks run once when nothing is left or the agent is off, and twice when the agent runs.
 
 Every failing path prints one `rumdl-fix:` line that names what failed and what to do next:
 
@@ -80,6 +80,25 @@ Environment switches:
 - `RUMDL_AGENT_FILE` overrides the agent file (default `~/.omp/agent/agents/repo-markdown-fixer.md`).
 - `RUMDL_AGENT_MAX_TIME` is the agent time limit (default `5m`).
 - `CI`, when set, runs no agent.
+
+## `rumdl-docs-check.py`
+
+The rumdl step's second check. `hk check` runs `rumdl check --deny-config-warnings` and then `hooks/rumdl-docs-check.py {{files}}`; both must pass. `rumdl-fix.sh` runs it with `--json` after every `rumdl check --fix` and merges its findings into the rumdl findings, so the printed list, the per-rule counts, the agent prompt and the final gate include them. It needs `uv` (the script header pins no dependencies) and rumdl 0.3.2 or newer (`rumdl experimental export-elements` and `report-diagnostics`). Exit status: 0 clean, 1 findings, 2 tool error; with `--json` it exits 0 with findings.
+
+| Rule             | Reports                                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| `callout/type`   | An alert type other than `NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`, or one not in uppercase.         |
+| `callout/title`  | Text after the alert marker, or a fold marker (`-`, `+`).                                                   |
+| `callout/nested` | An alert inside a list item or quote.                                                                       |
+| `callout/label`  | A paragraph that starts with `Note:`, `**Warning:**`, `**Tip**:` or the same with `Important` or `Caution`. |
+| `ref/path`       | A code span that looks like a repository path and does not exist.                                           |
+| `ref/task`       | `mise run <name>` in a code span or a shell fence, where the repository's mise config defines no such task. |
+
+- Files whose effective rumdl flavor is `obsidian` (`[global] flavor` and `[per-file-flavor]` in `.rumdl.toml`, same glob rules as rumdl) skip `callout/type`, `callout/title` and `callout/nested`. `callout/label` and the `ref/*` rules apply in every flavor.
+- A path code span has a `/`, no whitespace, none of `*?[{$<`, no `://` and does not start with `~`, `/` or `-`. A trailing `:LINE`, `:LINE-LINE`, `::symbol`, `#fragment` or `/` is ignored.
+- `ref/path` checks a reference only when its first segment exists, resolved from the repository root or from the Markdown file's directory. It passes when the full path is tracked, untracked but not ignored, or gitignored. Lint rule names (`typescript/await-thenable`), `owner/repo` names, `origin/HEAD` and paths under `.git/` are never checked because their first segment is not a directory. A top-level directory that disappeared entirely is therefore not reported.
+- A path the reader is told to create (an optional config file in an adopting repository) is reported when its directory exists. Name the file and its directory separately: `actionlint.yaml` in the `.github` directory.
+- `ref/task` uses `mise tasks ls --no-global --hidden --json` and counts only tasks whose source is inside the repository. It is skipped silently when `mise` is not on `PATH` or fails.
 
 ## Escape hatches
 

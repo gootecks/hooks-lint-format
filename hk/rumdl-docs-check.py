@@ -1,0 +1,378 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# ///
+"""Docs check for the rumdl step: callout format (callout/*) and stale references (ref/*).
+
+Usage: rumdl-docs-check.py [--json] FILE...
+Exit 0 clean, 1 findings, 2 tool error; with --json exit 0 unless a tool fails.
+"""
+
+import json
+import os
+import posixpath
+import re
+import shutil
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+TYPES = ("NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION")
+MARKER = re.compile(r"^>[ ]?\[!([^\]\s]+)\]([+-]?)(.*)$")
+LABEL = re.compile(
+    r"^(?:\*\*|__|\*|_)?(Note|Tip|Important|Warning|Caution)(?:\*\*|__|\*|_)?:",
+    re.IGNORECASE,
+)
+OBSIDIAN_SKIPS = {"callout/type", "callout/title", "callout/nested"}
+
+
+class ToolError(Exception):
+    pass
+
+
+def glob_regex(pattern):
+    out, i, depth = [], 0, 0
+    while i < len(pattern):
+        c = pattern[i]
+        if pattern.startswith("**/", i):
+            out.append("(?:.*/)?")
+            i += 3
+            continue
+        if pattern.startswith("**", i):
+            out.append(".*")
+            i += 2
+            continue
+        if c == "*":
+            out.append("[^/]*")
+        elif c == "?":
+            out.append("[^/]")
+        elif c == "[":
+            j = pattern.find("]", i + 2)
+            if j < 0:
+                out.append(re.escape(c))
+            else:
+                body = pattern[i + 1 : j]
+                if body.startswith("!"):
+                    body = "^" + body[1:]
+                out.append("[" + body.replace("\\", "\\\\") + "]")
+                i = j
+        elif c == "{":
+            out.append("(?:")
+            depth += 1
+        elif c == "}" and depth:
+            out.append(")")
+            depth -= 1
+        elif c == "," and depth:
+            out.append("|")
+        else:
+            out.append(re.escape(c))
+        i += 1
+    return re.compile("".join(out) + r"\Z")
+
+
+def load_flavors():
+    path = Path(".rumdl.toml")
+    if not path.is_file():
+        return "standard", []
+    try:
+        config = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as err:
+        raise ToolError(f".rumdl.toml: {err}")
+    default = str(config.get("global", {}).get("flavor", "standard"))
+    table = config.get("per-file-flavor", {})
+    return default, [(glob_regex(k.removeprefix("./")), str(v)) for k, v in table.items()]
+
+
+def flavor_of(file, default, table):
+    path = Path(file)
+    if path.is_absolute():
+        path = path.resolve().relative_to(Path.cwd().resolve())
+    rel = path.as_posix()
+    for regex, flavor in table:
+        if regex.match(rel):
+            return flavor
+    return default
+
+
+def run_rumdl(args, stdin=None):
+    try:
+        return subprocess.run(["rumdl", *args], input=stdin, capture_output=True, text=True, encoding="utf-8")
+    except OSError as err:
+        raise ToolError(f"cannot run rumdl: {err}")
+
+
+def export_elements(file):
+    proc = run_rumdl(["experimental", "export-elements", file])
+    if proc.returncode != 0:
+        raise ToolError(f"{file}: rumdl export-elements failed: {proc.stderr.strip()}")
+    try:
+        return json.loads(proc.stdout)
+    except json.JSONDecodeError as err:
+        raise ToolError(f"{file}: rumdl export-elements printed invalid JSON: {err}")
+
+
+def check(payload, obsidian):
+    raw = payload["source"].encode("utf-8")
+    nodes = payload["nodes"]
+    found = []
+
+    def add(rule, start, end, message):
+        if obsidian and rule in OBSIDIAN_SKIPS:
+            return
+        found.append({"rule": rule, "start_byte": start, "end_byte": end, "message": message})
+
+    def in_blockquote(node):
+        parent = node["parent"]
+        while parent is not None:
+            if nodes[parent]["kind"] == "blockquote":
+                return True
+            parent = nodes[parent]["parent"]
+        return False
+
+    for node in nodes:
+        start, end = node["range"]
+        if node["kind"] == "blockquote":
+            first = raw[start:end].split(b"\n", 1)[0].decode("utf-8").rstrip("\r")
+            marker = MARKER.match(first)
+            if not marker:
+                continue
+            kind, fold, rest = marker.group(1), marker.group(2), marker.group(3).strip()
+            if kind not in TYPES:
+                type_start = start + marker.start(1)
+                type_end = start + marker.end(1)
+                if kind.upper() in TYPES:
+                    add("callout/type", type_start, type_end, f"Write the alert type in uppercase: [!{kind.upper()}]")
+                else:
+                    add("callout/type", type_start, type_end, f"Unknown alert type [!{kind}]; use one of {', '.join(TYPES)}")
+            if fold or rest:
+                title_start = start + marker.end(1) + 1
+                title_end = start + len(first.rstrip().encode("utf-8"))
+                add(
+                    "callout/title",
+                    title_start,
+                    title_end,
+                    "GitHub shows a titled or folded alert marker as a plain quote; put the title in bold on the first body line and remove the fold marker",
+                )
+            if node["parent"] is not None:
+                add(
+                    "callout/nested",
+                    start,
+                    start + marker.end(1) + 1,
+                    "GitHub does not render an alert nested in a list item or quote; move it to the top level next to its context",
+                )
+        elif node["kind"] == "paragraph" and not in_blockquote(node):
+            text = raw[start:end].decode("utf-8")
+            lead = len(text.encode("utf-8")) - len(text.lstrip().encode("utf-8"))
+            label = LABEL.match(text.lstrip())
+            if label:
+                word = label.group(1).upper()
+                add(
+                    "callout/label",
+                    start + lead,
+                    start + lead + len(label.group(0).encode("utf-8")),
+                    f"Make this a > [!{word}] alert if a skimming reader must not miss it, otherwise drop the label and keep a plain sentence (docs/markdown-convention.md, Callouts)",
+                )
+    return found
+
+
+SHELL_LANGS = {"sh", "bash", "shell", "zsh", "console"}
+PATH_REJECT = re.compile(r"[\s*?\[{$<]")
+PATH_SUFFIX = re.compile(r"(?:::.*|:\d+(?:-\d+)?)$")
+TASK_SPAN = re.compile(r"mise run (?:-\S+\s+)*(\S+)")
+TASK_LINE = re.compile(r"(?:^|(?<=[\s$;&|(]))mise run (?:-\S+\s+)*([^\s;&|)`'\"]+)")
+TASK_NAME = re.compile(r"[A-Za-z0-9_][\w.:/@-]*")
+
+
+def path_ref(text):
+    if "/" not in text or PATH_REJECT.search(text) or "://" in text:
+        return None
+    if text[0] in "~/-" or not text.strip("./"):
+        return None
+    ref = PATH_SUFFIX.sub("", text).split("#", 1)[0].rstrip("/")
+    return ref or None
+
+
+def collect_refs(payload):
+    raw = payload["source"].encode("utf-8")
+    paths, tasks = [], []
+    for node in payload["nodes"]:
+        start, end = node["range"]
+        if node["kind"] == "code_span":
+            text = b"".join(raw[s:e] for s, e in node["content_ranges"]).decode("utf-8").strip()
+            ref = path_ref(text)
+            if ref:
+                paths.append((ref, start, end, text))
+            span = TASK_SPAN.match(text)
+            if span and TASK_NAME.fullmatch(span.group(1)):
+                tasks.append((span.group(1), start, end))
+        elif node["kind"] == "fenced_code":
+            if node["language"] is not None and node["language"].lower() not in SHELL_LANGS:
+                continue
+            for s, e in node["content_ranges"]:
+                text = raw[s:e].decode("utf-8")
+                for m in TASK_LINE.finditer(text):
+                    line_start = text.rfind("\n", 0, m.start()) + 1
+                    if text[line_start : m.start()].lstrip().startswith("#"):
+                        continue
+                    if TASK_NAME.fullmatch(m.group(1)):
+                        offset = s + len(text[: m.start()].encode("utf-8"))
+                        tasks.append((m.group(1), offset, offset + len(m.group(0).encode("utf-8"))))
+    return paths, tasks
+
+
+def git(args, stdin=None):
+    try:
+        return subprocess.run(["git", *args], input=stdin, capture_output=True)
+    except OSError as err:
+        raise ToolError(f"cannot run git: {err}")
+
+
+def tracked_paths():
+    proc = git(["ls-files", "-z", "--cached", "--others", "--exclude-standard"])
+    if proc.returncode != 0:
+        raise ToolError(f"git ls-files failed: {proc.stderr.decode(errors='replace').strip()}")
+    files = {p for p in proc.stdout.decode("utf-8", "surrogateescape").split("\0") if p}
+    dirs = set()
+    for f in files:
+        parts = f.split("/")
+        dirs.update("/".join(parts[:i]) for i in range(1, len(parts)))
+    return files | dirs
+
+
+def path_forms(file, ref, known):
+    forms = []
+    for base in ("", posixpath.dirname(Path(file).as_posix())):
+        form = posixpath.normpath(posixpath.join(base, ref))
+        anchor = posixpath.normpath(posixpath.join(base, ref.split("/", 1)[0]))
+        if form in forms or form == ".git" or form.startswith(("..", "/", ".git/")) or anchor.startswith(("..", "/")):
+            continue
+        if anchor in known or os.path.lexists(anchor):
+            forms.append(form)
+    return forms
+
+
+def ignored_paths(forms):
+    if not forms:
+        return set()
+    data = "".join(f + "\0" for f in forms).encode("utf-8", "surrogateescape")
+    proc = git(["check-ignore", "-z", "--stdin"], stdin=data)
+    if proc.returncode > 1:
+        return set()
+    return {p for p in proc.stdout.decode("utf-8", "surrogateescape").split("\0") if p}
+
+
+def local_tasks():
+    if shutil.which("mise") is None:
+        return None
+    try:
+        proc = subprocess.run(
+            ["mise", "tasks", "ls", "--no-global", "--hidden", "--json"], capture_output=True, text=True, encoding="utf-8"
+        )
+        items = json.loads(proc.stdout) if proc.returncode == 0 else None
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(items, list):
+        return None
+    root = Path.cwd().resolve()
+    names = set()
+    for item in items:
+        source = item.get("source")
+        if source and not Path(source).resolve().is_relative_to(root):
+            continue
+        names.add(item["name"])
+        names.update(item.get("aliases") or [])
+    return names
+
+
+def docs_findings(entries):
+    wanted = [(f, p) for f, e in entries.items() for p in e["paths"]]
+    if wanted:
+        known = tracked_paths()
+        missing = []
+        for file, ref in wanted:
+            forms = path_forms(file, ref[0], known)
+            if forms and not any(form in known for form in forms):
+                missing.append((file, ref, forms))
+        ignored = ignored_paths(sorted({form for _, _, forms in missing for form in forms}))
+        for file, (_, start, end, text), forms in missing:
+            if not any(form in ignored for form in forms):
+                entries[file]["found"].append(
+                    {
+                        "rule": "ref/path",
+                        "start_byte": start,
+                        "end_byte": end,
+                        "message": f"`{text}` does not exist in the repository; update or remove the reference",
+                    }
+                )
+    if any(e["tasks"] for e in entries.values()):
+        names = local_tasks()
+        if names is not None:
+            for e in entries.values():
+                for name, start, end in e["tasks"]:
+                    if name not in names:
+                        e["found"].append(
+                            {
+                                "rule": "ref/task",
+                                "start_byte": start,
+                                "end_byte": end,
+                                "message": f"`mise run {name}` names no task defined by this repository's mise config; update or remove the reference",
+                            }
+                        )
+
+
+def position(raw, offset):
+    line_start = raw.rfind(b"\n", 0, offset) + 1
+    return raw.count(b"\n", 0, offset) + 1, len(raw[line_start:offset].decode("utf-8")) + 1
+
+
+def main(argv):
+    as_json = "--json" in argv
+    files = [a for a in argv if a != "--json"]
+    default, table = load_flavors()
+    entries = {}
+    for file in files:
+        payload = export_elements(file)
+        paths, tasks = collect_refs(payload)
+        found = check(payload, flavor_of(file, default, table) == "obsidian")
+        entries[file] = {"payload": payload, "found": found, "paths": paths, "tasks": tasks}
+    docs_findings(entries)
+    all_findings = []
+    status = 0
+    for file, entry in entries.items():
+        diagnostics = sorted(entry["found"], key=lambda d: d["start_byte"])
+        if not diagnostics:
+            continue
+        status = 1
+        payload = entry["payload"]
+        if as_json:
+            raw = payload["source"].encode("utf-8")
+            for d in diagnostics:
+                line, column = position(raw, d["start_byte"])
+                all_findings.append(
+                    {"file": file, "line": line, "column": column, "rule": d["rule"], "message": d["message"], "severity": "warning", "fixable": False}
+                )
+            continue
+        body = {
+            "protocol": "rumdl.diagnostics",
+            "protocol_version": 1,
+            "source_hash": payload["source_hash"],
+            "diagnostics": diagnostics,
+        }
+        proc = run_rumdl(["experimental", "report-diagnostics", file], stdin=json.dumps(body))
+        sys.stdout.write(proc.stdout)
+        sys.stderr.write(proc.stderr)
+        if proc.returncode > 1:
+            raise ToolError(f"{file}: rumdl report-diagnostics rejected the findings (status {proc.returncode})")
+    if as_json:
+        print(json.dumps(all_findings, ensure_ascii=False))
+        return 0
+    return status
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except ToolError as err:
+        print(f"rumdl-docs-check: {err}", file=sys.stderr)
+        sys.exit(2)

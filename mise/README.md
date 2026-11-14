@@ -41,6 +41,7 @@ oxfmt and oxlint come from mise rather than `devDependencies`, so lint versions 
 - `pre-commit`: `hk run pre-commit` without committing.
 - `release:preview`: `cz bump --dry-run --changelog-to-stdout`. commitizen runs through `uvx` with a pinned version, because mise's pipx backend is off on these machines; CI uses the runner's `pipx` ([../commitizen](../commitizen/README.md#where-cz-is-installed)).
 - `unslop`: runs `hooks/unslop.sh`, which asks an agent to clean up the prose of changed Markdown files and leaves the result unstaged. Optional, run by hand, not part of the hooks; details in [../unslop](../unslop/README.md). File names after the task name are passed through.
+- `docs-drift`: runs `hooks/docs-drift.sh`, which asks an agent to find statements in the Markdown that the branch's code changes made false or stale, and fixes them unstaged or, with `--report`, lists them. Optional, run by hand before a pull request, not part of the hooks; details in [../docs-drift](../docs-drift/README.md). Arguments after the task name are passed through.
 
 ## Environment
 
