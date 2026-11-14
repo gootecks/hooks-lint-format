@@ -11,3 +11,6 @@ uv = "0.11.26"
 
 [task_config]
 includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.1"]
+
+[settings]
+experimental = true

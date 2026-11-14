@@ -34,6 +34,15 @@ oxfmt and oxlint come from mise rather than `devDependencies`, so lint versions 
 includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.0"]
 ```
 
+The `git::` source is experimental in mise, and mise skips the include with a warning unless experimental is on. The consumer `mise.toml` therefore also sets it, because CI has no global `experimental = true`:
+
+```toml
+[settings]
+experimental = true
+```
+
+Without it, `mise run pre-commit` and `mise run release:preview` do not exist in CI and `hlf-rumdl-docs-check` reports them as `ref/task` findings. `jdx/mise-action` honours the project setting.
+
 - `pre-commit`: `hk run pre-commit` without committing.
 - `release:preview`: `cz bump --dry-run --changelog-to-stdout`. commitizen runs through `uvx` with a pinned version, because mise's pipx backend is off on these machines; CI uses the runner's `pipx` ([../commitizen](../commitizen/README.md#where-cz-is-installed)).
 
