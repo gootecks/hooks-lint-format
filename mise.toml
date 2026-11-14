@@ -17,6 +17,7 @@ includes = ["tasks"]
 [tasks."check:hk-base-consumer"]
 description = "Validate a consumer hk.pkl that amends the local hk/hk.pkl and imports Builtins"
 dir = "{{config_root}}"
+shell = "bash -c"
 run = '''
 set -euo pipefail
 root=$PWD
