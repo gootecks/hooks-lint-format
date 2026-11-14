@@ -78,10 +78,12 @@ def load_flavors():
     try:
         config = tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, tomllib.TOMLDecodeError) as err:
-        raise ToolError(f".rumdl.toml: {err}")
+        raise ToolError(f".rumdl.toml: {err}") from err
     default = str(config.get("global", {}).get("flavor", "standard"))
     table = config.get("per-file-flavor", {})
-    return default, [(glob_regex(k.removeprefix("./")), str(v)) for k, v in table.items()]
+    return default, [
+        (glob_regex(k.removeprefix("./")), str(v)) for k, v in table.items()
+    ]
 
 
 def flavor_of(file, default, table):
@@ -97,9 +99,15 @@ def flavor_of(file, default, table):
 
 def run_rumdl(args, stdin=None):
     try:
-        return subprocess.run(["rumdl", *args], input=stdin, capture_output=True, text=True, encoding="utf-8")
+        return subprocess.run(  # noqa: S603 - fixed rumdl argv, file names from hk
+            ["rumdl", *args],  # noqa: S607 - rumdl resolved from the mise PATH
+            input=stdin,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
     except OSError as err:
-        raise ToolError(f"cannot run rumdl: {err}")
+        raise ToolError(f"cannot run rumdl: {err}") from err
 
 
 def export_elements(file):
@@ -109,7 +117,9 @@ def export_elements(file):
     try:
         return json.loads(proc.stdout)
     except json.JSONDecodeError as err:
-        raise ToolError(f"{file}: rumdl export-elements printed invalid JSON: {err}")
+        raise ToolError(
+            f"{file}: rumdl export-elements printed invalid JSON: {err}"
+        ) from err
 
 
 def check(payload, obsidian):
@@ -120,7 +130,9 @@ def check(payload, obsidian):
     def add(rule, start, end, message):
         if obsidian and rule in OBSIDIAN_SKIPS:
             return
-        found.append({"rule": rule, "start_byte": start, "end_byte": end, "message": message})
+        found.append(
+            {"rule": rule, "start_byte": start, "end_byte": end, "message": message}
+        )
 
     def in_blockquote(node):
         parent = node["parent"]
@@ -142,9 +154,19 @@ def check(payload, obsidian):
                 type_start = start + marker.start(1)
                 type_end = start + marker.end(1)
                 if kind.upper() in TYPES:
-                    add("callout/type", type_start, type_end, f"Write the alert type in uppercase: [!{kind.upper()}]")
+                    add(
+                        "callout/type",
+                        type_start,
+                        type_end,
+                        f"Write the alert type in uppercase: [!{kind.upper()}]",
+                    )
                 else:
-                    add("callout/type", type_start, type_end, f"Unknown alert type [!{kind}]; use one of {', '.join(TYPES)}")
+                    add(
+                        "callout/type",
+                        type_start,
+                        type_end,
+                        f"Unknown alert type [!{kind}]; use one of {', '.join(TYPES)}",
+                    )
             if fold or rest:
                 title_start = start + marker.end(1) + 1
                 title_end = start + len(first.rstrip().encode("utf-8"))
@@ -199,7 +221,11 @@ def collect_refs(payload):
     for node in payload["nodes"]:
         start, end = node["range"]
         if node["kind"] == "code_span":
-            text = b"".join(raw[s:e] for s, e in node["content_ranges"]).decode("utf-8").strip()
+            text = (
+                b"".join(raw[s:e] for s, e in node["content_ranges"])
+                .decode("utf-8")
+                .strip()
+            )
             ref = path_ref(text)
             if ref:
                 paths.append((ref, start, end, text))
@@ -207,7 +233,10 @@ def collect_refs(payload):
             if span and TASK_NAME.fullmatch(span.group(1)):
                 tasks.append((span.group(1), start, end))
         elif node["kind"] == "fenced_code":
-            if node["language"] is not None and node["language"].lower() not in SHELL_LANGS:
+            if (
+                node["language"] is not None
+                and node["language"].lower() not in SHELL_LANGS
+            ):
                 continue
             for s, e in node["content_ranges"]:
                 text = raw[s:e].decode("utf-8")
@@ -217,21 +246,29 @@ def collect_refs(payload):
                         continue
                     if TASK_NAME.fullmatch(m.group(1)):
                         offset = s + len(text[: m.start()].encode("utf-8"))
-                        tasks.append((m.group(1), offset, offset + len(m.group(0).encode("utf-8"))))
+                        tasks.append(
+                            (
+                                m.group(1),
+                                offset,
+                                offset + len(m.group(0).encode("utf-8")),
+                            )
+                        )
     return paths, tasks
 
 
 def git(args, stdin=None):
     try:
-        return subprocess.run(["git", *args], input=stdin, capture_output=True)
+        return subprocess.run(["git", *args], input=stdin, capture_output=True)  # noqa: S603, S607 - fixed git argv
     except OSError as err:
-        raise ToolError(f"cannot run git: {err}")
+        raise ToolError(f"cannot run git: {err}") from err
 
 
 def tracked_paths():
     proc = git(["ls-files", "-z", "--cached", "--others", "--exclude-standard"])
     if proc.returncode != 0:
-        raise ToolError(f"git ls-files failed: {proc.stderr.decode(errors='replace').strip()}")
+        raise ToolError(
+            f"git ls-files failed: {proc.stderr.decode(errors='replace').strip()}"
+        )
     files = {p for p in proc.stdout.decode("utf-8", "surrogateescape").split("\0") if p}
     dirs = set()
     for f in files:
@@ -245,7 +282,12 @@ def path_forms(file, ref, known):
     for base in ("", posixpath.dirname(Path(file).as_posix())):
         form = posixpath.normpath(posixpath.join(base, ref))
         anchor = posixpath.normpath(posixpath.join(base, ref.split("/", 1)[0]))
-        if form in forms or form == ".git" or form.startswith(("..", "/", ".git/")) or anchor.startswith(("..", "/")):
+        if (
+            form in forms
+            or form == ".git"
+            or form.startswith(("..", "/", ".git/"))
+            or anchor.startswith(("..", "/"))
+        ):
             continue
         if anchor in known or os.path.lexists(anchor):
             forms.append(form)
@@ -267,7 +309,10 @@ def local_tasks():
         return None
     try:
         proc = subprocess.run(
-            ["mise", "tasks", "ls", "--no-global", "--hidden", "--json"], capture_output=True, text=True, encoding="utf-8"
+            ["mise", "tasks", "ls", "--no-global", "--hidden", "--json"],  # noqa: S607 - mise found by shutil.which above
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
         )
         items = json.loads(proc.stdout) if proc.returncode == 0 else None
     except (OSError, json.JSONDecodeError):
@@ -294,7 +339,9 @@ def docs_findings(entries):
             forms = path_forms(file, ref[0], known)
             if forms and not any(form in known for form in forms):
                 missing.append((file, ref, forms))
-        ignored = ignored_paths(sorted({form for _, _, forms in missing for form in forms}))
+        ignored = ignored_paths(
+            sorted({form for _, _, forms in missing for form in forms})
+        )
         for file, (_, start, end, text), forms in missing:
             if not any(form in ignored for form in forms):
                 entries[file]["found"].append(
@@ -323,7 +370,9 @@ def docs_findings(entries):
 
 def position(raw, offset):
     line_start = raw.rfind(b"\n", 0, offset) + 1
-    return raw.count(b"\n", 0, offset) + 1, len(raw[line_start:offset].decode("utf-8")) + 1
+    return raw.count(b"\n", 0, offset) + 1, len(
+        raw[line_start:offset].decode("utf-8")
+    ) + 1
 
 
 def main(argv):
@@ -335,7 +384,12 @@ def main(argv):
         payload = export_elements(file)
         paths, tasks = collect_refs(payload)
         found = check(payload, flavor_of(file, default, table) == "obsidian")
-        entries[file] = {"payload": payload, "found": found, "paths": paths, "tasks": tasks}
+        entries[file] = {
+            "payload": payload,
+            "found": found,
+            "paths": paths,
+            "tasks": tasks,
+        }
     docs_findings(entries)
     all_findings = []
     status = 0
@@ -350,7 +404,15 @@ def main(argv):
             for d in diagnostics:
                 line, column = position(raw, d["start_byte"])
                 all_findings.append(
-                    {"file": file, "line": line, "column": column, "rule": d["rule"], "message": d["message"], "severity": "warning", "fixable": False}
+                    {
+                        "file": file,
+                        "line": line,
+                        "column": column,
+                        "rule": d["rule"],
+                        "message": d["message"],
+                        "severity": "warning",
+                        "fixable": False,
+                    }
                 )
             continue
         body = {
@@ -359,13 +421,17 @@ def main(argv):
             "source_hash": payload["source_hash"],
             "diagnostics": diagnostics,
         }
-        proc = run_rumdl(["experimental", "report-diagnostics", file], stdin=json.dumps(body))
+        proc = run_rumdl(
+            ["experimental", "report-diagnostics", file], stdin=json.dumps(body)
+        )
         sys.stdout.write(proc.stdout)
         sys.stderr.write(proc.stderr)
         if proc.returncode > 1:
-            raise ToolError(f"{file}: rumdl report-diagnostics rejected the findings (status {proc.returncode})")
+            raise ToolError(
+                f"{file}: rumdl report-diagnostics rejected the findings (status {proc.returncode})"
+            )
     if as_json:
-        print(json.dumps(all_findings, ensure_ascii=False))
+        sys.stdout.write(json.dumps(all_findings, ensure_ascii=False) + "\n")
         return 0
     return status
 
@@ -374,5 +440,5 @@ if __name__ == "__main__":
     try:
         sys.exit(main(sys.argv[1:]))
     except ToolError as err:
-        print(f"rumdl-docs-check: {err}", file=sys.stderr)
+        sys.stderr.write(f"rumdl-docs-check: {err}\n")
         sys.exit(2)
