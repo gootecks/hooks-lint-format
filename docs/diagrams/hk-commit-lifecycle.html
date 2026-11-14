@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What happens on git commit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #2d3142;
+      --color-ink:     #f5f5f5;
+      --color-muted:   #bfc0c0;
+      --color-accent:  #f08a59;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', 'Noto Serif', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1200px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 1000px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Sequence · Diagram Design</p>
+    <h1>What happens on git commit</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 796" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="hk-commit-lifecycle-title hk-commit-lifecycle-desc">
+        <title id="hk-commit-lifecycle-title">What happens on git commit</title>
+        <desc id="hk-commit-lifecycle-desc">The sequence of git hooks hk runs during a commit.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#bfc0c0"/></marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#f08a59"/></marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#739fdf"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#2d3142"/>
+
+      <rect x="88" y="472" width="568" height="88" rx="4" fill="rgba(245,245,245,0.04)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <rect x="88" y="472" width="40" height="16" rx="2" fill="#2d3142" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <text x="108" y="484" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">OPT</text>
+      <text x="156" y="504" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.04em">[NO -M, TTY]</text>
+      <text x="236" y="504" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace">not CI / HK_AGENT</text>
+      <line x1="140" y1="112" x2="140" y2="716" stroke="rgba(245,245,245,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="380" y1="112" x2="380" y2="716" stroke="rgba(245,245,245,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="620" y1="112" x2="620" y2="716" stroke="rgba(245,245,245,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="860" y1="112" x2="860" y2="716" stroke="rgba(245,245,245,0.22)" stroke-width="1" stroke-dasharray="3,3"/>
+      <rect x="136" y="136" width="8" height="572" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="376" y="136" width="8" height="572" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="616" y="180" width="8" height="216" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="616" y="444" width="8" height="104" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="616" y="596" width="8" height="64" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <rect x="856" y="268" width="8" height="72" fill="rgba(245,245,245,0.06)" stroke="#bfc0c0" stroke-width="0.8"/>
+      <line x1="144" y1="144" x2="376" y2="144" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="227" y="124" width="66" height="12" rx="2" fill="#2d3142"/>
+      <text x="260" y="133" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GIT COMMIT</text>
+      <line x1="384" y1="184" x2="616" y2="184" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="467" y="164" width="66" height="12" rx="2" fill="#2d3142"/>
+      <text x="500" y="173" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PRE-COMMIT</text>
+      <path d="M624 212 H640 a8 8 0 0 1 8 8 V228 a8 8 0 0 1 -8 8 H626" fill="none" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="660" y="221" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.08em">STASH UNSTAGED</text>
+      <text x="660" y="233" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace">stash = "git"</text>
+      <line x1="624" y1="272" x2="856" y2="272" stroke="#f08a59" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <rect x="710" y="252" width="61" height="12" rx="2" fill="#2d3142"/>
+      <text x="740" y="261" fill="#f08a59" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">RUN STEPS</text>
+      <text x="740" y="296" fill="#bfc0c0" font-size="11" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="middle">fix = true · parallel · rumdl after oxfmt</text>
+      <line x1="856" y1="336" x2="626" y2="336" stroke="#bfc0c0" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <rect x="700" y="316" width="81" height="12" rx="2" fill="#2d3142"/>
+      <text x="740" y="325" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">FIXES / FAILS</text>
+      <line x1="616" y1="392" x2="388" y2="392" stroke="#f08a59" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <rect x="467" y="372" width="71" height="12" rx="2" fill="#2d3142"/>
+      <text x="502" y="381" fill="#f08a59" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STAGE FIXES</text>
+      <text x="502" y="410" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">stage = true · restore stash</text>
+      <text x="366" y="396" fill="#bfc0c0" font-size="11" font-style="italic" font-family="'Instrument Serif', serif" text-anchor="end">on failure the commit aborts</text>
+      <line x1="384" y1="448" x2="616" y2="448" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="465" y="428" width="71" height="12" rx="2" fill="#2d3142"/>
+      <text x="500" y="437" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">PREPARE-MSG</text>
+      <line x1="616" y1="536" x2="146" y2="536" stroke="#bfc0c0" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <rect x="467" y="516" width="66" height="12" rx="2" fill="#2d3142"/>
+      <text x="500" y="525" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CZG PROMPT</text>
+      <line x1="384" y1="600" x2="616" y2="600" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="467" y="580" width="66" height="12" rx="2" fill="#2d3142"/>
+      <text x="500" y="589" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">COMMIT-MSG</text>
+      <path d="M624 624 H640 a8 8 0 0 1 8 8 V640 a8 8 0 0 1 -8 8 H626" fill="none" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="660" y="633" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.08em">CHECK MESSAGE</text>
+      <text x="660" y="645" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace">check_conventional_commit</text>
+      <text x="660" y="657" fill="#949eb2" font-size="8" font-family="'Geist Mono', monospace">rejects non-Conventional</text>
+      <line x1="376" y1="700" x2="146" y2="700" stroke="#bfc0c0" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <rect x="218" y="680" width="86" height="12" rx="2" fill="#2d3142"/>
+      <text x="261" y="689" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">COMMIT CREATED</text>
+      <rect x="60" y="40" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="60" y="40" width="160" height="72" rx="6" fill="rgba(245,245,245,0.04)" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="68" y="48" width="32" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.30)" stroke-width="0.8"/>
+      <text x="84" y="57" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">USER</text>
+      <text x="140" y="78" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Developer</text>
+      <rect x="300" y="40" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="300" y="40" width="160" height="72" rx="6" fill="rgba(245,245,245,0.04)" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="308" y="48" width="28" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.30)" stroke-width="0.8"/>
+      <text x="322" y="57" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">VCS</text>
+      <text x="380" y="78" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">git</text>
+      <rect x="540" y="40" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="540" y="40" width="160" height="72" rx="6" fill="rgba(245,245,245,0.04)" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="548" y="48" width="36" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.30)" stroke-width="0.8"/>
+      <text x="566" y="57" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">HOOKS</text>
+      <text x="620" y="78" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">hk</text>
+      <rect x="780" y="40" width="160" height="72" rx="6" fill="#2d3142"/>
+      <rect x="780" y="40" width="160" height="72" rx="6" fill="rgba(245,245,245,0.04)" stroke="#f5f5f5" stroke-width="1"/>
+      <rect x="788" y="48" width="36" height="12" rx="2" fill="transparent" stroke="rgba(245,245,245,0.30)" stroke-width="0.8"/>
+      <text x="806" y="57" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEPS</text>
+      <text x="860" y="78" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Steps</text>
+      <text x="860" y="92" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">oxfmt oxlint rumdl</text>
+      <text x="860" y="104" fill="#bfc0c0" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">actionlint zizmor</text>
+      <line x1="56" y1="740" x2="944" y2="740" stroke="rgba(245,245,245,0.12)" stroke-width="0.8"/>
+      <text x="56" y="756" fill="#bfc0c0" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+      <line x1="56" y1="776" x2="84" y2="776" stroke="#bfc0c0" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <text x="92" y="780" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Call</text>
+      <line x1="200" y1="776" x2="228" y2="776" stroke="#bfc0c0" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <text x="236" y="780" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Return</text>
+      <rect x="340" y="767" width="28" height="18" rx="2" fill="rgba(245,245,245,0.04)" stroke="rgba(245,245,245,0.22)" stroke-width="1"/>
+      <text x="348" y="779" fill="#bfc0c0" font-size="7" font-family="'Geist Mono', monospace">OPT</text>
+      <text x="376" y="780" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Optional, guarded</text>
+      <line x1="540" y1="776" x2="568" y2="776" stroke="#f08a59" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <text x="576" y="780" fill="#bfc0c0" font-size="8.5" font-family="'Geist', sans-serif">Focal: fix and stage</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
