@@ -46,7 +46,7 @@ The agent can read, search and, outside `--report`, edit files. It has no shell 
 
 | Variable              | Default                 | Effect                                |
 | --------------------- | ----------------------- | ------------------------------------- |
-| `DOCS_DRIFT_MODEL`    | the `omp` default model | Model passed to `omp --model`         |
+| `DOCS_DRIFT_MODEL`    | `claude-sonnet-5-5`     | Model passed to `omp --model`         |
 | `DOCS_DRIFT_MAX_TIME` | `15m`                   | Time limit passed to `omp --max-time` |
 
 ## Requires

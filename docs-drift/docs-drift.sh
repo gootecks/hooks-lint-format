@@ -91,8 +91,8 @@ if ((report == 0)); then
     fi
 fi
 
-model_args=()
-[[ -z ${DOCS_DRIFT_MODEL:-} ]] || model_args=(--model "$DOCS_DRIFT_MODEL")
+model=${DOCS_DRIFT_MODEL:-claude-sonnet-5-5}
+model_args=(--model "$model")
 list=$(printf '%s\n' "${files[@]}")
 
 if ((report == 1)); then
@@ -106,7 +106,7 @@ else
 - When the correct new statement cannot be proved from the repository, do not edit; list it as UNSURE."
 fi
 
-echo "docs-drift: checking ${#files[@]} file(s) against changes since $base with omp (${DOCS_DRIFT_MODEL:-default model}); this takes minutes" >&2
+echo "docs-drift: checking ${#files[@]} file(s) against changes since $base with omp ($model); this takes minutes" >&2
 agent_rc=0
 omp -p --no-session --no-title --no-skills --no-rules \
     ${model_args[@]+"${model_args[@]}"} \
