@@ -37,3 +37,51 @@ steps {
 PKL
 hk validate
 '''
+
+[tasks."test:docs-check-ref-path"]
+description = "ref/path accepts untracked paths that exist on disk and still flags missing ones"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+script=$PWD/bin/hlf-rumdl-docs-check
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+git init -q
+mkdir -p nested/real tracked
+touch nested/real/file.txt tracked/a.txt
+ln -s real nested/link
+echo 'nested/' > .gitignore
+printf '%s\n' '# Doc' '' 'Uses `tracked/a.txt`, `nested/real/file.txt`, `nested/link/file.txt` and `nested/real/`.' > ok.md
+printf '%s\n' '# Doc' '' 'Uses `nested/real/file.txt` and `tracked/gone.txt`.' > bad.md
+git add .gitignore tracked ok.md bad.md
+"$script" ok.md
+out=$("$script" bad.md || true)
+grep -q 'tracked/gone.txt' <<<"$out"
+! grep -q 'nested/' <<<"$out"
+'''
+
+[tasks."test:docs-check-ref-task-monorepo"]
+description = "ref/task treats //:name in a monorepo root as name and still flags undefined tasks"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+script=$PWD/bin/hlf-rumdl-docs-check
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+git init -q
+printf '%s\n' 'monorepo_root = true' '' '[settings]' 'experimental = true' '' > mise.toml
+printf '%s\n' '[tasks.vault-links]' 'run = "true"' '[tasks."event:build"]' 'run = "true"' >> mise.toml
+printf '%s\n' '# Doc' '' 'Run `mise run vault-links` and `mise run event:build`.' > ok.md
+printf '%s\n' '# Doc' '' 'Run `mise run vault-links` and `mise run nope`.' > bad.md
+git add mise.toml ok.md bad.md
+mise trust -q
+mise tasks ls --no-global --hidden --json | grep -q '"//:vault-links"'
+"$script" ok.md
+out=$("$script" bad.md || true)
+grep -q 'mise run nope' <<<"$out"
+! grep -q 'vault-links' <<<"$out"
+'''
