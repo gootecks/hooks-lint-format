@@ -18,7 +18,7 @@ steps {
     }
     ["rumdl"] {
         glob = List("**/*.md", "**/*.markdown", "**/*.mdx")
-        check = "rumdl check --deny-config-warnings {{files}} && hlf-rumdl-docs-check {{files}}"
+        check = "a=0; rumdl check --deny-config-warnings {{files}} || a=$?; b=0; hlf-rumdl-docs-check {{files}} || b=$?; exit $((a > b ? a : b))"
         fix = "hlf-rumdl-fix {{files}}"
     }
     ["zizmor"] = KitBuiltins.zizmor

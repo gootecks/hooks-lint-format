@@ -1,6 +1,6 @@
 # Shared rumdl config
 
-`.rumdl.toml` is the shared rumdl config. rumdl formats and lints every Markdown file in the repository; oxfmt does not touch Markdown. The hk step runs `rumdl check --deny-config-warnings` and the kit docs check `hooks/rumdl-docs-check.py` to check, and `hooks/rumdl-fix.sh` to fix.
+`.rumdl.toml` is the shared rumdl config. rumdl formats and lints every Markdown file in the repository; oxfmt does not touch Markdown. The hk step runs `rumdl check --deny-config-warnings` and the kit docs check `hlf-rumdl-docs-check` to check, and `hlf-rumdl-fix` to fix.
 
 ## Config layout
 
