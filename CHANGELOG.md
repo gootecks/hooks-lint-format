@@ -1,3 +1,13 @@
+## v0.1.2 (2026-11-15)
+
+### Fix
+
+- **docs-check**: accept ref/path targets that exist on disk (#23)
+
+### Docs
+
+- **mise**: require experimental setting for the git:: task include (#21)
+
 ## v0.1.1 (2026-11-13)
 
 ### Fix
