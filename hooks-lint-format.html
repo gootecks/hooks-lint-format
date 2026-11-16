@@ -496,12 +496,12 @@
                 shell-level <code>export</code> does not win: mise shims apply <code>[env]</code> when they run oxlint.
               </li>
               <li>
-                The script tool <code>"github:gootecks/hooks-lint-format"</code> provides <code>hlf-rumdl-fix</code> and
-                <code>hlf-rumdl-docs-check</code>. Shared tasks <code>pre-commit</code> and
-                <code>release:preview</code> come from the task include
-                <code>git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.2.1</code>. The consumer
-                <code>mise.toml</code> also needs <code>[settings] experimental = true</code>, because mise skips
-                <code>git::</code> includes otherwise and CI has no global setting.
+                The script tool <code>"github:gootecks/hooks-lint-format"</code> provides <code>hlf-rumdl-fix</code>,
+                <code>hlf-rumdl-docs-check</code> and <code>hlf-nlpm-check</code>. Shared tasks <code>pre-commit</code>,
+                <code>release:preview</code>, <code>skills:link</code> and <code>skills:check</code> come from the task
+                include <code>git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.2.1</code>. The
+                consumer <code>mise.toml</code> also needs <code>[settings] experimental = true</code>, because mise
+                skips <code>git::</code> includes otherwise and CI has no global setting.
               </li>
             </ul>
           </article>

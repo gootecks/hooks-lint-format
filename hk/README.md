@@ -129,7 +129,7 @@ The `nlpm` step runs `hlf-nlpm-check` once for the whole repository. It has no `
 | `R01`         | One of the 11 vague quantifiers of NLPM rule R01, outside frontmatter, fences and inline code.   | no    |
 | `R51`         | A deprecated synonym from the registry, outside frontmatter, fences and inline code, when on.    | yes   |
 
-R51 applies the registry's `verbs` of every scope whose `paths` contain the artifact, plus the registry's `nouns` (`enforce_terms` when present, else `deprecated`), minus canonical terms and `sanctioned` (term, path) pairs. An artifact outside every scope is not checked. When a tracked `.claude-plugin/plugin.json` exists, the vendored `nlpm-check` (NLPM 1.4.3, ISC license) also runs on that plugin root and the worst exit status wins. LLM scoring (`/nlpm:score`) is not part of the step and stays a manual pass.
+R51 applies the registry's `verbs` of every scope whose `paths` contain the artifact, plus the registry's `nouns` (`enforce_terms` when present, else `deprecated`), minus canonical terms and `sanctioned` (term, path) pairs. A registry entry without `canonical` is skipped. An artifact outside every scope is not checked, and neither is any file under the `vocabulary_skill` directory, which quotes the deprecated terms by design. When a tracked `.claude-plugin/plugin.json` exists, the vendored `nlpm-check` (NLPM 1.4.3, ISC license) also runs on that plugin root and the worst exit status wins. LLM scoring (`/nlpm:score`) is not part of the step and stays a manual pass.
 
 ## `hlf-rumdl-docs-check`
 
