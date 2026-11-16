@@ -45,7 +45,7 @@ The version is pinned in the `release:preview` task in [../mise/mise.toml](../mi
 
 ## Commands
 
-- `cz bump --get-next` prints the next version. It exits 21 when no commit since the last tag is a `fix`, `feat` or breaking change.
+- `cz bump --get-next` prints the next version. It exits 21 when no commit since the last tag is a `fix`, `feat` or breaking change. In a repository with no tag it asks whether this is the first tag; pass `--yes` where nothing can answer, as in CI.
 - `cz bump --dry-run --changelog-to-stdout` previews the bump and changelog.
 - `cz changelog --dry-run --unreleased-version vX.Y.Z` prints the unreleased section. A version argument cannot be combined with `changelog_incremental`.
 - Set `HK=0` when running `cz bump` locally. The bump commit stages the version files, and the `pre-commit` fixers could rewrite them after `cz` wrote them, or a failing check could stop the commit after the files changed and before the tag exists. For other bypasses, see [../docs/lint-policy.md](../docs/lint-policy.md).
