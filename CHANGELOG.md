@@ -1,3 +1,9 @@
+## v0.1.4 (2026-11-15)
+
+### Fix
+
+- install tsrs with bun, accept maintainer tasks in docs-check, enforce doc versions (#30)
+
 ## v0.1.3 (2026-11-15)
 
 ### Fix
