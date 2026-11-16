@@ -42,6 +42,15 @@ Tool versions are stated in [mise/mise.toml](mise/mise.toml) and nowhere else in
 - Versions change in `mise/mise.toml` first, then in each repo, and ship with a new release tag.
 - TypeScript type-aware linting uses tsrs-lint only. There is no tsgolint anywhere in the kit.
 
+## Verifying changes
+
+Two agent skills in `.agents/skills/` check the kit. Run them before you commit a change to the parts they cover.
+
+- **The Markdown gate.** Run it after you change the `["rumdl"]` step in `hk/hk.pkl` or `bin/hlf-rumdl-fix`: `mise run verify:rumdl-gate`. It runs the real step and script against every combination of tool results and agent settings in its scope, and takes about 2 minutes. Add `-- --mutants` to prove it still catches broken code. What it promises and covers: [prove-rumdl-gate](.agents/skills/prove-rumdl-gate/SKILL.md).
+- **The kit's features end to end.** Use [verify-hooks-lint-format](.agents/skills/verify-hooks-lint-format/SKILL.md) to drive pre-commit, commit-msg, check and fix, the docs check, and the release preview in a scratch repository.
+
+After merges that changed covered code without rerunning these checks, the `/maintain-formal-verification-skill` and `/maintain-verification-skill` skills bring them back in line.
+
 ## This repository uses the kit
 
 The kit checks itself with its own files, without second copies:

@@ -1,0 +1,160 @@
+#!/usr/bin/env bash
+# Drive the hooks-lint-format kit the way a consuming repo does, in a disposable git repo.
+# Usage: hlf-verify <launch|doctor|run|evidence|cleanup> <run-id> [args]
+set -euo pipefail
+
+usage() {
+    cat >&2 << 'EOF'
+usage:
+  hlf-verify launch   <run-id>                 create the scratch consumer repo and install hooks
+  hlf-verify doctor   <run-id>                 read-only health check of that repo
+  hlf-verify run      <run-id> <label> -- CMD  run CMD in the repo, record a transcript as <label>
+  hlf-verify evidence <run-id>                 print the evidence directory
+  hlf-verify cleanup  <run-id>                 delete the scratch repo; evidence is kept
+EOF
+    exit 2
+}
+
+(($# >= 2)) || usage
+cmd=$1
+id=$2
+shift 2
+[[ $id =~ ^[A-Za-z0-9._-]+$ ]] || {
+    echo "hlf-verify: run-id must match [A-Za-z0-9._-]+" >&2
+    exit 2
+}
+
+skill_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+kit=$(cd "$skill_dir/../../.." && pwd)
+base="${TMPDIR:-/tmp}"
+base="${base%/}/hlf-verify-$id"
+repo="$base/repo"
+gitcfg="$base/gitconfig"
+evidence="${XDG_STATE_HOME:-$HOME/.local/state}/hlf-verify/$id"
+marker="$repo/.git/hlf-verify-kit"
+
+kit_env() {
+    export GIT_CONFIG_GLOBAL="$gitcfg"
+    export GIT_CONFIG_NOSYSTEM=1
+    export RUMDL_AGENT="${RUMDL_AGENT:-0}"
+    eval "$(mise -C "$repo" env -s bash)"
+}
+
+case $cmd in
+    launch)
+        [[ ! -e $base ]] || {
+            echo "hlf-verify: $base already exists; run cleanup first or pick a new run-id" >&2
+            exit 1
+        }
+        mkdir -p "$repo" "$evidence"
+        printf '%s\n' '[user]' '    name = hlf-verify' '    email = hlf-verify@example.invalid' \
+            '[commit]' '    gpgsign = false' '[tag]' '    gpgsign = false' \
+            '[init]' '    defaultBranch = main' > "$gitcfg"
+        cd "$repo"
+        git init -q
+        printf 'amends "file://%s/hk/hk.pkl"\n' "$kit" > hk.pkl
+        {
+            echo '# Scratch consumer: kit tool pins from mise/mise.toml, kit scripts and tasks from the local checkout.'
+            sed -n '/^\[tools\]/,/^$/p' "$kit/mise/mise.toml" | grep -v '^"github:gootecks/hooks-lint-format"'
+            printf '%s\n' '[env]' "_.path = [\"$kit/bin\"]" '' '[task_config]' "includes = [\"$kit/tasks\"]" ''
+            printf '%s\n' '[settings]' 'experimental = true' '' '[tasks.real]' 'run = "true"'
+        } > mise.toml
+        printf 'extends = "%s/rumdl/.rumdl.toml"\n' "$kit" > .rumdl.toml
+        printf '%s\n' '# Scratch consumer' '' 'Seed file for hlf-verify.' > README.md
+        printf '%s\n' "$kit" > "$marker"
+        mise trust -q mise.toml
+        kit_env
+        git add hk.pkl mise.toml .rumdl.toml README.md
+        RUMDL_AGENT=0 git commit -q -m "chore: seed scratch consumer"
+        hk install > /dev/null
+        echo "ready repo=$repo evidence=$evidence kit=$kit"
+        ;;
+    doctor)
+        rc=0
+        [[ -f $marker ]] || {
+            echo "FAIL no scratch repo at $repo (run launch)"
+            exit 1
+        }
+        [[ $(cat "$marker") == "$kit" ]] && echo "ok   repo $repo belongs to kit $kit" || {
+            echo "FAIL repo was launched from another kit: $(cat "$marker")"
+            rc=1
+        }
+        kit_env
+        cd "$repo"
+        for t in hk rumdl oxfmt oxlint actionlint zizmor uv jq hlf-rumdl-docs-check hlf-rumdl-fix; do
+            p=$(command -v "$t" || true)
+            [[ -n $p ]] && echo "ok   $t -> $p" || {
+                echo "FAIL $t not on PATH"
+                rc=1
+            }
+        done
+        want=$(sed -n 's/^hk = "\(.*\)"$/\1/p' "$kit/mise.toml")
+        have=$(hk --version | awk '{print $2}')
+        [[ $have == "$want" ]] && echo "ok   hk $have matches kit pin" || {
+            echo "FAIL hk $have, kit pins $want"
+            rc=1
+        }
+        hk validate > /dev/null 2>&1 && echo "ok   hk validate" || {
+            echo "FAIL hk validate (run: hlf-verify run $id validate -- hk validate)"
+            rc=1
+        }
+        for h in pre-commit commit-msg; do
+            git config --local --get "hook.hk-$h.command" 2> /dev/null | grep -q "hk run $h" && echo "ok   $h hook installed (git config hook.hk-$h)" || {
+                echo "FAIL $h hook missing from .git/config (hook.hk-$h.command)"
+                rc=1
+            }
+        done
+        [[ -z $(git status --porcelain) ]] && echo "ok   worktree clean" || echo "warn worktree dirty: $(git status --porcelain | tr '\n' ' ')"
+        echo "info RUMDL_AGENT=$RUMDL_AGENT kit HEAD $(git -C "$kit" rev-parse --short HEAD) $(git -C "$kit" status --porcelain -- hk bin tasks | wc -l | tr -d ' ') uncommitted kit file(s) in hk/ bin/ tasks/"
+        exit $rc
+        ;;
+    run)
+        (($# >= 3)) && [[ $2 == -- ]] || usage
+        label=$1
+        shift 2
+        [[ $label =~ ^[A-Za-z0-9._-]+$ ]] || {
+            echo "hlf-verify: label must match [A-Za-z0-9._-]+" >&2
+            exit 2
+        }
+        [[ -f $marker ]] || {
+            echo "hlf-verify: no scratch repo at $repo (run launch)" >&2
+            exit 1
+        }
+        mkdir -p "$evidence"
+        out="$evidence/$label.txt"
+        kit_env
+        cd "$repo"
+        {
+            echo "\$ $*"
+            echo "# cwd=$repo"
+            echo "# date=$(date -u +%Y-%m-%dT%H:%M:%SZ) kit=$(git -C "$kit" rev-parse --short HEAD) RUMDL_AGENT=$RUMDL_AGENT"
+        } > "$out"
+        rc=0
+        "$@" >> "$out" 2>&1 || rc=$?
+        {
+            echo "# exit=$rc"
+            echo "# git status --porcelain:"
+            git status --porcelain
+            echo "# git log --oneline -3:"
+            git log --oneline -3
+        } >> "$out"
+        cat "$out"
+        exit $rc
+        ;;
+    evidence)
+        echo "$evidence"
+        ;;
+    cleanup)
+        if [[ -f $marker ]]; then
+            rm -rf "$base"
+            echo "removed $base"
+        elif [[ -e $base ]]; then
+            echo "hlf-verify: $base exists but has no hlf-verify marker; not deleting" >&2
+            exit 1
+        else
+            echo "nothing to remove at $base"
+        fi
+        echo "evidence kept at $evidence"
+        ;;
+    *) usage ;;
+esac

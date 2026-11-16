@@ -158,6 +158,11 @@ grep -q 'MD018' <<<"$out"
 grep -q 'ref/task' <<<"$out"
 '''
 
+[tasks."verify:rumdl-gate"]
+description = "Run after changing the hk rumdl step or bin/hlf-rumdl-fix: check every tool outcome and agent flag against the gate's promises; --mutants proves the check can fail"
+dir = "{{config_root}}"
+run = ".agents/skills/prove-rumdl-gate/scripts/check_rumdl_gate.py"
+
 [tasks."check:doc-versions"]
 description = "Fail when a doc, template or .cz.toml names a kit version other than the one in hk/PklProject"
 dir = "{{config_root}}"
