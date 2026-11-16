@@ -102,7 +102,7 @@ style = "aligned"
 [MD063]
 enabled = true
 style = "sentence-case"
-# Keeps the word after a list-style number capitalised (`## 1. Survey`).
+# Keeps the word after a list-style number capitalized (`## 1. Survey`).
 sentence-case-restart-after = ["."]
 # Proper nouns are per repository; a word listed here keeps its case in headings.
 ignore-words = []

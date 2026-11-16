@@ -160,6 +160,60 @@ grep -q 'MD018' <<<"$out"
 grep -q 'ref/task' <<<"$out"
 '''
 
+[tasks."test:nlpm-check"]
+description = "hlf-nlpm-check fails on name mismatch, R05 and R51 hits, reports R01 as advisory, and exits 0 on a clean repository"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+script=$PWD/bin/hlf-nlpm-check
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+git init -q
+mkdir -p .claude skills/good skills/bad skills/long vocab
+printf '%s\n' '---' 'score_threshold: 80' 'rule_overrides:' '  R51:' '    enabled: true' '    vocabulary_skill: vocab' '---' > .claude/nlpm.local.md
+printf '%s\n' 'scopes:' '  - id: internal' '    paths:' '      - skills/' 'verbs:' '  internal:' '    - canonical: check' '      deprecated: [lint]' > vocab/registry.yaml
+printf '%s\n' '---' 'name: good' 'description: Use when checking the fixture.' '---' '# Good' 'Run the check.' > skills/good/SKILL.md
+git add .claude vocab skills/good
+"$script"
+printf '%s\n' '---' 'name: wrong' 'description: Use when testing.' '---' '# Bad' 'Handle some cases and lint the files.' '```' 'some lint in a fence' '```' > skills/bad/SKILL.md
+{ printf '%s\n' '---' 'name: long' 'description: Use when testing.' '---'; seq 1 501; } > skills/long/SKILL.md
+git add skills
+status=0
+out=$("$script") || status=$?
+[ "$status" -eq 1 ]
+grep -q '^skills/bad/SKILL.md:1: name ' <<<"$out"
+grep -q '^skills/bad/SKILL.md:6: R01 advisory: ' <<<"$out"
+grep -q '^skills/bad/SKILL.md:6: R51 ' <<<"$out"
+grep -q '^skills/long/SKILL.md:5: R05 ' <<<"$out"
+[ "$(grep -c ' R01 ' <<<"$out")" -eq 1 ]
+! grep -q 'skills/good' <<<"$out"
+git rm -q -f --cached skills/long/SKILL.md
+sed -i.bak 's/^name: wrong/name: bad/; s/ and lint the files//' skills/bad/SKILL.md
+rm skills/bad/SKILL.md.bak
+git add skills/bad
+out=$("$script")
+grep -q 'R01 advisory' <<<"$out"
+cd "$tmp"
+rm -rf nouns
+mkdir nouns
+cd nouns
+git init -q
+mkdir -p .claude skills/n docs vocab
+printf '%s\n' '---' 'rule_overrides:' '  R51:' '    enabled: true' '    vocabulary_skill: vocab' '---' > .claude/nlpm.local.md
+printf '%s\n' 'scopes:' '  - id: internal' '    paths:' '      - skills/' '      - docs/' 'verbs:' '  internal: []' 'nouns:' '  core:' '    - canonical: widget' '      deprecated: [gadget]' > vocab/registry.yaml
+printf '%s\n' '---' 'name: n' 'description: Use when testing nouns.' '---' '# N' 'Build the gadget.' > skills/n/SKILL.md
+printf '%s\n' '# Doc' 'Some gadget notes.' > docs/x.md
+git add .claude vocab skills docs
+status=0
+out=$("$script") || status=$?
+[ "$status" -eq 1 ]
+grep -q '^skills/n/SKILL.md:6: R51 ' <<<"$out"
+grep -q '^docs/x.md:2: R51 ' <<<"$out"
+! grep -q '^docs/x.md.* R01 ' <<<"$out"
+'''
+
 [tasks."verify:rumdl-gate"]
 description = "Run after changing the hk rumdl step or bin/hlf-rumdl-fix: check every tool outcome and agent flag against the gate's promises; --mutants proves the check can fail"
 dir = "{{config_root}}"

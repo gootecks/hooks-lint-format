@@ -36,7 +36,7 @@ On GitHub, the rendered view of a pull request diff for a Markdown file also hig
 - Use ATX headings (`#`), never underlines.
 - Use one top-level heading per file, as the first line after front matter.
 - Do not skip levels: `##` follows `#`, `###` follows `##`.
-- Use sentence case: capitalise the first word and proper nouns only.
+- Use sentence case: capitalize the first word and proper nouns only.
 - Do not end a heading with punctuation.
 - Do not use bold text as a heading.
 
@@ -135,7 +135,7 @@ These constructs render in Obsidian and appear as literal text on GitHub. Use th
 
 In a file read on both, hide text with an HTML comment `<!-- text -->`, which both renderers hide.
 
-Mark a vault so rumdl accepts this syntax: set the Obsidian flavour for the vault's paths in the `[per-file-flavor]` table of `.rumdl.toml`, or run rumdl with `--flavor obsidian` inside the vault. The setting is described in [rumdl/README.md](../rumdl/README.md#obsidian-vaults). Without it rumdl reports a line that starts with `#tag` as a malformed heading.
+Mark a vault so rumdl accepts this syntax: set the Obsidian flavor for the vault's paths in the `[per-file-flavor]` table of `.rumdl.toml`, or run rumdl with `--flavor obsidian` inside the vault. The setting is described in [rumdl/README.md](../rumdl/README.md#obsidian-vaults). Without it rumdl reports a line that starts with `#tag` as a malformed heading.
 
 ## Inline HTML
 

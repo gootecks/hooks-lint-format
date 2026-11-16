@@ -1,6 +1,6 @@
 # hk
 
-[hk](https://hk.jdx.dev) runs every linter and formatter in this kit as git hooks and as `hk check` / `hk fix`. `hk.pkl` is the shared base, published as the Pkl package `hk-base`; the two scripts it calls, `hlf-rumdl-fix` and `hlf-rumdl-docs-check`, ship in the release's script tarball and live in [../bin](../bin). Repositories do not copy either: they amend the package and install the scripts through mise. The hk version appears in the `amends` and `import` URLs; the other tool versions are pinned in [../mise/mise.toml](../mise/mise.toml). To install the kit into a repository, use the maintainer's global `repo-adopt` task (in `~/.config/mise`) or follow [../skills/hooks-lint-format/SKILL.md](../skills/hooks-lint-format/SKILL.md).
+[hk](https://hk.jdx.dev) runs every linter and formatter in this kit as git hooks and as `hk check` / `hk fix`. `hk.pkl` is the shared base, published as the Pkl package `hk-base`; the scripts it calls, `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` (plus the vendored `nlpm-check`), ship in the release's script tarball and live in [../bin](../bin). Repositories do not copy any of them: they amend the package and install the scripts through mise. The hk version appears in the `amends` and `import` URLs; the other tool versions are pinned in [../mise/mise.toml](../mise/mise.toml). To install the kit into a repository, use the maintainer's global `repo-adopt` task (in `~/.config/mise`) or follow [../skills/hooks-lint-format/SKILL.md](../skills/hooks-lint-format/SKILL.md).
 
 ## Consuming the package
 
@@ -21,11 +21,11 @@ steps {
 
 The `import` line is needed only when the repository adds steps from hk's builtins. hk does not resolve `PklProject` dependencies, so the package imports hk's `Config.pkl` and `Builtins.pkl` by absolute `package://` URL. The base imports hk's builtins as `KitBuiltins`, so a consumer can use the bare name `Builtins`.
 
-The steps call `hlf-rumdl-fix` and `hlf-rumdl-docs-check` by name. The repository's `mise.toml` installs them with the `github:gootecks/hooks-lint-format` tool, which puts the release's `bin` directory on `PATH` ([../mise](../mise/README.md)). The docs check script starts with `uv run --script`, so `uv` is pinned in the same file.
+The steps call `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` by name. The repository's `mise.toml` installs them with the `github:gootecks/hooks-lint-format` tool, which puts the release's `bin` directory on `PATH` ([../mise](../mise/README.md)). The scripts start with `uv run --script`, so `uv` is pinned in the same file.
 
 ### Pinning and upgrading
 
-The kit version appears in three places of a consuming repository; change all three together:
+The kit version appears in three places of a consumer repository; change all three together:
 
 1. the `amends` URL in `hk.pkl` (`v<version>` and `hk-base@<version>`),
 2. the version of the `github:gootecks/hooks-lint-format` tool in `mise.toml`,
@@ -42,6 +42,7 @@ Pushing a tag `v<version>` runs [../.github/workflows/release.yml](../.github/wo
 | `actionlint`  | `.github/workflows/*.yml`                    | builtin ([../actionlint](../actionlint/README.md))                                                     | none                    |
 | `oxfmt`       | JS/TS, JSON, YAML, TOML, CSS, HTML, and more | builtin ([../oxfmt](../oxfmt/README.md))                                                               | builtin                 |
 | `oxlint`      | JS/TS                                        | `--type-aware --type-check --deny-warnings` ([../oxlint](../oxlint/README.md))                         | same flags plus `--fix` |
+| `nlpm`        | whole repository (no `{{files}}`)            | `hlf-nlpm-check` ([below](#hlf-nlpm-check))                                                            | none                    |
 | `rumdl`       | `**/*.md`, `**/*.markdown`, `**/*.mdx`       | `rumdl check --deny-config-warnings` then `hlf-rumdl-docs-check` ([../rumdl](../rumdl/README.md))      | `hlf-rumdl-fix`         |
 | `zizmor`      | workflows, `action.yml`, dependabot          | builtin ([../zizmor](../zizmor/README.md))                                                             | builtin, `zizmor --fix` |
 | `ruff`        | Python (added per repository, below)         | builtin through `uv run`                                                                               | builtin                 |
@@ -115,6 +116,21 @@ Environment switches:
 - `RUMDL_AGENT_MAX_TIME` is the agent time limit (default `5m`).
 - `CI`, when set, runs no agent.
 
+## `hlf-nlpm-check`
+
+The `nlpm` step runs `hlf-nlpm-check` once for the whole repository. It has no `glob` and does not use `{{files}}`, because the base `exclude` hides `.agents/**` from `{{files}}` and the check must see the skills there. It needs `uv` (`uv run --script` installs `pyyaml`). It checks the tracked files `**/SKILL.md`, `AGENTS.md` and `CLAUDE.md` at any depth, `agents/*.md`, `commands/*.md` and `.claude/**/*.md`, and reads `.claude/nlpm.local.md`: `discovery.exclude` (globs to skip) and `rule_overrides.R51` (`enabled`, `vocabulary_skill`, the directory holding NLPM's `registry.yaml`). Exit status: 0 clean, 1 failing findings, 2 tool error; `--json` prints the findings and exits 0 unless a tool fails. Output is one `path:line: RULE message` line per finding.
+
+| Rule          | Reports                                                                                          | Fails |
+| ------------- | ------------------------------------------------------------------------------------------------ | ----- |
+| `frontmatter` | A `SKILL.md` without frontmatter, with invalid YAML or without a closing `---`.                  | yes   |
+| `name`        | `name` missing, not `^[a-z][a-z0-9-]{0,63}$`, or different from the parent directory name.       | yes   |
+| `R04`         | `description` missing (fails); description of 500-800 or over 800 characters (advisory).         | mixed |
+| `R05`         | `SKILL.md` body (frontmatter excluded) over 500 lines (fails); 400-500 lines (advisory).         | mixed |
+| `R01`         | One of the 11 vague quantifiers of NLPM rule R01, outside frontmatter, fences and inline code.   | no    |
+| `R51`         | A deprecated synonym from the registry, outside frontmatter, fences and inline code, when on.    | yes   |
+
+R51 applies the registry's `verbs` of every scope whose `paths` contain the artifact, plus the registry's `nouns` (`enforce_terms` when present, else `deprecated`), minus canonical terms and `sanctioned` (term, path) pairs. An artifact outside every scope is not checked. When a tracked `.claude-plugin/plugin.json` exists, the vendored `nlpm-check` (NLPM 1.4.3, ISC license) also runs on that plugin root and the worst exit status wins. LLM scoring (`/nlpm:score`) is not part of the step and stays a manual pass.
+
 ## `hlf-rumdl-docs-check`
 
 The rumdl step's second check. `hk check` runs `rumdl check --deny-config-warnings` and `hlf-rumdl-docs-check {{files}}`, both every time, and fails with the higher of the two exit statuses; a rumdl finding does not hide the docs check findings. `hlf-rumdl-fix` runs it with `--json` after every `rumdl check --fix` and merges its findings into the rumdl findings, so the printed list, the per-rule counts, the agent prompt and the final gate include them. It needs `uv` (the script header pins no dependencies) and rumdl 0.3.2 or newer (`rumdl experimental export-elements` and `report-diagnostics`). Exit status: 0 clean, 1 findings, 2 tool error; with `--json` it exits 0 with findings.
@@ -131,7 +147,7 @@ The rumdl step's second check. `hk check` runs `rumdl check --deny-config-warnin
 - Files whose effective rumdl flavor is `obsidian` (`[global] flavor` and `[per-file-flavor]` in `.rumdl.toml`, same glob rules as rumdl) skip `callout/type`, `callout/title` and `callout/nested`. `callout/label` and the `ref/*` rules apply in every flavor.
 - A path code span has a `/`, no whitespace, none of `*?[{$<`, no `://` and does not start with `~`, `/` or `-`. A trailing `:LINE`, `:LINE-LINE`, `::symbol`, `#fragment` or `/` is ignored.
 - `ref/path` checks a reference only when its first segment exists, resolved from the repository root or from the Markdown file's directory. It passes when the full path is tracked, untracked but not ignored, gitignored, or present on disk (file, directory or symlink, tracked or not), so a gitignored nested repository checked out in the tree counts. Lint rule names (`typescript/await-thenable`), `owner/repo` names, `origin/HEAD` and paths under `.git/` are never checked because their first segment is not a directory. A top-level directory that disappeared entirely is therefore not reported.
-- A path the reader is told to create (an optional config file in an adopting repository) is reported when its directory exists. Name the file and its directory separately: `actionlint.yaml` in the `.github` directory.
+- A path the reader is told to create (an optional config file in a consumer repository) is reported when its directory exists. Name the file and its directory separately: `actionlint.yaml` in the `.github` directory.
 - `ref/task` uses `mise tasks ls --no-global --hidden --json` and counts only tasks whose source is inside the repository or comes from a `git::` entry in `task_config.includes` (mise's `remote-git-tasks-cache`), so `mise run release:preview` from the kit's task include passes. In a monorepo root (`monorepo_root = true`) mise names the root tasks `//:<name>`; the check strips the `//:` prefix, so `mise run <name>` passes. Global tasks never count, because CI does not have them, with one fixed exception: the kit's documented maintainer tasks `repo-adopt`, `repo-init`, `docs-drift`, `unslop` and `tsrs:install` always pass, so a repository's docs can tell its maintainer to run them and the result is the same locally and in CI. No other global task is accepted. A `git::` include that mise skipped, because `[settings] experimental = true` is missing from the repository's `mise.toml`, shows up as `ref/task` findings for the kit's tasks. It is skipped silently when `mise` is not on `PATH` or fails.
 
 ## Escape hatches
