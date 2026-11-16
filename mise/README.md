@@ -45,6 +45,8 @@ Without it, `mise run pre-commit` and `mise run release:preview` do not exist in
 
 - `pre-commit`: `hk run pre-commit` without committing.
 - `release:preview`: `cz bump --get-next`, then `git-cliff --unreleased --tag v<next>`. commitizen runs through `uvx` with a pinned version, locally and in CI ([../commitizen](../commitizen/README.md#where-cz-is-installed)). git-cliff is a `[tools]` entry.
+- `skills:link`: symlinks each `<src>/*/` directory that holds a `SKILL.md` into `<dest>` with a relative link. It is idempotent, prunes dangling links in `<dest>` and skips a non-symlink entry. Source and destination pairs are `src:dest` arguments (`mise run skills:link -- skills:.agents/skills vault/skills:vault/.omp/skills`) or the space-separated `SKILLS_PAIRS` environment variable; the default is `skills:.agents/skills`.
+- `skills:check`: lints the same pairs and exits 1 when a skill directory lacks `SKILL.md`, when its frontmatter `name` differs from the directory name, when `<dest>` holds a non-symlink copy of a skill, or when `<dest>` holds a dangling link. It is not an hk step: a consumer adds it to its own check task if wanted.
 
 Setting `includes` replaces mise's default task directories. A repository with its own file tasks lists their directory next to the kit's entry, for example `includes = ["git::...", "mise-tasks"]`.
 

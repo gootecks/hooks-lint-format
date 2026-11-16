@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#MISE description="Symlink <src>/*/ skill directories into <dest> (default skills:.agents/skills); idempotent, prunes dangling links. Pairs: args or SKILLS_PAIRS, each src:dest"
+set -euo pipefail
+cd "${MISE_PROJECT_ROOT:-.}"
+pairs=("$@")
+if [ "${#pairs[@]}" -eq 0 ]; then
+  read -r -a pairs <<<"${SKILLS_PAIRS:-skills:.agents/skills}"
+fi
+for pair in "${pairs[@]}"; do
+  src="${pair%%:*}"
+  dest="${pair#*:}"
+  src="${src%/}"
+  dest="${dest%/}"
+  ups=""
+  IFS=/ read -r -a parts <<<"$dest"
+  for _ in "${parts[@]}"; do ups="../$ups"; done
+  mkdir -p "$dest"
+  for l in "$dest"/*; do
+    if [ -L "$l" ] && [ ! -e "$l" ]; then
+      rm "$l"
+      echo "skills:link: removed dangling $l"
+    fi
+  done
+  [ -d "$src" ] || continue
+  for d in "$src"/*/; do
+    [ -f "${d}SKILL.md" ] || continue
+    name="$(basename "$d")"
+    if [ -e "$dest/$name" ] && [ ! -L "$dest/$name" ]; then
+      echo "skills:link: skipped $dest/$name (not a symlink)" >&2
+      continue
+    fi
+    ln -sfn "$ups$src/$name" "$dest/$name"
+    echo "skills:link: $dest/$name -> $ups$src/$name"
+  done
+done

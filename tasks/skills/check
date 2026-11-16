@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#MISE description="Lint skill layout: SKILL.md present, frontmatter name equals directory name, no non-symlink copy or dangling link in dest. Pairs: args or SKILLS_PAIRS, each src:dest (default skills:.agents/skills)"
+set -uo pipefail
+cd "${MISE_PROJECT_ROOT:-.}"
+pairs=("$@")
+if [ "${#pairs[@]}" -eq 0 ]; then
+  read -r -a pairs <<<"${SKILLS_PAIRS:-skills:.agents/skills}"
+fi
+fail=0
+err() { echo "skills:check: $*" >&2; fail=1; }
+for pair in "${pairs[@]}"; do
+  src="${pair%%:*}"
+  dest="${pair#*:}"
+  src="${src%/}"
+  dest="${dest%/}"
+  if [ -d "$src" ]; then
+    for d in "$src"/*/; do
+      [ -d "$d" ] || continue
+      name="$(basename "$d")"
+      if [ ! -f "${d}SKILL.md" ]; then
+        err "${d}SKILL.md is missing"
+        continue
+      fi
+      fm="$(awk 'NR==1 { if ($0 != "---") exit; next } $0 == "---" { exit } /^name:/ { sub(/^name:[ \t]*/, ""); gsub(/^["'\'']|["'\'']$/, ""); print; exit }' "${d}SKILL.md")"
+      if [ "$fm" != "$name" ]; then
+        err "${d}SKILL.md frontmatter name '${fm}' does not match directory '$name'"
+      fi
+      if [ -e "$dest/$name" ] && [ ! -L "$dest/$name" ]; then
+        err "$dest/$name is a copy, not a symlink"
+      fi
+    done
+  fi
+  for l in "$dest"/*; do
+    if [ -L "$l" ] && [ ! -e "$l" ]; then
+      err "$l is a dangling symlink"
+    fi
+  done
+done
+exit "$fail"
