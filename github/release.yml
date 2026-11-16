@@ -30,7 +30,7 @@ jobs:
         id: next
         run: |
           code=0
-          version=$(cz bump --get-next) || code=$?
+          version=$(cz bump --get-next --yes) || code=$?
           if [ "$code" -eq 21 ]; then
             echo "No feat, fix or breaking commit since the last tag; nothing to release."
             exit 0

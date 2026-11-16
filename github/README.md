@@ -33,7 +33,7 @@ Delete the `Install tsrs-lint` and `Install dependencies` steps. In a repository
 
 Runs on every push to `main`, so merging a PR is the release trigger. It needs `.cz.toml` from [../commitizen](../commitizen/README.md).
 
-1. `cz bump --get-next` reads the Conventional Commits since the last tag. Exit code 21 means nothing to release, and the run ends green.
+1. `cz bump --get-next --yes` reads the Conventional Commits since the last tag. Exit code 21 means nothing to release, and the run ends green. `--yes` answers commitizen's "Is this the first tag created?" prompt in a repository with no tag yet; without it the step fails with `EOFError`, as CI has no terminal.
 2. `cz changelog --dry-run --unreleased-version` produces the release notes. `cz bump --yes` then updates the version files and `CHANGELOG.md`, commits `chore(release): vX.Y.Z` and tags `vX.Y.Z`.
 3. `git push --atomic` sends the commit and tag to `main` together.
 4. `gh release create --verify-tag` publishes the GitHub Release with the notes.
