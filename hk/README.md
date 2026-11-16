@@ -7,7 +7,7 @@
 A repository's `hk.pkl` amends the released package and adds only what is specific to it:
 
 ```pkl
-amends "package://github.com/gootecks/hooks-lint-format/releases/download/v0.1.4/hk-base@0.1.4#/hk.pkl"
+amends "package://github.com/gootecks/hooks-lint-format/releases/download/v0.1.5/hk-base@0.1.5#/hk.pkl"
 import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
 
 exclude = super.exclude + List("repo/specific/**")

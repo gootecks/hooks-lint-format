@@ -1,3 +1,9 @@
+## v0.1.5 (2026-11-16)
+
+### Fix
+
+- **hk**: run the docs check even when rumdl check fails (#33)
+
 ## v0.1.4 (2026-11-15)
 
 ### Fix

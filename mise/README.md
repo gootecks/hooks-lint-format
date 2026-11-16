@@ -31,7 +31,7 @@ oxfmt and oxlint come from mise rather than `devDependencies`, so lint versions 
 
 ```toml
 [task_config]
-includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.4"]
+includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.5"]
 ```
 
 The `git::` source is experimental in mise, and mise skips the include with a warning unless experimental is on. The consumer `mise.toml` therefore also sets it, because CI has no global `experimental = true`:
