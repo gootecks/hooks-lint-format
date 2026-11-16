@@ -155,7 +155,10 @@ def load_registry(skill_dir):
     scopes = []
     for scope in registry.get("scopes") or []:
         paths = [glob_regex(p.rstrip("/") + "/**") if p.endswith("/") else glob_regex(p) for p in scope.get("paths") or []]
-        entries = (registry.get("verbs") or {}).get(scope.get("id")) or []
+        entries = [
+            e for e in (registry.get("verbs") or {}).get(scope.get("id")) or []
+            if isinstance(e, dict) and "canonical" in e
+        ]
         scopes.append((paths, entries))
     nouns = [
         entry
@@ -286,11 +289,13 @@ def main(argv):
     override = (config.get("rule_overrides") or {}).get("R51") or {}
     r51 = bool(override.get("enabled"))
     registry = None
+    vocab_prefix = ""
     if r51:
         skill_dir = override.get("vocabulary_skill")
         if not skill_dir:
             raise ToolError(f"{CONFIG}: R51 is enabled without vocabulary_skill")
         registry = load_registry(skill_dir)
+        vocab_prefix = PurePosixPath(skill_dir).as_posix().rstrip("/") + "/"
     top = run(["git", "rev-parse", "--show-toplevel"])
     root_name = Path(top.stdout.strip()).name if top.returncode == 0 else Path.cwd().name
     findings = []
@@ -305,7 +310,7 @@ def main(argv):
             body_start = check_skill(rel, text, findings, root_name)
         else:
             _, _, body_start = split_frontmatter(text)
-        check_prose(rel, text, body_start, registry, r51, findings, vague=artifact)
+        check_prose(rel, text, body_start, registry, r51 and not rel.startswith(vocab_prefix), findings, vague=artifact)
     plugin = run_plugin_check(files, Path(__file__).resolve().parent)
     failing = any(f["severity"] == "error" for f in findings) or any(p["exit"] for p in plugin)
     if as_json:
