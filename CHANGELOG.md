@@ -1,3 +1,55 @@
+## [0.2.0](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.2.0) - 2026-11-16
+
+### ✨ Features
+
+- **git-cliff**: Write the changelog and release notes with git-cliff ([#42](https://github.com/gootecks/hooks-lint-format/pull/42))
+
+  - feat(git-cliff): write the changelog and release notes with git-cliff
+
+  Commitizen still bumps the version, rewrites version_files and tags. A
+  pre_bump_hooks entry runs git-cliff so the new CHANGELOG.md section lands
+  in the tagged release commit. The shared cliff.toml groups commits under
+  emoji headings, keeps commit bodies and links PRs and releases when
+  GITHUB_REPOSITORY is set, without calling the GitHub API.
+
+  Both release workflows take their notes from git-cliff, release:preview
+  prints the next version and its section, and CHANGELOG.md is regenerated
+  from history. The obsolete version-heading hazard is removed from the
+  docs and the skill survey now warns when .cz.toml still has commitizen
+  write the changelog.
+
+  - ci(github): run cz and git-cliff through uvx in the release template
+
+  astral-sh/setup-uv replaces the runner's pipx. cz bump runs with
+  --with git-cliff so its pre_bump_hooks find git-cliff on PATH.
+
+- **hk**: Add nlpm step for skill scores and vocabulary drift ([#47](https://github.com/gootecks/hooks-lint-format/pull/47))
+
+  - bin/hlf-nlpm-check (uv, pyyaml) runs NLPM deterministic checks and R51 vocabulary drift
+  - bin/nlpm-check is the vendored NLPM checker
+  - hk/hk.pkl nlpm step; .claude/nlpm.local.md config; vocabulary skill + registry
+  - Fix low-scoring skills and docs; test:nlpm-check task
+  - .gitignore: .claude/nlpm-history.json, .claude/nlpm-reports/
+
+- **tasks**: Add shared skills:link and skills:check ([#48](https://github.com/gootecks/hooks-lint-format/pull/48))
+
+  - skills:link symlinks <src>/*/ with SKILL.md into <dest>; idempotent, prunes dangling links, skips non-symlinks
+  - src:dest pairs come from args or SKILLS_PAIRS, default skills:.agents/skills
+  - skills:check fails on a missing SKILL.md, a frontmatter name that differs from the directory, a non-symlink copy or a dangling link in dest
+  - document both tasks in README, mise/README and the adopt skill
+
+  Part of prime-optimal/K-Lab#142
+
+### 🐛 Fixes
+
+- **github**: Answer the first-tag prompt in release.yml ([#40](https://github.com/gootecks/hooks-lint-format/pull/40))
+
+  cz bump --get-next asks "Is this the first tag created?" in a repository with no tag and raises EOFError in CI. Pass --yes.
+
+### 📝 Docs
+
+- **skill**: Reproduce under mise x before filing; consuming a kit fix ([#46](https://github.com/gootecks/hooks-lint-format/pull/46))
+
 ## [0.1.6](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.1.6) - 2026-11-16
 
 ### 🔨 Chores
