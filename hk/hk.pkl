@@ -16,6 +16,9 @@ steps {
         check = "oxlint --type-aware --type-check --deny-warnings {{files}}"
         fix = "oxlint --type-aware --type-check --deny-warnings --fix {{files}}"
     }
+    ["nlpm"] {
+        check = "hlf-nlpm-check"
+    }
     ["rumdl"] {
         glob = List("**/*.md", "**/*.markdown", "**/*.mdx")
         check = "a=0; rumdl check --deny-config-warnings {{files}} || a=$?; b=0; hlf-rumdl-docs-check {{files}} || b=$?; exit $((a > b ? a : b))"

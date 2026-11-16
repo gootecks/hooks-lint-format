@@ -1,6 +1,6 @@
 # hooks-lint-format verification map
 
-This directory is the maintained source for verifying what a consuming repo gets from the kit. Read this index first, then use the matching feature file as the recipe.
+This directory is the maintained source for verifying what a consumer repository gets from the kit. Read this index first, then use the matching feature file as the recipe.
 
 ## Baseline preconditions
 

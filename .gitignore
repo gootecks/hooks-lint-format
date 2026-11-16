@@ -3,3 +3,7 @@ skills/*-workspace/
 .rumdl-docs/
 .rumdl_cache/
 .out/
+
+# nlpm generated artifacts
+.claude/nlpm-history.json
+.claude/nlpm-reports/

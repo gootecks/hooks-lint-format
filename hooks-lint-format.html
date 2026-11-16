@@ -398,6 +398,15 @@
                 <td>builtin</td>
               </tr>
               <tr>
+                <td><code>nlpm</code></td>
+                <td>
+                  whole repository (tracked <code>SKILL.md</code>, <code>AGENTS.md</code>, agents, commands,
+                  <code>.claude</code>)
+                </td>
+                <td><code>hlf-nlpm-check</code> (needs <code>uv</code>; reads <code>.claude/nlpm.local.md</code>)</td>
+                <td>none; <code>/nlpm:score</code> stays a manual pass</td>
+              </tr>
+              <tr>
                 <td><code>oxlint</code></td>
                 <td>JS/TS</td>
                 <td><code>--type-aware --type-check --deny-warnings</code></td>
@@ -701,8 +710,8 @@
             and the reason.
           </li>
           <li>
-            <code>docs-drift</code> and <code>unslop</code> are personal global mise tasks documented in the
-            maintainer's <code>~/.config/mise</code>, not part of the kit.
+            <code>docs-drift</code> and <code>unslop</code> are global tasks documented in the maintainer's
+            <code>~/.config/mise</code>, not part of the kit.
           </li>
         </ul>
       </section>

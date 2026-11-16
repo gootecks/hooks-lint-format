@@ -1,0 +1,328 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["pyyaml"]
+# ///
+"""Deterministic NLPM checks for natural-language artifacts (SKILL.md, AGENTS.md, agents, commands, .claude).
+
+Usage: hlf-nlpm-check [--json]
+Runs on the git-tracked files of the current repository. Settings come from the frontmatter of
+.claude/nlpm.local.md (discovery.exclude, rule_overrides.R51). When a tracked .claude-plugin/plugin.json
+exists, the vendored nlpm-check runs on that plugin root too.
+Exit 0 clean (advisories do not fail), 1 failing findings, 2 tool error; with --json exit 0 unless a tool fails.
+"""
+
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path, PurePosixPath
+
+import yaml
+
+CONFIG = ".claude/nlpm.local.md"
+NAME_RE = re.compile(r"^[a-z][a-z0-9-]{0,63}$")
+FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
+INLINE_CODE_RE = re.compile(r"(`+)(.+?)\1")
+VAGUE_TERMS = (
+    "appropriate",
+    "relevant",
+    "as needed",
+    "sufficient",
+    "adequate",
+    "reasonable",
+    "properly",
+    "correctly",
+    "some",
+    "several",
+    "various",
+)
+VAGUE_RE = re.compile(
+    r"(?<![\w-])(" + "|".join(re.escape(t) for t in VAGUE_TERMS) + r")(?![\w-])",
+    re.IGNORECASE,
+)
+ARTIFACT_RES = (
+    re.compile(r"(?:^|/)SKILL\.md\Z"),
+    re.compile(r"(?:^|/)(?:AGENTS|CLAUDE)\.md\Z"),
+    re.compile(r"(?:^|/)agents/[^/]+\.md\Z"),
+    re.compile(r"(?:^|/)commands/[^/]+\.md\Z"),
+    re.compile(r"(?:^|/)\.claude/.+\.md\Z"),
+)
+
+
+class ToolError(Exception):
+    pass
+
+
+def glob_regex(pattern):
+    out, i, depth = [], 0, 0
+    while i < len(pattern):
+        c = pattern[i]
+        if pattern.startswith("**/", i):
+            out.append("(?:.*/)?")
+            i += 3
+            continue
+        if pattern.startswith("**", i):
+            out.append(".*")
+            i += 2
+            continue
+        if c == "*":
+            out.append("[^/]*")
+        elif c == "?":
+            out.append("[^/]")
+        elif c == "{":
+            out.append("(?:")
+            depth += 1
+        elif c == "}" and depth:
+            out.append(")")
+            depth -= 1
+        elif c == "," and depth:
+            out.append("|")
+        else:
+            out.append(re.escape(c))
+        i += 1
+    return re.compile("".join(out) + r"\Z")
+
+
+def run(argv):
+    try:
+        return subprocess.run(argv, capture_output=True, text=True, encoding="utf-8")  # noqa: S603 - fixed argv
+    except OSError as err:
+        raise ToolError(f"cannot run {argv[0]}: {err}") from err
+
+
+def tracked_files():
+    proc = run(["git", "ls-files", "-z"])  # noqa: S607 - git from PATH
+    if proc.returncode != 0:
+        raise ToolError(f"git ls-files failed: {proc.stderr.strip()}")
+    return sorted(p for p in proc.stdout.split("\0") if p)
+
+
+def split_frontmatter(text):
+    """Return (data, error, body_start_line). body_start_line is 1-based; 1 when no frontmatter."""
+    lines = text.split("\n")
+    if not lines or lines[0].rstrip() != "---":
+        return None, None, 1
+    for i in range(1, len(lines)):
+        if lines[i].rstrip() == "---":
+            try:
+                data = yaml.safe_load("\n".join(lines[1:i]))
+            except yaml.YAMLError as err:
+                return None, f"invalid YAML: {str(err).splitlines()[0]}", i + 2
+            if data is None:
+                data = {}
+            if not isinstance(data, dict):
+                return None, "frontmatter is not a mapping", i + 2
+            return data, None, i + 2
+    return None, "frontmatter is not closed with ---", len(lines) + 1
+
+
+def load_config():
+    path = Path(CONFIG)
+    if not path.is_file():
+        return {}
+    data, error, _ = split_frontmatter(path.read_text(encoding="utf-8"))
+    if error:
+        raise ToolError(f"{CONFIG}: {error}")
+    return data or {}
+
+
+def prose_lines(text, body_start):
+    """Yield (line_number, text) for body lines with fenced code dropped and inline code blanked."""
+    fence = None
+    for number, line in enumerate(text.split("\n"), start=1):
+        if number < body_start:
+            continue
+        marker = FENCE_RE.match(line)
+        if fence:
+            if marker and marker.group(1)[0] == fence[0] and len(marker.group(1)) >= len(fence):
+                fence = None
+            continue
+        if marker:
+            fence = marker.group(1)
+            continue
+        yield number, INLINE_CODE_RE.sub(lambda m: " " * len(m.group(0)), line)
+
+
+def load_registry(skill_dir):
+    path = Path(skill_dir) / "registry.yaml"
+    try:
+        registry = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as err:
+        raise ToolError(f"{path}: {err}") from err
+    if not isinstance(registry, dict):
+        raise ToolError(f"{path}: not a mapping")
+    scopes = []
+    for scope in registry.get("scopes") or []:
+        paths = [glob_regex(p.rstrip("/") + "/**") if p.endswith("/") else glob_regex(p) for p in scope.get("paths") or []]
+        entries = (registry.get("verbs") or {}).get(scope.get("id")) or []
+        scopes.append((paths, entries))
+    nouns = [
+        entry
+        for group in (registry.get("nouns") or {}).values()
+        for entry in (group if isinstance(group, list) else [])
+        if isinstance(entry, dict) and "canonical" in entry
+    ]
+    sanctioned = [
+        (str(s["term"]).lower(), glob_regex(s["path"]))
+        for s in registry.get("sanctioned") or []
+        if "term" in s and "path" in s
+    ]
+    return scopes, nouns, sanctioned
+
+
+def in_scope(rel, registry):
+    return any(p.match(rel) for paths, _ in registry[0] for p in paths)
+
+
+def deprecated_terms(rel, registry):
+    """Map each deprecated term that applies to this artifact to its canonical replacement."""
+    scopes, nouns, sanctioned = registry
+    if not in_scope(rel, registry):
+        return {}
+    entries = [verb for paths, verbs in scopes if any(p.match(rel) for p in paths) for verb in verbs] + nouns
+    canonical = {str(e["canonical"]).lower() for e in entries if "canonical" in e}
+    found = {}
+    for entry in entries:
+        terms = entry.get("enforce_terms") or entry.get("deprecated") or []
+        for term in terms:
+            low = str(term).lower()
+            if low in canonical or any(s == low and rx.match(rel) for s, rx in sanctioned):
+                continue
+            found.setdefault(low, entry["canonical"])
+    return found
+
+
+def check_skill(rel, text, findings, root_name):
+    def add(line, rule, message, severity="error"):
+        findings.append({"path": rel, "line": line, "rule": rule, "message": message, "severity": severity})
+
+    data, error, body_start = split_frontmatter(text)
+    if error:
+        add(1, "frontmatter", error)
+        return body_start
+    if data is None:
+        add(1, "frontmatter", "SKILL.md has no frontmatter")
+        return 1
+    name = data.get("name")
+    parent = PurePosixPath(rel).parent.name or root_name
+    if not name:
+        add(1, "name", "frontmatter has no name")
+    elif not isinstance(name, str) or not NAME_RE.match(name):
+        add(1, "name", f"name {name!r} does not match {NAME_RE.pattern}")
+    elif name != parent:
+        add(1, "name", f"name {name!r} does not equal directory name {parent!r}")
+    description = data.get("description")
+    if not description or not isinstance(description, str) or not description.strip():
+        add(1, "R04", "frontmatter has no description (-25)")
+    else:
+        size = len(description.strip())
+        if size > 800:
+            add(1, "R04", f"description is {size} characters; keep it under 800", "warning")
+        elif size >= 500:
+            add(1, "R04", f"description is {size} characters; 500-800 is long, aim under 500", "warning")
+    body = text.split("\n")[body_start - 1 :]
+    if body and body[-1] == "":
+        body.pop()
+    if len(body) > 500:
+        add(body_start, "R05", f"body is {len(body)} lines; the limit is 500, move detail to references/")
+    elif len(body) >= 400:
+        add(body_start, "R05", f"body is {len(body)} lines; 400-500 is close to the 500 limit", "warning")
+    return body_start
+
+
+def check_prose(rel, text, body_start, registry, r51, findings, vague=True):
+    deprecated = deprecated_terms(rel, registry) if r51 else {}
+    dep_re = None
+    if deprecated:
+        dep_re = re.compile(
+            r"(?<![\w-])(" + "|".join(re.escape(t) for t in sorted(deprecated, key=len, reverse=True)) + r")(?![\w-])",
+            re.IGNORECASE,
+        )
+    for number, line in prose_lines(text, body_start):
+        for m in VAGUE_RE.finditer(line) if vague else ():
+            findings.append({
+                "path": rel, "line": number, "rule": "R01", "severity": "warning",
+                "message": f"vague quantifier {m.group(1)!r}; state a measurable criterion (-2)",
+            })
+        if dep_re:
+            for m in dep_re.finditer(line):
+                term = m.group(1)
+                findings.append({
+                    "path": rel, "line": number, "rule": "R51", "severity": "error",
+                    "message": f"deprecated term {term!r}; use {deprecated[term.lower()]!r}",
+                })
+
+
+def discover(config, registry):
+    """Yield (path, is_artifact): NL artifacts get every rule; other Markdown in an R51 scope gets R51 only."""
+    excludes = [glob_regex(p) for p in ((config.get("discovery") or {}).get("exclude") or [])]
+    for rel in tracked_files():
+        if rel == CONFIG or any(r.match(rel) for r in excludes):
+            continue
+        if any(r.search(rel) for r in ARTIFACT_RES):
+            yield rel, True
+        elif registry and rel.endswith(".md") and in_scope(rel, registry):
+            yield rel, False
+
+
+def run_plugin_check(files, here):
+    roots = sorted({str(PurePosixPath(f).parent.parent) for f in files if f.endswith(".claude-plugin/plugin.json")})
+    results = []
+    for root in roots:
+        proc = run(["uv", "run", "--script", str(here / "nlpm-check"), root])
+        if proc.returncode not in (0, 1):
+            raise ToolError(f"nlpm-check {root}: exit {proc.returncode}: {proc.stderr.strip()}")
+        results.append({"root": root, "exit": proc.returncode, "output": (proc.stdout + proc.stderr).strip()})
+    return results
+
+
+def main(argv):
+    as_json = "--json" in argv
+    unknown = [a for a in argv if a != "--json"]
+    if unknown:
+        raise ToolError(f"unknown argument {unknown[0]}; usage: hlf-nlpm-check [--json]")
+    config = load_config()
+    override = (config.get("rule_overrides") or {}).get("R51") or {}
+    r51 = bool(override.get("enabled"))
+    registry = None
+    if r51:
+        skill_dir = override.get("vocabulary_skill")
+        if not skill_dir:
+            raise ToolError(f"{CONFIG}: R51 is enabled without vocabulary_skill")
+        registry = load_registry(skill_dir)
+    top = run(["git", "rev-parse", "--show-toplevel"])
+    root_name = Path(top.stdout.strip()).name if top.returncode == 0 else Path.cwd().name
+    findings = []
+    files = tracked_files()
+    for rel, artifact in discover(config, registry):
+        try:
+            text = Path(rel).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as err:
+            raise ToolError(f"{rel}: {err}") from err
+        body_start = 1
+        if PurePosixPath(rel).name == "SKILL.md":
+            body_start = check_skill(rel, text, findings, root_name)
+        else:
+            _, _, body_start = split_frontmatter(text)
+        check_prose(rel, text, body_start, registry, r51, findings, vague=artifact)
+    plugin = run_plugin_check(files, Path(__file__).resolve().parent)
+    failing = any(f["severity"] == "error" for f in findings) or any(p["exit"] for p in plugin)
+    if as_json:
+        print(json.dumps({"findings": findings, "plugin": plugin}, indent=2))
+        return 0
+    for f in findings:
+        advisory = "advisory: " if f["severity"] == "warning" else ""
+        print(f"{f['path']}:{f['line']}: {f['rule']} {advisory}{f['message']}")
+    for p in plugin:
+        if p["exit"] and p["output"]:
+            print(p["output"])
+    return 1 if failing else 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except ToolError as err:
+        print(f"hlf-nlpm-check: {err}", file=sys.stderr)
+        sys.exit(2)

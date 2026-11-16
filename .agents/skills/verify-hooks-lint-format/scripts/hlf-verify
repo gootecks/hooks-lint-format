@@ -81,7 +81,7 @@ case $cmd in
         }
         kit_env
         cd "$repo"
-        for t in hk rumdl oxfmt oxlint actionlint zizmor uv jq hlf-rumdl-docs-check hlf-rumdl-fix; do
+        for t in hk rumdl oxfmt oxlint actionlint zizmor uv jq hlf-rumdl-docs-check hlf-rumdl-fix hlf-nlpm-check; do
             p=$(command -v "$t" || true)
             [[ -n $p ]] && echo "ok   $t -> $p" || {
                 echo "FAIL $t not on PATH"

@@ -5,7 +5,7 @@ Shared git hooks, linters, formatters and release automation for gootecks repos.
 | Artifact     | What it is                                                                                                                                                                                                                 |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Pkl package  | `hk-base`: the shared `hk.pkl`. A repo's `hk.pkl` amends `package://github.com/gootecks/hooks-lint-format/releases/download/v0.1.6/hk-base@0.1.6#/hk.pkl` and adds only its own extras                                     |
-| Script tool  | `hooks-lint-format-scripts-0.1.6.tar.gz` with `hlf-rumdl-fix` and `hlf-rumdl-docs-check`, pinned in `mise.toml` as `"github:gootecks/hooks-lint-format"`                                                                   |
+| Script tool  | `hooks-lint-format-scripts-0.1.6.tar.gz` with `hlf-rumdl-fix`, `hlf-rumdl-docs-check`, `hlf-nlpm-check` and `nlpm-check`, pinned in `mise.toml` as `"github:gootecks/hooks-lint-format"`                                   |
 | Task include | `tasks/` with `pre-commit` and `release:preview`, included through `[task_config] includes` with `?ref=v0.1.6`; the consumer `mise.toml` also needs `[settings] experimental = true` ([mise](mise/README.md#shared-tasks)) |
 
 Open [hooks-lint-format.html](hooks-lint-format.html) for the illustrated reference. To set a repo up, use the maintainer's global `repo-adopt` task (in `~/.config/mise`; interactive, per norm, additive; flags `--dry-run`, `--yes norm1,norm2` for agents) or the [`hooks-lint-format`](skills/hooks-lint-format/SKILL.md) skill, which holds the only ordered adopt procedure.
@@ -35,11 +35,11 @@ Tool versions are stated in [mise/mise.toml](mise/mise.toml) and nowhere else in
 ## Policy
 
 - [docs/lint-policy.md](docs/lint-policy.md): a rule, check or hook is never turned off or skipped because it reports many findings. Findings are fixed.
-- [docs/markdown-convention.md](docs/markdown-convention.md): how Markdown in the kit and in adopting repos is written and formatted.
+- [docs/markdown-convention.md](docs/markdown-convention.md): how Markdown in the kit and in consumer repositories is written and formatted.
 
 ## Conventions
 
-- Personal tools stay out of the kit: the commit prompt (czg) lives in the user's `~/.config/hk/config.pkl`, and `docs-drift`, `unslop` and `tsrs:install` are global mise tasks in the maintainer's `~/.config/mise`, not part of the kit.
+- Global tasks stay out of the kit: the commit prompt (czg) lives in the user's `~/.config/hk/config.pkl`, and `docs-drift`, `unslop` and `tsrs:install` are global tasks in the maintainer's `~/.config/mise`, not part of the kit.
 - Versions change in `mise/mise.toml` first, then in each repo, and ship with a new release tag.
 - TypeScript type-aware linting uses tsrs-lint only. There is no tsgolint anywhere in the kit.
 
@@ -47,7 +47,7 @@ Tool versions are stated in [mise/mise.toml](mise/mise.toml) and nowhere else in
 
 Two agent skills in `.agents/skills/` check the kit. Run them before you commit a change to the parts they cover.
 
-- **The Markdown gate.** Run it after you change the `["rumdl"]` step in `hk/hk.pkl` or `bin/hlf-rumdl-fix`: `mise run verify:rumdl-gate`. It runs the real step and script against every combination of tool results and agent settings in its scope, and takes about 2 minutes. Add `-- --mutants` to prove it still catches broken code. What it promises and covers: [prove-rumdl-gate](.agents/skills/prove-rumdl-gate/SKILL.md).
+- **The rumdl gate.** Run it after you change the `["rumdl"]` step in `hk/hk.pkl` or `bin/hlf-rumdl-fix`: `mise run verify:rumdl-gate`. It runs the real step and script against every combination of tool results and agent settings in its scope, and takes about 2 minutes. Add `-- --mutants` to prove it still catches broken code. What it promises and covers: [prove-rumdl-gate](.agents/skills/prove-rumdl-gate/SKILL.md).
 - **The kit's features end to end.** Use [verify-hooks-lint-format](.agents/skills/verify-hooks-lint-format/SKILL.md) to drive pre-commit, commit-msg, check and fix, the docs check, and the release preview in a scratch repository.
 
 After merges that changed covered code without rerunning these checks, the `/maintain-formal-verification-skill` and `/maintain-verification-skill` skills bring them back in line.

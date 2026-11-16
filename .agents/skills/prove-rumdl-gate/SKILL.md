@@ -1,11 +1,16 @@
 ---
 name: prove-rumdl-gate
-description: Use when a change touches the kit's Markdown gate — the rumdl step in hk/hk.pkl or bin/hlf-rumdl-fix — to check every tool outcome, agent env flag and agent setup against the gate's promises before committing.
+description: Use when a change touches the kit's rumdl gate — the rumdl step in hk/hk.pkl or bin/hlf-rumdl-fix — to check every tool outcome, agent env flag and agent setup against the gate's promises before committing.
 ---
 
 # Prove the rumdl gate
 
-The Markdown gate promises two things. `hk check` reports rumdl and docs-check findings together, and fails if either fails. `hk fix` exits 0 only when the files are clean, never hides a tool crash, and starts the fixer agent at most once, only when the user allows it. If the gate breaks, findings slip into commits, or an agent starts on its own in CI and recurses.
+The rumdl gate promises two things. `hk check` reports rumdl and docs check findings together, and fails if either fails. `hk fix` exits 0 only when the files are clean, never hides a tool crash, and starts the fixer agent at most once, only when the user allows it. If the gate breaks, findings slip into commits, or an agent starts on its own in CI and recurses.
+
+<example>
+user: I edited bin/hlf-rumdl-fix to change when the agent starts. Is the gate still sound?
+assistant: Runs `mise run verify:rumdl-gate` and expects `PASS S1 F1 F2 F3 F4`. A `FAIL` block names the broken property and lists its first case as numbered steps. After a check-code change it also runs `--mutants`.
+</example>
 
 The check runs the real step command and the real `bin/hlf-rumdl-fix` against stub `rumdl`, `hlf-rumdl-docs-check` and `omp` programs, over every combination in a fixed scope. This is bounded exhaustive testing of the real code, not a model: no verifier runs on bash, and the bugs live in exit-code and env-var combinations, which a full enumeration covers.
 
@@ -24,7 +29,7 @@ Sync commit: `0ece508`. The check last matched the covered code at this commit. 
 
 ## Properties
 
-- **S1.** The step runs both checks and exits with the worse status. Harm otherwise: the docs-check findings vanish whenever rumdl fails (issue #32).
+- **S1.** The step runs both checks and exits with the worse status. Harm otherwise: the docs check findings vanish whenever rumdl fails (issue #32).
 - **F1.** `hlf-rumdl-fix` exits 0 only when the last pass ran without errors and found nothing, or when no files are given. Harm otherwise: `hk fix` reports success with findings left.
 - **F2.** A rumdl exit above 1, a docs-check exit other than 0, or output that is not a JSON list fails the script, and no agent starts after such an error. The docs check always gets `--json`. Harm otherwise: a crash reads as "clean".
 - **F3.** The agent runs at most once, with `RUMDL_AGENT_RUNNING=1`, and only when `RUMDL_AGENT` is not `0`, `RUMDL_AGENT_RUNNING` and `CI` are unset, and `omp` and the agent file exist. Harm otherwise: the agent starts in CI or against the user's opt-out, or its own hk runs start agents without end.

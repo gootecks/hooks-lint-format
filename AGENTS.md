@@ -5,6 +5,11 @@
 - Labels: `feat`, `fix`, `chore`, `docs`, `epic`, `priority:high`, `priority:medium`, `priority:low`.
 - Workflow: open an issue, branch `feat/N-short-name` from `main`, open a PR whose body says `Closes #N`, squash-merge.
 
+## Prerequisites
+
+- `mise` on `PATH`. It installs the tools pinned in the root `mise.toml`: hk, pkl, actionlint, zizmor, rumdl, oxfmt, oxlint, uv and git-cliff.
+- The global tasks `docs-drift` and `repo-adopt` in `~/.config/mise`. They are not part of the kit.
+
 ## Layout
 
 - `hk/` is the shared hk base, published as the Pkl package `hk-base` on each `vX.Y.Z` release.
@@ -12,6 +17,7 @@
 - `tasks/` holds shared mise tasks that consumers include with `[task_config] includes`.
 - `mise/mise.toml` and `github/` are consumer templates; the maintainer's global `repo-adopt` task (in `~/.config/mise`) applies them.
 - Root `mise.toml` and `hk.pkl` dogfood the kit and put `bin/` on `PATH`.
+- `.agents/skills/hooks-lint-format-vocabulary/` holds the canonical terms; the `nlpm` hk step fails on a deprecated synonym (R51). `.claude/nlpm.local.md` configures it.
 
 ## Release
 

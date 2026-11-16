@@ -1,9 +1,14 @@
 ---
 name: hooks-lint-format
-description: Adopt or re-align the hooks-lint-format kit in a repository - hk git hooks, oxfmt and oxlint with tsrs-lint type checks, ruff and ty for Python/uv, rumdl for all Markdown, actionlint and zizmor for workflows, Conventional Commits checks, mise tool pins, an optional `hk check` CI gate, and optional commitizen releases. Use when the user asks to set up, migrate to (from husky, lefthook, lint-staged, pre-commit, Prettier, ESLint, markdownlint, tsc hooks) or bring a repository in line with "the kit", "my usual lint setup" or "the same hooks as my other repos", or wants a pre-commit or CI lint-and-format gate there, even without naming a tool. Do not use to fix individual lint findings in an already configured repository, explain one rule, or edit the kit's own files.
+description: Adopt or re-align the hooks-lint-format kit in a repository - hk hooks, oxfmt, oxlint with tsrs-lint, ruff and ty, rumdl for Markdown, actionlint, zizmor, Conventional Commits, mise pins, an optional `hk check` CI gate, commitizen releases. Use when asked to set up or migrate to it (from husky, lefthook, lint-staged, pre-commit, Prettier, ESLint, markdownlint) or to match "my usual lint setup". Do not use to fix single lint findings or edit the kit's files.
 ---
 
 # Adopt hooks-lint-format
+
+<example>
+User: "Set up the same hooks as my other repos in this project; it still uses husky and Prettier."
+Action: run `scripts/survey.sh`, show the findings, get agreement, run the global `repo-adopt` task, remove husky and Prettier, fix the backlog, then run `scripts/verify.sh` and report each check.
+</example>
 
 This file sits inside the kit, two directories below its root: `<kit>/skills/hooks-lint-format/SKILL.md`. `KIT` below means that root. Resolve it from the real path of this file; every script in `scripts/` does the same, so run them by their path under this directory from any working directory. If the skill was copied out of a kit checkout, check the kit out first and use the copy inside it.
 
@@ -56,7 +61,7 @@ Adoption is a global mise task, not a copy: the kit is delivered by version (tag
 1. Run the maintainer's global `repo-adopt` task (in `~/.config/mise`) with `--dry-run` in the repository and read what it would write. The task is interactive, asks per norm and is additive: it never overwrites without showing the difference. Agents pass `--yes norm1,norm2` to accept named norms without prompts.
 2. Run the global `repo-adopt` task without `--dry-run`. It writes:
    - `hk.pkl` that amends `package://github.com/gootecks/hooks-lint-format/releases/download/v0.1.6/hk-base@0.1.6#/hk.pkl` and adds only repository extras (`exclude = super.exclude + List(...)`, extra steps imported from hk's `Builtins.pkl`).
-   - `mise.toml` pins: `hk`, `actionlint`, `zizmor`, `rumdl`, `npm:oxfmt`, `npm:oxlint`, `uv`, and the script tool `"github:gootecks/hooks-lint-format"` (provides `hlf-rumdl-fix` and `hlf-rumdl-docs-check` on `PATH`), plus `[task_config] includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.6"]` for the shared `pre-commit` and `release:preview` tasks. The same `mise.toml` needs `[settings]` with `experimental = true`: mise skips a `git::` include otherwise, CI has no global setting, and `hlf-rumdl-docs-check` then reports `ref/task` findings. A `task_config.includes` setting replaces mise's default task directories, so list the repository's local task directories too.
+   - `mise.toml` pins: `hk`, `actionlint`, `zizmor`, `rumdl`, `npm:oxfmt`, `npm:oxlint`, `uv`, and the script tool `"github:gootecks/hooks-lint-format"` (provides `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` on `PATH`), plus `[task_config] includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.6"]` for the shared `pre-commit` and `release:preview` tasks. The same `mise.toml` needs `[settings]` with `experimental = true`: mise skips a `git::` include otherwise, CI has no global setting, and `hlf-rumdl-docs-check` then reports `ref/task` findings. A `task_config.includes` setting replaces mise's default task directories, so list the repository's local task directories too.
    - Optional: the `hk check` CI workflow, and with the release norm `.cz.toml` (`version_provider` from the repository; `KIT/commitizen/README.md`) and `release.yml`.
    - Steps and pins for languages the survey shows are absent are skipped.
 3. Upgrading a repository that has an older kit copy is something `repo-adopt` offers: the copied rumdl scripts under `hooks/` are replaced by the script tool, and a copied `hk.pkl` becomes an amending one. Show the user each difference between the copy and the base and keep a local difference only as a deliberate adaptation with a stated reason; it goes into the amending file as an extra.
@@ -64,10 +69,10 @@ Adoption is a global mise task, not a copy: the kit is delivered by version (tag
 5. Extend `exclude` in the repository's `hk.pkl` with generated and vendored paths (`super.exclude + List(...)`). Keep `CHANGELOG.md` excluded when git-cliff writes it.
 6. Fill `ignorePatterns`, rumdl `exclude` and `[per-file-ignores]` only for third-party text, generated output and byte-exact fixtures, each with its reason beside it.
 7. In `.rumdl.toml`, list the repository's product, tool and project names in `[MD063] ignore-words` so the sentence-case check keeps their capitals (`KIT/rumdl/README.md`, "Heading case"). Add `.rumdl_cache/` to `.gitignore`.
-8. In an Obsidian vault, set the `obsidian` flavour for the vault's paths (`KIT/rumdl/README.md`, "Obsidian vaults"). When `MD063` reports note titles, show the user the count and let them choose between re-casing the titles and listing names; do not change `min-level` to hide them.
+8. In an Obsidian vault, set the `obsidian` flavor for the vault's paths (`KIT/rumdl/README.md`, "Obsidian vaults"). When `MD063` reports note titles, show the user the count and let them choose between re-casing the titles and listing names; do not change `min-level` to hide them.
 9. Python with uv: `uv add --dev ruff ty`, then add the `ruff`, `ruff-format` and `ty` steps in the amending `hk.pkl`, each with `prefix = List("uv", "run")` (`KIT/hk/README.md`, "Python repositories"), and a `ty-check` mise task (`uv run ty check`). Fix ty findings in code; no `# ty: ignore`, no rule set to `ignore`, no `exclude` entry.
 
-The commit prompt (czg), `docs-drift`, `unslop` and `tsrs:install` are personal global tooling (czg in `~/.config/hk/config.pkl`, the tasks in the maintainer's `~/.config/mise`); they are not part of the kit and `repo-adopt` does not write them.
+The `docs-drift`, `unslop` and `tsrs:install` global tasks (in the maintainer's `~/.config/mise`) and the czg commit prompt (in `~/.config/hk/config.pkl`) are not part of the kit, and `repo-adopt` does not write them.
 
 ## 3. Type-aware lint (repositories with TypeScript only)
 
@@ -122,5 +127,5 @@ Done means every line holds, and you report which you ran:
 - **Lost deletion.** With `stash = "git"` in `pre-commit`, a staged `git rm` deletion was lost while other files were committed. In the split of section 4, run `git status` after each commit and stage the deletions again.
 - **Wrong hk.** When mise is not activated in the shell, an older global hk and pkl (hk 1.49, for example) can run and fail on a 2.x `hk.pkl` with `unexpected token in expression: KwImport`. Run `mise install`, then `mise x -- hk ...`.
 - **Global hooks.** `hk install --mise` skips the local install when hooks are configured globally in `~/.gitconfig`. `scripts/verify.sh` reports whether the global hooks cover the repository.
-- **Served HTML.** oxfmt reformats hand-maintained HTML that an application serves verbatim. Show that the render is equivalent (headless Chrome screenshots before and after; script timing makes a single frame differ, so take several), or add the file to `ignorePatterns` with its reason.
+- **Served HTML.** oxfmt reformats hand-maintained HTML that an application serves verbatim. Show that the render is equivalent (headless Chrome screenshots before and after; script timing makes a single frame differ, so take at least three), or add the file to `ignorePatterns` with its reason.
 - **Stale tool on PATH.** An older kit script or hk earlier on `PATH` than the pinned one produces findings the pinned version does not. Before reporting a kit bug, reproduce it with `mise x -- <tool>` from the repository and put the output of `mise x -- <tool> --version` in the issue.

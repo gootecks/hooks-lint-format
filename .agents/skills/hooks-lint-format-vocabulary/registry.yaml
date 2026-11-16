@@ -1,0 +1,69 @@
+# Machine-readable vocabulary registry for hooks-lint-format.
+#
+# Read by hlf-nlpm-check (the `nlpm` hk step), /nlpm:score and /nlpm:check
+# when R51 is enabled in .claude/nlpm.local.md. SKILL.md in this directory
+# is the human-readable counterpart; keep both in sync.
+#
+# Seeded 2026-11-16 from an /nlpm:vocab-drift scan of 25 artifacts.
+
+scopes:
+  - id: internal
+    description: The kit's own skills, agent rules and docs.
+    paths:
+      - AGENTS.md
+      - README.md
+      - "*/README.md"
+      - docs/
+      - skills/
+      - .agents/skills/
+
+cross_scope_homonyms:
+  verbs: []
+
+verbs:
+  internal: []
+
+nouns:
+  domain:
+    - canonical: consumer repository
+      deprecated:
+        - adopting repo
+        - adopting repos
+        - adopting repository
+        - adopting repositories
+        - consuming repo
+        - consuming repos
+        - consuming repository
+        - consuming repositories
+      definition: A repository that amends hk-base and installs the hlf-* scripts.
+    - canonical: global task
+      deprecated:
+        - personal tool
+        - personal tools
+        - personal task
+        - personal tasks
+        - personal global tooling
+      definition: A maintainer mise task in ~/.config/mise (docs-drift, unslop, tsrs:install, repo-adopt, czg).
+    - canonical: rumdl gate
+      deprecated:
+        - Markdown gate
+      definition: The rumdl hk step plus hlf-rumdl-docs-check, as proven by prove-rumdl-gate.
+  spelling:
+    - canonical: flavor
+      deprecated: [flavour, flavours]
+      definition: A rumdl Markdown flavor; matches the `[per-file-flavor]` config key.
+    - canonical: capitalized
+      deprecated: [capitalised, capitalise, capitalisation]
+      definition: US spelling, matching the rest of the kit.
+
+rejected_pending_warrant:
+  - term: alert
+    reason: GitHub's name for the `> [!NOTE]` syntax; the kit's rule IDs say callout/*. Both names are kept on purpose.
+  - term: bypass
+    reason: Names the act; "escape hatch" names the switch (HK=0, HK_SKIP_STEPS). Distinct concepts.
+  - term: hooks-lint-format skill
+    reason: The skill's literal name; "adopt skill" is its link text. Not drift.
+  - term: docs-check
+    reason: Identifier form of "docs check" (script name and verification id).
+  - term: script tarball
+    reason: The release asset; "script tool" is the mise tool installed from it.

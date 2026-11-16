@@ -8,8 +8,8 @@ Pinned in `[tools]`:
 
 - `hk`: hooks, `hk check`.
 - `actionlint`, `zizmor`, `rumdl`, `oxfmt`, `oxlint`: the step of the same name.
-- `uv`: `hlf-rumdl-docs-check` (`uv run --script`) and `release:preview`.
-- `github:gootecks/hooks-lint-format`: `hlf-rumdl-fix` and `hlf-rumdl-docs-check` from the release's `bin` directory.
+- `uv`: `hlf-rumdl-docs-check` and `hlf-nlpm-check` (`uv run --script`) and `release:preview`.
+- `github:gootecks/hooks-lint-format`: `hlf-rumdl-fix`, `hlf-rumdl-docs-check`, `hlf-nlpm-check` and the vendored `nlpm-check` from the release's `bin` directory.
 
 Not in `[tools]`:
 
@@ -17,7 +17,7 @@ Not in `[tools]`:
 - `commitizen`: pinned in the `release:preview` task ([../tasks/release/preview](../tasks/release/preview)) and in [../github/release.yml](../github/release.yml).
 - `czg`: personal, installed once per machine and wired in the user's hk config, not the kit.
 - `shellcheck`: optional; actionlint uses it when it is on `PATH` ([../actionlint](../actionlint/README.md)).
-- bun, node: the adopting repo's own `mise.toml`.
+- bun, node: the consumer repository's own `mise.toml`.
 
 oxfmt and oxlint come from mise rather than `devDependencies`, so lint versions change in one file and `bun install` stays out of the hook path. The hk pkl `amends` and `import` URLs pin hk's config schema separately; keep them on the same version as the `hk` pin.
 
@@ -48,7 +48,7 @@ Without it, `mise run pre-commit` and `mise run release:preview` do not exist in
 
 Setting `includes` replaces mise's default task directories. A repository with its own file tasks lists their directory next to the kit's entry, for example `includes = ["git::...", "mise-tasks"]`.
 
-Personal tasks are not part of the kit and are not in a repository's `mise.toml`: `docs-drift`, `unslop` and `tsrs:install` are global tasks in the user's `~/.config/mise`, and `OXLINT_TSGOLINT_PATH` is a global environment variable ([../oxlint](../oxlint/README.md)). `ty-check` (Python and uv repositories, added per repository) is `uv run ty check`; ruff and ty are uv dev dependencies, not `[tools]` entries ([../hk](../hk/README.md#python-repositories)).
+Global tasks are not part of the kit and are not in a repository's `mise.toml`: `docs-drift`, `unslop` and `tsrs:install` are global tasks in the user's `~/.config/mise`, and `OXLINT_TSGOLINT_PATH` is a global environment variable ([../oxlint](../oxlint/README.md)). `ty-check` (Python and uv repositories, added per repository) is `uv run ty check`; ruff and ty are uv dev dependencies, not `[tools]` entries ([../hk](../hk/README.md#python-repositories)).
 
 ## Pinning and upgrading
 

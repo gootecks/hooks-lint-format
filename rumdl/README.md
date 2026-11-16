@@ -43,7 +43,7 @@ rumdl looks for the config upward from each file and stops at the first director
 
 `MD063` reports a heading that is not in sentence case. Three settings keep the reports to real findings:
 
-- `sentence-case-restart-after = ["."]` keeps the word after a list-style number capitalised, so `## 1. Survey` passes.
+- `sentence-case-restart-after = ["."]` keeps the word after a list-style number capitalized, so `## 1. Survey` passes.
 - `ignore-words` holds the repository's proper nouns. A word listed there keeps its case in headings and is not checked anywhere else. Add the product, tool and project names of the repository.
 - `[MD044] names` also protects a name in headings, and in addition reports every other spelling of it in the whole file. Use it only for a name that has one correct spelling everywhere (`GitHub`). A common word (`Core`, `Mini`) belongs in `ignore-words`.
 
@@ -56,7 +56,7 @@ rumdl 0.3.2 reports these headings even when the words are listed:
 - A decimal section number: `## 2.1 Addressing` is reported, `## 2.1. Addressing` passes.
 - A listed word directly after an opening bracket: `(Q1)`.
 - A listed word joined to the next word by a slash: `Slicer/stems`.
-- A capitalised word after a number and a dash: `## 00 — User brief`.
+- A capitalized word after a number and a dash: `## 00 — User brief`.
 - A listed lower-case word with a possessive at the start: `## 2. djay's cache`.
 
 Measured on a research corpus of 12 files: 78 findings with the bare rule, 46 with the restart setting, 23 after listing the corpus's proper nouns. Of those 23, 17 are the five cases above and 6 are real: title-case headings, a lower-case first word and names that were not listed.

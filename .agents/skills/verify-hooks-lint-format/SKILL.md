@@ -1,11 +1,16 @@
 ---
 name: verify-hooks-lint-format
-description: Drive the hooks-lint-format kit (hk hooks, rumdl docs check, oxfmt/oxlint/actionlint/zizmor steps, release:preview) the way a consuming repo uses it, inside a disposable git repo, and capture terminal transcripts as proof. Use when a change to hk/hk.pkl, bin/hlf-*, tasks/, rumdl/ or mise/ must be proven to work for a consumer, not just pass the kit's own mise test tasks.
+description: Drive the hooks-lint-format kit (hk hooks, rumdl docs check, oxfmt/oxlint/actionlint/zizmor steps, release:preview) the way a consumer repository uses it, inside a disposable git repo, and capture terminal transcripts as proof. Use when a change to hk/hk.pkl, bin/hlf-*, tasks/, rumdl/ or mise/ must be proven to work for a consumer, not just pass the kit's own mise test tasks.
 ---
 
 # Verify hooks-lint-format
 
-The kit has no server or UI. What a user touches is a consuming repo: `git commit` runs the hk `pre-commit` and `commit-msg` hooks, `hk check` and `hk fix` run on demand, `hlf-rumdl-docs-check` runs inside the rumdl step, and `mise run release:preview` prints the next release. This skill builds a throwaway consumer repo that uses the kit from this checkout without releasing it. Then it drives that repo through `git`, `hk` and `mise` and saves each command's transcript.
+The kit has no server or UI. What a user touches is a consumer repository: `git commit` runs the hk `pre-commit` and `commit-msg` hooks, `hk check` and `hk fix` run on demand, `hlf-rumdl-docs-check` runs inside the rumdl step, and `mise run release:preview` prints the next release. This skill builds a throwaway consumer repository that uses the kit from this checkout without releasing it. Then it drives that repository through `git`, `hk` and `mise` and saves each command's transcript.
+
+<example>
+user: I changed hk/hk.pkl. Prove a consumer still gets the pre-commit fix.
+assistant: Runs `$H launch "$RUN_ID"` and `$H doctor "$RUN_ID"`, drives a `git commit` through `$H run "$RUN_ID" <label> -- <command>`, reads the transcript from `$H evidence "$RUN_ID"`, then runs `$H cleanup "$RUN_ID"`.
+</example>
 
 All commands below run from the kit root. `H` is the helper:
 
@@ -42,7 +47,7 @@ Run this before the first drive and again after any drive that surprised you:
 $H doctor "$RUN_ID"
 ```
 
-Every line must read `ok`, and the exit code must be 0. It checks that the repo was launched from this kit checkout, that every step tool and both `hlf-*` scripts resolve on the consumer's PATH, that the hk version matches the kit pin, that `hk validate` passes, and that `hook.hk-pre-commit` and `hook.hk-commit-msg` are set in `.git/config`. hk 2.12 installs hooks through git config, not `.git/hooks/`. The `warn worktree dirty` line is informational. The `info` line records the kit HEAD and how many uncommitted kit files in `hk/`, `bin/` and `tasks/` the run is testing.
+Every line must read `ok`, and the exit code must be 0. It checks that the repo was launched from this kit checkout, that every step tool and all three `hlf-*` scripts resolve on the consumer's PATH, that the hk version matches the kit pin, that `hk validate` passes, and that `hook.hk-pre-commit` and `hook.hk-commit-msg` are set in `.git/config`. hk 2.12 installs hooks through git config, not `.git/hooks/`. The `warn worktree dirty` line is informational. The `info` line records the kit HEAD and how many uncommitted kit files in `hk/`, `bin/` and `tasks/` the run is testing.
 
 ## Drive
 
@@ -52,7 +57,7 @@ Run every consumer action through `run`, which executes the command in the scrat
 $H run "$RUN_ID" <label> -- <command...>
 ```
 
-`<label>` names the transcript (`[A-Za-z0-9._-]+`). `run` exits with the command's own exit code. For pipelines, file writes or several git steps, wrap the command in `sh -c '...'`. To create input files, write them into the repo path that `launch` printed.
+`<label>` names the transcript (`[A-Za-z0-9._-]+`). `run` exits with the command's own exit code. For pipelines, file writes or commands that chain 2 or more git steps, wrap the command in `sh -c '...'`. To create input files, write them into the repo path that `launch` printed.
 
 The consumer environment sets `RUMDL_AGENT=0`, so when rumdl findings remain `hlf-rumdl-fix` stops and lists them instead of spawning an omp agent. Pass `RUMDL_AGENT=1` on the `$H run` line only when the agent path is the feature under test. That path spends model tokens and edits files.
 
