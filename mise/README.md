@@ -44,7 +44,7 @@ experimental = true
 Without it, `mise run pre-commit` and `mise run release:preview` do not exist in CI and `hlf-rumdl-docs-check` reports them as `ref/task` findings. `jdx/mise-action` honours the project setting.
 
 - `pre-commit`: `hk run pre-commit` without committing.
-- `release:preview`: `cz bump --get-next`, then `git-cliff --unreleased --tag v<next>`. commitizen runs through `uvx` with a pinned version, because mise's pipx backend is off on these machines; CI uses the runner's `pipx` ([../commitizen](../commitizen/README.md#where-cz-is-installed)). git-cliff is a `[tools]` entry.
+- `release:preview`: `cz bump --get-next`, then `git-cliff --unreleased --tag v<next>`. commitizen runs through `uvx` with a pinned version, locally and in CI ([../commitizen](../commitizen/README.md#where-cz-is-installed)). git-cliff is a `[tools]` entry.
 
 Setting `includes` replaces mise's default task directories. A repository with its own file tasks lists their directory next to the kit's entry, for example `includes = ["git::...", "mise-tasks"]`.
 

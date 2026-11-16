@@ -23,14 +23,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Install commitizen and git-cliff
-        run: pipx install commitizen==4.19.3 && pipx install git-cliff==2.14.2
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: '0.11.26'
+          enable-cache: false
 
       - name: Find the next version
         id: next
         run: |
           code=0
-          version=$(cz bump --get-next --yes) || code=$?
+          version=$(uvx --from commitizen==4.19.3 cz bump --get-next --yes) || code=$?
           if [ "$code" -eq 21 ]; then
             echo "No feat, fix or breaking commit since the last tag; nothing to release."
             exit 0
@@ -45,8 +47,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git-cliff --unreleased --tag "v$VERSION" --strip all > "$RUNNER_TEMP/notes.md"
-          cz bump --yes
+          uvx git-cliff@2.14.2 --unreleased --tag "v$VERSION" --strip all > "$RUNNER_TEMP/notes.md"
+          uvx --from commitizen==4.19.3 --with git-cliff==2.14.2 cz bump --yes
 
       - name: Push the bump commit and tag
         if: steps.next.outputs.version != ''

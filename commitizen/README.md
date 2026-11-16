@@ -31,7 +31,7 @@ The version field must equal the latest release tag reachable from the default b
 
 ## Where `cz` is installed
 
-The versions are pinned in the `release:preview` task in [../mise/mise.toml](../mise/mise.toml) and in [../github/release.yml](../github/release.yml); keep the two equal. Locally the task runs `cz` through `uvx`, because mise's pipx backend is off on these machines. CI installs it with the runner's `pipx`, so the workflow needs no extra setup action. `cz` is not in the `[tools]` table; `git-cliff` is.
+The versions are pinned in the `release:preview` task in [../mise/mise.toml](../mise/mise.toml) and in [../github/release.yml](../github/release.yml); keep the two equal. Both run `cz` through `uvx` with a pinned version. CI gets `uv` from `astral-sh/setup-uv` and runs `cz bump` with `--with git-cliff==<pin>` so the `pre_bump_hooks` find `git-cliff`. `cz` is not in the `[tools]` table; `git-cliff` is.
 
 ## Commands
 

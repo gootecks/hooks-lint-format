@@ -41,7 +41,7 @@ Runs on every push to `main`, so merging a PR is the release trigger. It needs `
 Properties:
 
 - The job runs on `ubuntu-latest`, like `hk.yml`. A copy that builds macOS binaries changes `runs-on`.
-- `cz` and `git-cliff` are installed with the runner's `pipx`; the pins match the `release:preview` task in `mise.toml` ([../commitizen](../commitizen/README.md#where-cz-is-installed)).
+- `cz` and `git-cliff` run through `uvx` after `astral-sh/setup-uv`; the pins match the `release:preview` task in `mise.toml` ([../commitizen](../commitizen/README.md#where-cz-is-installed)).
 - Only the default `GITHUB_TOKEN` is used, with `contents: write` on the job. Pushes and releases made with it do not start other workflows, so the bump commit cannot loop and `on: release` workflows do not fire. Use a PAT or GitHub App token when a release must trigger another workflow.
 - `main` must accept pushes from `github-actions[bot]`. When `main` requires pull requests or status checks, the push is rejected unless the bot can bypass the rule. GitHub allows bypass lists only for repositories owned by an organization.
 - `concurrency: release` runs one release at a time. When `main` moves during a run the push fails; the next run releases everything.
