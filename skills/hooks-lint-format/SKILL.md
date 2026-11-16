@@ -103,6 +103,11 @@ Required before the first release, in a repository that has a `CHANGELOG.md` or 
 3. **Forks.** An `upstream` remote can fetch tags with the same names as origin's and shadow them. Run `git fetch --force --tags origin` and `git config remote.upstream.tagOpt --no-tags`.
 4. **Check.** Run `cz bump --get-next` and `git-cliff --unreleased --tag v<next>`. `scripts/survey.sh` repeats the config and tag checks as `warn` lines.
 
+### Consuming a kit fix
+
+1. Confirm a release tag holds the fix: `git -C KIT tag --contains <fix commit>`. A merged fix with no tag is not usable; ask for a release first. Releases go through a release PR whose merge lets `release.yml` create the tag; never push a release tag by hand, because a tag without the version-bump commit publishes a release without assets.
+2. Bump the three pins together to that tag: the `amends` URL in `hk.pkl`, the `"github:gootecks/hooks-lint-format"` version in `mise.toml`, and the `?ref=` of the `[task_config] includes` entry. Run `mise install`, then `hk check --all`.
+
 ## 6. Verify
 
 Done means every line holds, and you report which you ran:
@@ -118,3 +123,4 @@ Done means every line holds, and you report which you ran:
 - **Wrong hk.** When mise is not activated in the shell, an older global hk and pkl (hk 1.49, for example) can run and fail on a 2.x `hk.pkl` with `unexpected token in expression: KwImport`. Run `mise install`, then `mise x -- hk ...`.
 - **Global hooks.** `hk install --mise` skips the local install when hooks are configured globally in `~/.gitconfig`. `scripts/verify.sh` reports whether the global hooks cover the repository.
 - **Served HTML.** oxfmt reformats hand-maintained HTML that an application serves verbatim. Show that the render is equivalent (headless Chrome screenshots before and after; script timing makes a single frame differ, so take several), or add the file to `ignorePatterns` with its reason.
+- **Stale tool on PATH.** An older kit script or hk earlier on `PATH` than the pinned one produces findings the pinned version does not. Before reporting a kit bug, reproduce it with `mise x -- <tool>` from the repository and put the output of `mise x -- <tool> --version` in the issue.
