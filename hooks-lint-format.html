@@ -315,7 +315,11 @@
               </tr>
               <tr>
                 <td><a href="commitizen/README.md">commitizen</a></td>
-                <td>Bumps the version, writes the changelog, tags</td>
+                <td>Bumps the version and tags</td>
+              </tr>
+              <tr>
+                <td><a href="git-cliff/README.md">git-cliff</a></td>
+                <td>Writes the changelog and the release notes</td>
               </tr>
               <tr>
                 <td><a href="github/README.md">github</a></td>
@@ -651,8 +655,8 @@
               <a class="src" href="commitizen/README.md">commitizen/README.md</a>
             </header>
             <p>
-              Python <code>cz</code> bumps the version, writes <code>CHANGELOG.md</code> and tags, from
-              <code>.cz.toml</code>.
+              Python <code>cz</code> bumps the version, rewrites <code>version_files</code> and tags, from
+              <code>.cz.toml</code>. <code>git-cliff</code> writes <code>CHANGELOG.md</code>.
             </p>
             <ul>
               <li>
@@ -661,8 +665,8 @@
               </li>
               <li><code>tag_format = "v$version"</code> matches existing <code>vX.Y.Z</code> tags.</li>
               <li>
-                <code>update_changelog_on_bump</code> with <code>changelog_incremental</code> adds one section per
-                release and leaves older ones alone.
+                <code>pre_bump_hooks</code> runs <code>git-cliff --prepend CHANGELOG.md</code>, so the new section lands
+                in the tagged release commit. commitizen does not read the file.
               </li>
               <li>
                 <code>bump_message = "chore(release): v$new_version"</code> keeps the bump commit valid and unable to
@@ -752,9 +756,9 @@
             nothing to release and the run ends green.
           </li>
           <li>
-            <code>cz changelog --dry-run --unreleased-version</code> produces the release notes.
-            <code>cz bump --yes</code> then updates version files and <code>CHANGELOG.md</code>, commits
-            <code>chore(release): vX.Y.Z</code> and tags <code>vX.Y.Z</code>.
+            <code>git-cliff --unreleased --strip all</code> produces the release notes. <code>cz bump --yes</code> then
+            runs the <code>pre_bump_hooks</code> that prepend the section to <code>CHANGELOG.md</code>, updates version
+            files, commits <code>chore(release): vX.Y.Z</code> and tags <code>vX.Y.Z</code>.
           </li>
           <li><code>git push --atomic</code> sends the commit and tag to <code>main</code> together.</li>
           <li><code>gh release create --verify-tag</code> publishes the GitHub Release with the notes.</li>

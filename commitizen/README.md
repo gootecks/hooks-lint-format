@@ -1,6 +1,6 @@
 # commitizen config
 
-`.cz.toml` is the shared [commitizen](https://commitizen-tools.github.io/commitizen/) config for repos that release from Conventional Commits. `cz` (Python commitizen) bumps the version, writes `CHANGELOG.md` and tags. `czg` only writes commit messages and reads a different config, so the two do not collide.
+`.cz.toml` is the shared [commitizen](https://commitizen-tools.github.io/commitizen/) config for repos that release from Conventional Commits. `cz` (Python commitizen) bumps the version, rewrites `version_files` and tags. [git-cliff](../git-cliff/README.md) writes `CHANGELOG.md`. `czg` only writes commit messages and reads a different config, so the two do not collide.
 
 To add it to a repository, follow the [adopt skill](../skills/hooks-lint-format/SKILL.md).
 
@@ -17,7 +17,7 @@ To add it to a repository, follow the [adopt skill](../skills/hooks-lint-format/
 
   Use `uv` for every uv project. `pep621` bumps `pyproject.toml` but leaves the project's entry in `uv.lock` on the old version.
 - `tag_format = "v$version"` matches existing `vX.Y.Z` tags.
-- `update_changelog_on_bump` with `changelog_incremental` adds one section per release to `CHANGELOG.md` and keeps older sections untouched, provided the file already has a version heading ([Before the first release](#before-the-first-release)).
+- `pre_bump_hooks` runs `git-cliff --unreleased --tag "$CZ_PRE_NEW_TAG_VERSION" --prepend CHANGELOG.md` and stages the file, so the new section lands in the tagged `chore(release)` commit. commitizen does not read `CHANGELOG.md`: `update_changelog_on_bump` and `changelog_incremental` are not set ([../git-cliff](../git-cliff/README.md)).
 - `bump_message = "chore(release): v$new_version"` keeps the bump commit a valid Conventional Commit that never triggers another bump.
 
 ## Per-repo settings
@@ -27,25 +27,14 @@ To add it to a repository, follow the [adopt skill](../skills/hooks-lint-format/
 
 ## Before the first release
 
-Two files must agree with commitizen before `cz bump` runs, or it fails or damages the repository.
-
-### Changelog heading
-
-With `changelog_incremental = true`, commitizen finds the place to insert the new section by looking for a heading that holds a version, such as `## v1.2.3 (2026-01-02)`. A hand-written `CHANGELOG.md` whose headings are dated or say `## Unreleased` has none. `cz bump` and `cz changelog` then regenerate the whole file from the commit history and delete the hand-written text (reproduced with commitizen 4.19.3).
-
-Before the first release, add a `## vX.Y.Z (date)` heading for the latest existing release tag above the hand-written history. When the history sits under `## Unreleased`, rename that heading. The check is that `cz changelog --dry-run` prints a file that still contains every line of the current one; the [adopt skill](../skills/hooks-lint-format/SKILL.md#release-preparation) gives the command.
-
-### Version field and tag
-
 The version field must equal the latest release tag reachable from the default branch (`git tag --merged origin/<default>`). When it does not, `cz bump --get-next` fails with `No tag matching configuration`. In a fork with an `upstream` remote, fetched upstream tags can shadow origin's tags of the same name. Run `git fetch --force --tags origin` and `git config remote.upstream.tagOpt --no-tags`.
 
 ## Where `cz` is installed
 
-The version is pinned in the `release:preview` task in [../mise/mise.toml](../mise/mise.toml) and in [../github/release.yml](../github/release.yml); keep the two equal. Locally the task runs `cz` through `uvx`, because mise's pipx backend is off on these machines. CI installs it with the runner's `pipx`, so the workflow needs no extra setup action. `cz` is not in the `[tools]` table.
+The versions are pinned in the `release:preview` task in [../mise/mise.toml](../mise/mise.toml) and in [../github/release.yml](../github/release.yml); keep the two equal. Locally the task runs `cz` through `uvx`, because mise's pipx backend is off on these machines. CI installs it with the runner's `pipx`, so the workflow needs no extra setup action. `cz` is not in the `[tools]` table; `git-cliff` is.
 
 ## Commands
 
 - `cz bump --get-next` prints the next version. It exits 21 when no commit since the last tag is a `fix`, `feat` or breaking change. In a repository with no tag it asks whether this is the first tag; pass `--yes` where nothing can answer, as in CI.
-- `cz bump --dry-run --changelog-to-stdout` previews the bump and changelog.
-- `cz changelog --dry-run --unreleased-version vX.Y.Z` prints the unreleased section. A version argument cannot be combined with `changelog_incremental`.
+- `cz bump --dry-run` previews the bump. The changelog section comes from `git-cliff --unreleased --tag vX.Y.Z`.
 - Set `HK=0` when running `cz bump` locally. The bump commit stages the version files, and the `pre-commit` fixers could rewrite them after `cz` wrote them, or a failing check could stop the commit after the files changed and before the tag exists. For other bypasses, see [../docs/lint-policy.md](../docs/lint-policy.md).

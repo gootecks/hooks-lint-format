@@ -14,6 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
@@ -37,12 +38,15 @@ jobs:
       - name: Package the scripts
         run: tar -czf ".out/hooks-lint-format-scripts-$VERSION.tar.gz" bin
 
+      - name: Write the release notes
+        run: git-cliff --latest --strip all > "$RUNNER_TEMP/notes.md"
+
       - name: Create the GitHub Release
         env:
           TAG: ${{ github.ref_name }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes \
+          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md" \
             ".out/hk-base@$VERSION/hk-base@$VERSION" \
             ".out/hk-base@$VERSION/hk-base@$VERSION.sha256" \
             ".out/hk-base@$VERSION/hk-base@$VERSION.zip" \

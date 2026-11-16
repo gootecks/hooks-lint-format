@@ -19,7 +19,8 @@ Each tool directory under `KIT` holds the canonical config and a README with the
 | Markdown writing convention                 | `KIT/docs/markdown-convention.md`                     |
 | Workflow lint and security                  | `KIT/actionlint/README.md`, `KIT/zizmor/README.md`    |
 | Delivery by version                         | `KIT/hk/README.md`, `KIT/mise/README.md`, `KIT/tasks` |
-| Versioning and changelog                    | `KIT/commitizen/README.md`                            |
+| Versioning                                  | `KIT/commitizen/README.md`                            |
+| Changelog                                   | `KIT/git-cliff/README.md`                             |
 | CI and release workflows                    | `KIT/github/README.md`                                |
 | Replacing husky, Prettier, ESLint and so on | `references/legacy-tools.md`                          |
 
@@ -43,7 +44,7 @@ Use the result as follows:
 - Legacy tools are removed in the same change. See `references/legacy-tools.md`.
 - Release signals (tags, a version file, an existing release workflow) decide whether commitizen and `release.yml` apply. Ask the user when unclear.
 - Ask whether the user wants the `hk check` CI gate (`hk.yml`). It is recommended and optional. When declined, decline the CI norm in the global `repo-adopt` task, skip every CI step below and the PR `check` job in section 6, and say in the report that the pull request has no check job.
-- `warn` lines about `CHANGELOG.md`, the version field or `upstream` tags are fixed under "Release preparation" in section 5 before any release.
+- `warn` lines about the version field, `upstream` tags or the `.cz.toml` changelog setup are fixed under "Release preparation" in section 5 before any release.
 - A repository that already has an older copy of the kit is re-aligned through the global `repo-adopt` task (see section 2), not re-copied. The survey's "kit delivery" lines show whether `hk.pkl` already amends the package, which `hooks/` copies remain, and whether the script tool pin and task include exist.
 
 Summarise the survey and get the user's agreement before the first edit.
@@ -60,7 +61,7 @@ Adoption is a global mise task, not a copy: the kit is delivered by version (tag
    - Steps and pins for languages the survey shows are absent are skipped.
 3. Upgrading a repository that has an older kit copy is something `repo-adopt` offers: the copied rumdl scripts under `hooks/` are replaced by the script tool, and a copied `hk.pkl` becomes an amending one. Show the user each difference between the copy and the base and keep a local difference only as a deliberate adaptation with a stated reason; it goes into the amending file as an extra.
 4. Run `mise install`.
-5. Extend `exclude` in the repository's `hk.pkl` with generated and vendored paths (`super.exclude + List(...)`). Keep `CHANGELOG.md` excluded when commitizen writes it.
+5. Extend `exclude` in the repository's `hk.pkl` with generated and vendored paths (`super.exclude + List(...)`). Keep `CHANGELOG.md` excluded when git-cliff writes it.
 6. Fill `ignorePatterns`, rumdl `exclude` and `[per-file-ignores]` only for third-party text, generated output and byte-exact fixtures, each with its reason beside it.
 7. In `.rumdl.toml`, list the repository's product, tool and project names in `[MD063] ignore-words` so the sentence-case check keeps their capitals (`KIT/rumdl/README.md`, "Heading case"). Add `.rumdl_cache/` to `.gitignore`.
 8. In an Obsidian vault, set the `obsidian` flavour for the vault's paths (`KIT/rumdl/README.md`, "Obsidian vaults"). When `MD063` reports note titles, show the user the count and let them choose between re-casing the titles and listing names; do not change `min-level` to hide them.
@@ -95,12 +96,12 @@ Fix the backlog in code, starting with what auto-fix removes and then the rule w
 
 ### Release preparation
 
-Required before the first release, in a repository that has a `CHANGELOG.md` or any release tag. Skipping it can delete the project's history.
+Required before the first release, in a repository that has a `CHANGELOG.md` or any release tag.
 
-1. **Changelog heading.** With `changelog_incremental = true`, a `CHANGELOG.md` that has no heading holding a version (dated or `## Unreleased` headings only) makes `cz bump` and `cz changelog` regenerate the whole file and delete the hand-written history (reproduced with commitizen 4.19.3). Above the hand-written history, add `## vX.Y.Z (date)` for the latest existing release tag. When the history sits under `## Unreleased`, rename that heading to the tag and its date.
+1. **Changelog.** `.cz.toml` must carry the `git-cliff` `pre_bump_hooks` and no `update_changelog_on_bump`. Copy `KIT/git-cliff/cliff.toml` to the repository root unchanged. An existing hand-written `CHANGELOG.md` stays as it is; git-cliff prepends new sections above it. Regenerate it from history only when the user asks (`KIT/git-cliff/README.md`).
 2. **Version and tag.** The version field (`pyproject.toml`, `package.json`, `Cargo.toml`) must equal the latest release tag reachable from the default branch: `git tag --merged origin/<default> --list 'v[0-9]*' --sort=-v:refname | head -n1`. Otherwise `cz bump --get-next` fails with `No tag matching configuration`. Align the field with the tag.
 3. **Forks.** An `upstream` remote can fetch tags with the same names as origin's and shadow them. Run `git fetch --force --tags origin` and `git config remote.upstream.tagOpt --no-tags`.
-4. **Check.** `cz changelog --dry-run` must keep every existing line. Run `cp CHANGELOG.md /tmp/before.md; cz changelog --dry-run > /tmp/after.md; grep -vxFf /tmp/after.md /tmp/before.md`: no output means no line was dropped (blank lines aside). Also run `cz bump --get-next`. `scripts/survey.sh` repeats the heading and tag checks as `warn` lines.
+4. **Check.** Run `cz bump --get-next` and `git-cliff --unreleased --tag v<next>`. `scripts/survey.sh` repeats the config and tag checks as `warn` lines.
 
 ## 6. Verify
 
@@ -108,7 +109,7 @@ Done means every line holds, and you report which you ran:
 
 - `scripts/verify.sh [REPO]` exits 0. It validates `hk.pkl`, confirms the hooks are installed, runs `hk check --all`, then in a temporary worktree it removes afterwards proves that a commit with the message `bad message` is rejected and that a commit with a lint finding is rejected, after a control commit with a valid message succeeds. It leaves `HEAD`, refs and the working tree as found.
 - When the user accepted the CI gate, the pull request's `check` job passes: `gh run list --branch <branch>`, then `gh run view <id> --log`. In TypeScript repositories confirm the oxlint step ran with `OXLINT_TSGOLINT_PATH` set. When the user declined it, there is no `check` job to wait for; state in the report that CI does not run `hk check`.
-- In a repository that releases, the checks under "Release preparation" pass: the changelog has a version heading, the version field equals the latest reachable tag, and `cz changelog --dry-run` drops no existing line.
+- In a repository that releases, the checks under "Release preparation" pass: `.cz.toml` runs git-cliff in `pre_bump_hooks`, the version field equals the latest reachable tag, and `git-cliff --unreleased` prints a section.
 - Every rule disable, ignore or exclude you added is listed for the user with its reason.
 
 ## 7. Gotchas

@@ -23,8 +23,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Install commitizen
-        run: pipx install commitizen==4.19.3
+      - name: Install commitizen and git-cliff
+        run: pipx install commitizen==4.19.3 && pipx install git-cliff==2.14.2
 
       - name: Find the next version
         id: next
@@ -45,7 +45,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          cz changelog --dry-run --unreleased-version "v$VERSION" | awk '/^## /{n++; next} n==1' > "$RUNNER_TEMP/notes.md"
+          git-cliff --unreleased --tag "v$VERSION" --strip all > "$RUNNER_TEMP/notes.md"
           cz bump --yes
 
       - name: Push the bump commit and tag

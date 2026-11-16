@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
-#MISE description="Print the next version and its changelog section (commitizen dry run)"
+#MISE description="Print the next version and its changelog section (commitizen and git-cliff dry run)"
 set -euo pipefail
-exec uvx --from commitizen==4.19.3 cz bump --dry-run --changelog-to-stdout
+version=$(uvx --from commitizen==4.19.3 cz bump --get-next)
+echo "tag to create: v$version"
+git-cliff --unreleased --tag "v$version"
