@@ -8,4 +8,12 @@ tag_format = "v$version"
 update_changelog_on_bump = true
 changelog_incremental = true
 bump_message = "chore(release): v$new_version"
-version_files = ["hk/PklProject:^    version =", "mise/mise.toml:hooks-lint-format"]
+version_files = [
+  "hk/PklProject:^    version =",
+  "mise/mise.toml:hooks-lint-format",
+  "README.md:release tag|hk-base@|hooks-lint-format-scripts-|ref=v",
+  "hk/README.md:hk-base@",
+  "mise/README.md:ref=v",
+  "skills/hooks-lint-format/SKILL.md:tag .v[0-9]|hk-base@|ref=v",
+  "hooks-lint-format.html:tag <code>v|ref=v",
+]
