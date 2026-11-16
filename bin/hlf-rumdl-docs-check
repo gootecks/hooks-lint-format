@@ -19,6 +19,7 @@ import tomllib
 from pathlib import Path
 
 TYPES = ("NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION")
+MAINTAINER_TASKS = frozenset({"repo-adopt", "repo-init", "docs-drift", "unslop", "tsrs:install"})
 MARKER = re.compile(r"^>[ ]?\[!([^\]\s]+)\]([+-]?)(.*)$")
 LABEL = re.compile(
     r"^(?:\*\*|__|\*|_)?(Note|Tip|Important|Warning|Caution)(?:\*\*|__|\*|_)?:",
@@ -329,7 +330,7 @@ def local_tasks():
                 continue
         for name in [item["name"], *(item.get("aliases") or [])]:
             names.add(re.sub(r"^//[^:]*:", "", name))
-    return names
+    return names | MAINTAINER_TASKS
 
 
 def docs_findings(entries):

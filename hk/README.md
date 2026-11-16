@@ -7,7 +7,7 @@
 A repository's `hk.pkl` amends the released package and adds only what is specific to it:
 
 ```pkl
-amends "package://github.com/gootecks/hooks-lint-format/releases/download/v0.1.0/hk-base@0.1.0#/hk.pkl"
+amends "package://github.com/gootecks/hooks-lint-format/releases/download/v0.1.3/hk-base@0.1.3#/hk.pkl"
 import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
 
 exclude = super.exclude + List("repo/specific/**")
@@ -132,7 +132,7 @@ The rumdl step's second check. `hk check` runs `rumdl check --deny-config-warnin
 - A path code span has a `/`, no whitespace, none of `*?[{$<`, no `://` and does not start with `~`, `/` or `-`. A trailing `:LINE`, `:LINE-LINE`, `::symbol`, `#fragment` or `/` is ignored.
 - `ref/path` checks a reference only when its first segment exists, resolved from the repository root or from the Markdown file's directory. It passes when the full path is tracked, untracked but not ignored, gitignored, or present on disk (file, directory or symlink, tracked or not), so a gitignored nested repository checked out in the tree counts. Lint rule names (`typescript/await-thenable`), `owner/repo` names, `origin/HEAD` and paths under `.git/` are never checked because their first segment is not a directory. A top-level directory that disappeared entirely is therefore not reported.
 - A path the reader is told to create (an optional config file in an adopting repository) is reported when its directory exists. Name the file and its directory separately: `actionlint.yaml` in the `.github` directory.
-- `ref/task` uses `mise tasks ls --no-global --hidden --json` and counts only tasks whose source is inside the repository or comes from a `git::` entry in `task_config.includes` (mise's `remote-git-tasks-cache`), so `mise run release:preview` from the kit's task include passes. In a monorepo root (`monorepo_root = true`) mise names the root tasks `//:<name>`; the check strips the `//:` prefix, so `mise run <name>` passes. Global tasks never count, because CI does not have them. A `git::` include that mise skipped, because `[settings] experimental = true` is missing from the repository's `mise.toml`, shows up as `ref/task` findings for the kit's tasks. It is skipped silently when `mise` is not on `PATH` or fails.
+- `ref/task` uses `mise tasks ls --no-global --hidden --json` and counts only tasks whose source is inside the repository or comes from a `git::` entry in `task_config.includes` (mise's `remote-git-tasks-cache`), so `mise run release:preview` from the kit's task include passes. In a monorepo root (`monorepo_root = true`) mise names the root tasks `//:<name>`; the check strips the `//:` prefix, so `mise run <name>` passes. Global tasks never count, because CI does not have them, with one fixed exception: the kit's documented maintainer tasks `repo-adopt`, `repo-init`, `docs-drift`, `unslop` and `tsrs:install` always pass, so a repository's docs can tell its maintainer to run them and the result is the same locally and in CI. No other global task is accepted. A `git::` include that mise skipped, because `[settings] experimental = true` is missing from the repository's `mise.toml`, shows up as `ref/task` findings for the kit's tasks. It is skipped silently when `mise` is not on `PATH` or fails.
 
 ## Escape hatches
 

@@ -19,7 +19,7 @@ oxlint hands type-aware work to an external binary. This kit uses `tsrs-lint` fr
 - The npm `tsrs` package ships two launchers, `tsrs` and `tsrs-lint`. Point oxlint at `tsrs-lint`.
 - `TSRS_FAST=1` is an optional speed switch read by tsrs.
 
-Install: [../mise](../mise/README.md) (local cargo build) and [../github/hk.yml](../github/hk.yml) (npm in CI).
+Install: [../mise](../mise/README.md) (local cargo build) and [../github/hk.yml](../github/hk.yml) (bun in CI).
 
 ### Checking the install
 

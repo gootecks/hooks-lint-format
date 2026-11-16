@@ -114,3 +114,52 @@ grep -q 'mise run nope' <<<"$out"
 grep -q 'mise run parent-only' <<<"$out"
 ! grep -q 'live:build' <<<"$out"
 '''
+
+[tasks."test:docs-check-ref-task-global"]
+description = "ref/task accepts the kit's documented maintainer global tasks and still flags other undefined tasks"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+script=$PWD/bin/hlf-rumdl-docs-check
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+git init -q
+printf '%s\n' '[tasks.local-build]' 'run = "true"' > mise.toml
+printf '%s\n' '# Doc' '' 'Run `mise run repo-adopt`, `mise run repo-init`, `mise run docs-drift`, `mise run unslop`, `mise run tsrs:install` and `mise run local-build`.' > ok.md
+printf '%s\n' '# Doc' '' 'Run `mise run repo-adopt` and `mise run nope`.' > bad.md
+git add mise.toml ok.md bad.md
+mise trust -q
+"$script" ok.md
+out=$("$script" bad.md || true)
+grep -q 'mise run nope' <<<"$out"
+! grep -q 'repo-adopt' <<<"$out"
+'''
+
+[tasks."check:doc-versions"]
+description = "Fail when a doc, template or .cz.toml names a kit version other than the one in hk/PklProject"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+expected=$(sed -n 's/^    version = "\([^"]*\)"$/\1/p' hk/PklProject)
+[ -n "$expected" ] || { echo "no version in hk/PklProject" >&2; exit 2; }
+num='[0-9]+\.[0-9]+\.[0-9]+'
+pattern="hk-base@$num|releases/download/v$num/hk-base|hooks-lint-format-scripts-$num|ref=v$num"
+pattern="$pattern|tag (\`|<code>)v$num|hooks-lint-format\" = \{ version = \"$num"
+bad=0
+while IFS=: read -r file line match; do
+    found=$(grep -oE "$num" <<<"$match" | head -n 1)
+    if [ "$found" != "$expected" ]; then
+        echo "$file:$line: names kit version $found, hk/PklProject has $expected" >&2
+        bad=1
+    fi
+done < <(git grep -nEo "$pattern" -- . ':!CHANGELOG.md' ':!plans')
+cz=$(sed -n 's/^version = "\([^"]*\)"$/\1/p' .cz.toml)
+if [ "$cz" != "$expected" ]; then
+    echo ".cz.toml: version $cz, hk/PklProject has $expected" >&2
+    bad=1
+fi
+exit $bad
+'''

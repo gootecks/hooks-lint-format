@@ -262,7 +262,7 @@
         <h1>hooks-lint-format</h1>
         <p class="lede">
           Shared git hooks, linters, formatters and release automation for gootecks repos. Each directory holds a
-          canonical config and a README. Repos consume the kit by version (tag <code>v0.1.0</code>): the Pkl package
+          canonical config and a README. Repos consume the kit by version (tag <code>v0.1.3</code>): the Pkl package
           <code>hk-base</code>, the script tool and the task include.
         </p>
         <nav>
@@ -486,7 +486,7 @@
                 The script tool <code>"github:gootecks/hooks-lint-format"</code> provides <code>hlf-rumdl-fix</code> and
                 <code>hlf-rumdl-docs-check</code>. Shared tasks <code>pre-commit</code> and
                 <code>release:preview</code> come from the task include
-                <code>git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.0</code>. The consumer
+                <code>git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.1.3</code>. The consumer
                 <code>mise.toml</code> also needs <code>[settings] experimental = true</code>, because mise skips
                 <code>git::</code> includes otherwise and CI has no global setting.
               </li>
@@ -552,7 +552,7 @@
             <ul>
               <li>
                 Local: the global mise task <code>tsrs:install</code> (in <code>~/.config/mise</code>) builds tsrs with
-                cargo into <code>~/.local/bin</code>. CI installs the npm <code>tsrs</code> package and links its
+                cargo into <code>~/.local/bin</code>. CI installs the <code>tsrs</code> package with bun and links its
                 <code>tsrs-lint</code> launcher to the same path.
               </li>
               <li>
@@ -716,7 +716,7 @@
             <code>mise.toml</code>, including the script tool, and applies its <code>[env]</code>.
           </li>
           <li>
-            <code>npm install -g tsrs@&lt;version&gt;</code> provides <code>tsrs-lint</code>, linked to
+            <code>bun add -g tsrs@&lt;version&gt;</code> provides <code>tsrs-lint</code>, linked to
             <code>~/.local/bin/tsrs-lint</code>. The pin lives in <code>hk.yml</code>.
           </li>
           <li>The repo's own dependency install lets type-aware lint resolve imports.</li>

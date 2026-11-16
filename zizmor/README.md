@@ -20,7 +20,7 @@ What `--fix` does and does not change, from `zizmor --help` and the [zizmor usag
 - `actions/checkout` with `persist-credentials: false`, so the token is not left in `.git/config` for later steps (`artipacked`).
 - `permissions: contents: read` at the top, wider grants only on the job that needs them (`excessive-permissions`).
 - Pass `${{ }}` values to `run:` through `env:`, never inline (`template-injection`).
-- One justified suppression: `npm install -g tsrs@...` in `hk.yml` is an exact-version CI-only install (`adhoc-packages`).
+- One justified suppression: `bun add -g tsrs@...` in `hk.yml` is an exact-version CI-only install (`adhoc-packages`).
 
 ## Suppressions
 

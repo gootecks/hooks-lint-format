@@ -1,1 +1,7 @@
 amends "hk/hk.pkl"
+
+steps {
+    ["doc-versions"] {
+        check = "mise run check:doc-versions"
+    }
+}
