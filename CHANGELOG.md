@@ -1,3 +1,15 @@
+## [0.2.1](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.2.1) - 2026-11-16
+
+### 🐛 Fixes
+
+- **nlpm**: Exempt the vocabulary skill from R51 and skip entries without canonical ([#50](https://github.com/gootecks/hooks-lint-format/pull/50))
+
+  - files under the configured vocabulary_skill directory no longer get R51 checks, since they quote deprecated terms by design
+  - verb registry entries lacking `canonical` are skipped like noun entries, fixing a KeyError
+  - extend test:nlpm-check with a fixture covering both
+
+  Part of prime-optimal/K-Lab#142
+
 ## [0.2.0](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.2.0) - 2026-11-16
 
 ### ✨ Features
