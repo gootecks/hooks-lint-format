@@ -19,7 +19,8 @@ Open [hooks-lint-format.html](hooks-lint-format.html) for the illustrated refere
 | [rumdl](rumdl/README.md)           | rumdl          | Formats and lints Markdown; an agent fixes what auto-fix leaves                                  |
 | [actionlint](actionlint/README.md) | actionlint     | Checks workflow syntax and expressions                                                           |
 | [zizmor](zizmor/README.md)         | zizmor         | Audits workflow security and applies safe fixes                                                  |
-| [commitizen](commitizen/README.md) | commitizen     | Bumps the version, writes the changelog, tags                                                    |
+| [commitizen](commitizen/README.md) | commitizen     | Bumps the version and tags                                                                       |
+| [git-cliff](git-cliff/README.md)   | git-cliff      | Writes the changelog and the release notes                                                       |
 | [github](github/README.md)         | GitHub Actions | `hk check` in CI (optional); release on every push to `main`                                     |
 
 Tool versions are stated in [mise/mise.toml](mise/mise.toml) and nowhere else in the READMEs. The hk version inside the URLs of [hk/hk.pkl](hk/hk.pkl) is the one other place.
@@ -29,7 +30,7 @@ Tool versions are stated in [mise/mise.toml](mise/mise.toml) and nowhere else in
 1. `git commit` runs the hk `pre-commit` hook: oxfmt, oxlint, rumdl and zizmor fix what they can and stage it. actionlint only checks.
 2. `commit-msg` rejects messages that are not Conventional Commits. Details: [hk hooks](hk/README.md#hooks).
 3. Optional: the pull request runs `hk check --all` in CI (declining the CI norm in the global `repo-adopt` task leaves the workflow out).
-4. Merging to `main` runs the release workflow: commitizen picks the version from the commit types, writes `CHANGELOG.md`, tags and publishes a GitHub Release.
+4. Merging to `main` runs the release workflow: commitizen picks the version from the commit types, git-cliff writes `CHANGELOG.md`, commitizen tags and the workflow publishes a GitHub Release.
 
 ## Policy
 

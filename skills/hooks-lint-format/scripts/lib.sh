@@ -99,9 +99,11 @@ hk_excludes() {
     awk '/^exclude *= *List\(/ { on = 1; next } on && /\)/ { exit } on { gsub(/[ ,"]/, ""); if ($0 != "") print }' "$src"
 }
 
-# Version heading commitizen can anchor an incremental changelog on, such as "## v1.2.3 (2026-01-02)" or "## [1.2.3]".
-changelog_has_version_heading() {
-    grep -Eq '^#{1,6}[[:space:]]+\[?v?[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md
+# True when .cz.toml sets update_changelog_on_bump = true or its pre_bump_hooks do not run git-cliff.
+changelog_misconfigured() {
+    [[ -f .cz.toml ]] || return 1
+    grep -Eq '^[[:space:]]*update_changelog_on_bump[[:space:]]*=[[:space:]]*true' .cz.toml && return 0
+    ! awk '/^[[:space:]]*pre_bump_hooks[[:space:]]*=/ { on = 1 } on && /git-cliff/ { found = 1; exit } on && /\]/ { exit } END { exit !found }' .cz.toml
 }
 
 default_ref() {
@@ -138,8 +140,8 @@ project_version() {
 # Prints one "warn" line per release hazard; prints nothing when there is none. Always succeeds.
 release_warnings() {
     local tag ver
-    if [[ -f CHANGELOG.md ]] && ! changelog_has_version_heading; then
-        say "warn  CHANGELOG.md has no version heading (## vX.Y.Z (date)). With changelog_incremental = true, cz bump regenerates the whole file and deletes the hand-written history. Add a heading for the latest release tag above that history before the first release (SKILL.md, \"Release preparation\")."
+    if changelog_misconfigured; then
+        say "warn  .cz.toml does not run git-cliff in pre_bump_hooks, or sets update_changelog_on_bump = true. The kit's changelog comes from git-cliff, not commitizen (SKILL.md, \"Release preparation\")."
     fi
     tag=$(latest_release_tag || true)
     ver=$(project_version || true)

@@ -40,7 +40,7 @@ Examples from the kit:
 
 - rumdl `MD034` rewrites `https://x/<slug>/y` into `<https://x/><slug>/y`. This is reason 2 and applies to the fix only. Keep `MD034` enabled and add it to `unfixable` in `.rumdl.toml` (for example `unfixable = ["MD034"]` under `[global]`) with a comment that names the corruption. Fix the URLs by hand or put them in code spans.
 - oxlint `typescript/await-thenable` is `off` for `**/*.test.ts` in `oxlint/.oxlintrc.json`. This is reason 3, limited to a glob: in Bun test files the rule gives a wrong answer. Bun's type declarations make `expect(promise).rejects` look non-thenable, so the rule asks to remove an `await` that the assertion needs. Removing it would make those tests pass vacuously ([../oxlint/README.md](../oxlint/README.md)).
-- `CHANGELOG.md` is in the hk `exclude`. This is reason 3: commitizen generates it, and a failing Markdown check on it would leave a half-done version bump.
+- `CHANGELOG.md` is in the hk `exclude`. This is reason 3: git-cliff generates it, and a failing Markdown check on it would leave a half-done version bump.
 
 ## Settings that state a fact about the repository
 

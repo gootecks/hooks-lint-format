@@ -52,12 +52,12 @@ text{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Aria
 
 <rect class="box" x="540" y="76" width="160" height="48" rx="6"/>
 <text class="n c" x="620" y="98">Capture notes</text>
-<text class="m c" x="620" y="113">cz changelog --dry-run</text>
+<text class="m c" x="620" y="113">git-cliff --unreleased</text>
 
 <rect class="foc" x="760" y="52" width="200" height="96" rx="6"/>
 <text class="n c" x="860" y="72">Bump</text>
 <text class="m c" x="860" y="88">cz bump --yes</text>
-<text class="m c" x="860" y="106">version files + CHANGELOG.md</text>
+<text class="m c" x="860" y="106">git-cliff section + version files</text>
 <text class="m c" x="860" y="120">commit chore(release): vX.Y.Z</text>
 <text class="m c" x="860" y="134">tag vX.Y.Z</text>
 

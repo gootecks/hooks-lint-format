@@ -5,8 +5,10 @@ version = "0.1.6"
 version_scheme = "semver2"
 major_version_zero = true
 tag_format = "v$version"
-update_changelog_on_bump = true
-changelog_incremental = true
+pre_bump_hooks = [
+  "git-cliff --unreleased --tag \"$CZ_PRE_NEW_TAG_VERSION\" --prepend CHANGELOG.md",
+  "git add CHANGELOG.md",
+]
 bump_message = "chore(release): v$new_version"
 version_files = [
   "hk/PklProject:^    version =",

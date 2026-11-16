@@ -34,19 +34,19 @@ Delete the `Install tsrs-lint` and `Install dependencies` steps. In a repository
 Runs on every push to `main`, so merging a PR is the release trigger. It needs `.cz.toml` from [../commitizen](../commitizen/README.md).
 
 1. `cz bump --get-next --yes` reads the Conventional Commits since the last tag. Exit code 21 means nothing to release, and the run ends green. `--yes` answers commitizen's "Is this the first tag created?" prompt in a repository with no tag yet; without it the step fails with `EOFError`, as CI has no terminal.
-2. `cz changelog --dry-run --unreleased-version` produces the release notes. `cz bump --yes` then updates the version files and `CHANGELOG.md`, commits `chore(release): vX.Y.Z` and tags `vX.Y.Z`.
+2. `git-cliff --unreleased --tag "vX.Y.Z" --strip all` produces the release notes. `cz bump --yes` then runs the `pre_bump_hooks` of `.cz.toml`, which prepend the new section to `CHANGELOG.md`, updates the version files, commits `chore(release): vX.Y.Z` and tags `vX.Y.Z`. See [../git-cliff](../git-cliff/README.md).
 3. `git push --atomic` sends the commit and tag to `main` together.
 4. `gh release create --verify-tag` publishes the GitHub Release with the notes.
 
 Properties:
 
 - The job runs on `ubuntu-latest`, like `hk.yml`. A copy that builds macOS binaries changes `runs-on`.
-- `cz` is installed with the runner's `pipx`; the pin matches the `release:preview` task in `mise.toml` ([../commitizen](../commitizen/README.md#where-cz-is-installed)).
+- `cz` and `git-cliff` run through `uvx` after `astral-sh/setup-uv`; the pins match the `release:preview` task in `mise.toml` ([../commitizen](../commitizen/README.md#where-cz-is-installed)).
 - Only the default `GITHUB_TOKEN` is used, with `contents: write` on the job. Pushes and releases made with it do not start other workflows, so the bump commit cannot loop and `on: release` workflows do not fire. Use a PAT or GitHub App token when a release must trigger another workflow.
 - `main` must accept pushes from `github-actions[bot]`. When `main` requires pull requests or status checks, the push is rejected unless the bot can bypass the rule. GitHub allows bypass lists only for repositories owned by an organization.
 - `concurrency: release` runs one release at a time. When `main` moves during a run the push fails; the next run releases everything.
 - Actions are pinned by commit SHA and checkout uses `persist-credentials: false`, which keeps zizmor clean.
-- A tag matching `tag_format` must already exist; create the first tag by hand. The project's version field must equal it, and `CHANGELOG.md` needs a version heading for it ([../commitizen](../commitizen/README.md#before-the-first-release)).
+- A tag matching `tag_format` must already exist; create the first tag by hand. The project's version field must equal it ([../commitizen](../commitizen/README.md#before-the-first-release)). Checkout uses `fetch-depth: 0`, so git-cliff sees the full history.
 
 Copies that build release assets or images add the build and push steps between the bump and the push, so a failed build leaves no tag behind, and pass the built files to `gh release create` as assets.
 

@@ -7,9 +7,11 @@ rumdl = "0.3.2"
 "npm:oxfmt" = "0.77.0"
 "npm:oxlint" = "1.92.0"
 uv = "0.11.26"
+git-cliff = "2.14.2"
 
 [env]
 _.path = ["{{config_root}}/bin"]
+GITHUB_REPOSITORY = "gootecks/hooks-lint-format"
 
 [task_config]
 includes = ["tasks"]

@@ -4,6 +4,8 @@ name = "cz_conventional_commits"
 version_provider = "npm"
 version_scheme = "semver2"
 tag_format = "v$version"
-update_changelog_on_bump = true
-changelog_incremental = true
+pre_bump_hooks = [
+  "git-cliff --unreleased --tag \"$CZ_PRE_NEW_TAG_VERSION\" --prepend CHANGELOG.md",
+  "git add CHANGELOG.md",
+]
 bump_message = "chore(release): v$new_version"
