@@ -85,3 +85,32 @@ out=$("$script" bad.md || true)
 grep -q 'mise run nope' <<<"$out"
 ! grep -q 'vault-links' <<<"$out"
 '''
+
+[tasks."test:docs-check-ref-task-nested"]
+description = "ref/task treats //<path>:name in a nested monorepo project as name and ignores parent tasks"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+script=$PWD/bin/hlf-rumdl-docs-check
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+printf '%s\n' 'monorepo_root = true' '' '[monorepo]' 'config_roots = ["app"]' '' '[settings]' 'experimental = true' '' > mise.toml
+printf '%s\n' '[tasks.parent-only]' 'run = "true"' >> mise.toml
+mkdir app
+cd app
+git init -q
+printf '%s\n' '[tasks."live:build"]' 'run = "true"' > mise.toml
+printf '%s\n' '# Doc' '' 'Run `mise run live:build`.' > ok.md
+printf '%s\n' '# Doc' '' 'Run `mise run live:build`, `mise run parent-only` and `mise run nope`.' > bad.md
+git add mise.toml ok.md bad.md
+mise trust -q ../mise.toml
+mise trust -q mise.toml
+mise tasks ls --no-global --hidden --json | grep -q '"//app:live:build"'
+"$script" ok.md
+out=$("$script" bad.md || true)
+grep -q 'mise run nope' <<<"$out"
+grep -q 'mise run parent-only' <<<"$out"
+! grep -q 'live:build' <<<"$out"
+'''

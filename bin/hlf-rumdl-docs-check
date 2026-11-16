@@ -328,7 +328,7 @@ def local_tasks():
             if not path.is_relative_to(root) and "remote-git-tasks-cache" not in path.parts:
                 continue
         for name in [item["name"], *(item.get("aliases") or [])]:
-            names.add(name.removeprefix("//:"))
+            names.add(re.sub(r"^//[^:]*:", "", name))
     return names
 
 
