@@ -1,3 +1,9 @@
+## v0.1.3 (2026-11-15)
+
+### Fix
+
+- **docs-check**: treat //<path>:name as name for ref/task in a nested monorepo project (#26)
+
 ## v0.1.2 (2026-11-15)
 
 ### Fix
