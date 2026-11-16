@@ -212,6 +212,26 @@ out=$("$script") || status=$?
 grep -q '^skills/n/SKILL.md:6: R51 ' <<<"$out"
 grep -q '^docs/x.md:2: R51 ' <<<"$out"
 ! grep -q '^docs/x.md.* R01 ' <<<"$out"
+cd "$tmp"
+rm -rf exempt
+mkdir exempt
+cd exempt
+git init -q
+mkdir -p .claude skills/n vocab
+printf '%s\n' '---' 'rule_overrides:' '  R51:' '    enabled: true' '    vocabulary_skill: vocab/' '---' > .claude/nlpm.local.md
+printf '%s\n' 'scopes:' '  - id: internal' '    paths:' '      - skills/' '      - vocab/' 'verbs:' '  internal:' '    - name: legacy' '      deprecated: [old]' '    - canonical: build' '      deprecated: [make]' 'nouns:' '  core:' '    - canonical: widget' '      deprecated: [gadget]' > vocab/registry.yaml
+printf '%s\n' '---' 'name: vocab' 'description: Use when naming terms.' '---' '# Vocab' 'The deprecated term gadget and make are listed here.' > vocab/SKILL.md
+printf '%s\n' '---' 'name: n' 'description: Use when testing exemption.' '---' '# N' 'Build the widget.' > skills/n/SKILL.md
+git add .claude vocab skills
+"$script"
+printf '%s\n' '---' 'name: n' 'description: Use when testing exemption.' '---' '# N' 'Build the gadget and make it.' > skills/n/SKILL.md
+git add skills
+status=0
+out=$("$script") || status=$?
+[ "$status" -eq 1 ]
+grep -q '^skills/n/SKILL.md:6: R51 .*gadget' <<<"$out"
+grep -q '^skills/n/SKILL.md:6: R51 .*make' <<<"$out"
+! grep -q '^vocab/' <<<"$out"
 '''
 
 [tasks."verify:rumdl-gate"]
