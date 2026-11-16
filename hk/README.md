@@ -117,7 +117,7 @@ Environment switches:
 
 ## `hlf-rumdl-docs-check`
 
-The rumdl step's second check. `hk check` runs `rumdl check --deny-config-warnings` and then `hlf-rumdl-docs-check {{files}}`; both must pass. `hlf-rumdl-fix` runs it with `--json` after every `rumdl check --fix` and merges its findings into the rumdl findings, so the printed list, the per-rule counts, the agent prompt and the final gate include them. It needs `uv` (the script header pins no dependencies) and rumdl 0.3.2 or newer (`rumdl experimental export-elements` and `report-diagnostics`). Exit status: 0 clean, 1 findings, 2 tool error; with `--json` it exits 0 with findings.
+The rumdl step's second check. `hk check` runs `rumdl check --deny-config-warnings` and `hlf-rumdl-docs-check {{files}}`, both every time, and fails with the higher of the two exit statuses; a rumdl finding does not hide the docs check findings. `hlf-rumdl-fix` runs it with `--json` after every `rumdl check --fix` and merges its findings into the rumdl findings, so the printed list, the per-rule counts, the agent prompt and the final gate include them. It needs `uv` (the script header pins no dependencies) and rumdl 0.3.2 or newer (`rumdl experimental export-elements` and `report-diagnostics`). Exit status: 0 clean, 1 findings, 2 tool error; with `--json` it exits 0 with findings.
 
 | Rule             | Reports                                                                                                     |
 | ---------------- | ----------------------------------------------------------------------------------------------------------- |

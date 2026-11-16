@@ -137,6 +137,27 @@ grep -q 'mise run nope' <<<"$out"
 ! grep -q 'repo-adopt' <<<"$out"
 '''
 
+[tasks."test:hk-rumdl-step-both-checks"]
+description = "The hk rumdl step reports docs check findings when rumdl also has findings"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+root=$PWD
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+git init -q
+printf 'amends "file://%s/hk/hk.pkl"\n' "$root" > hk.pkl
+printf '%s\n' '[tasks.real]' 'run = "true"' > mise.toml
+printf '%s\n' '# Doc' '' 'Run `mise run nope`.' '' '#Bad heading' > mixed.md
+git add hk.pkl mise.toml mixed.md
+mise trust -q
+out=$(hk check --step rumdl mixed.md 2>&1 || true)
+grep -q 'MD018' <<<"$out"
+grep -q 'ref/task' <<<"$out"
+'''
+
 [tasks."check:doc-versions"]
 description = "Fail when a doc, template or .cz.toml names a kit version other than the one in hk/PklProject"
 dir = "{{config_root}}"
