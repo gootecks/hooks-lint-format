@@ -1,3 +1,9 @@
+## v0.1.6 (2026-11-16)
+
+### Chore
+
+- add verification skills for the kit and the Markdown gate (#37)
+
 ## v0.1.5 (2026-11-16)
 
 ### Fix
