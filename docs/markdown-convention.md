@@ -1,29 +1,42 @@
 # Markdown convention
 
-This convention is for people and coding agents writing Markdown in repositories that use this kit. The same file must read correctly on github.com, in an Obsidian vault and as raw text. [`rumdl/.rumdl.toml`](../rumdl/.rumdl.toml) enforces the mechanical part. Most sections end with what rumdl does for that topic: fixes, reports or cannot see. The policy for turning rules off is in [lint-policy.md](lint-policy.md).
+This convention is for people and coding agents writing Markdown in repositories that use this kit.
+The same file must read correctly on github.com, in an Obsidian vault and as raw text.
+[`rumdl/.rumdl.toml`](../rumdl/.rumdl.toml) enforces the mechanical part.
+Most sections end with what rumdl does for that topic: fixes, reports or cannot see.
+The policy for turning rules off is in [lint-policy.md](lint-policy.md).
 
 ## Scope and precedence
 
-The convention applies to every `.md` file in the repository, including READMEs, docs, plans, issue templates and agent instructions. It does not apply to text pasted from third-party sources; list those paths in the rumdl `exclude` setting.
+The convention applies to every `.md` file in the repository, including READMEs, docs, plans, issue templates and agent instructions.
+It does not apply to text pasted from third-party sources; list those paths in the rumdl `exclude` setting.
 
-GitHub rendering wins. When GitHub and Obsidian render a construct differently, write what GitHub renders correctly. Obsidian-only syntax is allowed only inside a vault (see [Obsidian-only syntax](#obsidian-only-syntax)).
+GitHub rendering wins.
+When GitHub and Obsidian render a construct differently, write what GitHub renders correctly.
+Obsidian-only syntax is allowed only inside a vault (see [Obsidian-only syntax](#obsidian-only-syntax)).
 
 rumdl is the only tool that formats and lints Markdown.
 
 ## Paragraphs and line breaks
 
-Write one line per paragraph and one line per list item. Do not hard-wrap prose at a column.
+Write one sentence per line, and one line per list item.
+Do not hard-wrap prose at a column.
 
-GitHub joins single newlines in `.md` files into a space, but keeps them as line breaks in issue, PR and discussion comments. Obsidian joins or shows them depending on its Strict line breaks setting. A wrapped paragraph therefore looks different in each place, and an unwrapped one looks the same in all of them. rumdl enforces this with `MD013` set to unlimited length with reflow: it fixes wrapped paragraphs by joining them.
+GitHub joins single newlines in `.md` files into a space, so a paragraph written one sentence per line renders as one paragraph.
+A whole paragraph on one line is hard to read in an editor and turns a one-word edit into a paragraph-wide diff; one sentence per line reads well and keeps diffs to the sentence that changed.
+Issue, PR and discussion comments keep single newlines as line breaks, so write those one line per paragraph. rumdl enforces this with `MD013` set to unlimited length with `reflow-mode = "sentence-per-line"`: it splits a paragraph at sentence ends and joins lines wrapped mid-sentence.
 
-To force a line break inside a paragraph, end the line with `<br>`. Two trailing spaces also work on GitHub and in Obsidian, but they are invisible and editors strip them. Use a blank line for a new paragraph.
+To force a line break inside a paragraph, end the line with `<br>`.
+Two trailing spaces also work on GitHub and in Obsidian, but they are invisible and editors strip them.
+Use a blank line for a new paragraph.
 
 ```markdown
 First line<br>
 second line
 ```
 
-A changed word flags the whole paragraph in a plain diff. Read long-line diffs with word granularity:
+A changed word still flags its whole sentence in a plain diff.
+Read prose diffs with word granularity:
 
 ```sh
 git diff --word-diff
@@ -40,13 +53,18 @@ On GitHub, the rendered view of a pull request diff for a Markdown file also hig
 - Do not end a heading with punctuation.
 - Do not use bold text as a heading.
 
-GitHub builds a heading anchor by lowercasing the text, replacing spaces with hyphens and removing other punctuation. A second heading with the same text gets `-1` appended. Renaming, reordering identical headings or changing punctuation changes the anchor and breaks every link to it, so search for `#old-anchor` before you rename. Keep heading text unique within a file.
+GitHub builds a heading anchor by lowercasing the text, replacing spaces with hyphens and removing other punctuation.
+A second heading with the same text gets `-1` appended.
+Renaming, reordering identical headings or changing punctuation changes the anchor and breaks every link to it, so search for `#old-anchor` before you rename.
+Keep heading text unique within a file.
 
-rumdl reports skipped levels, a second top-level heading, trailing punctuation, bold-as-heading, duplicate headings, broken `#fragment` links, setext headings and non-sentence-case headings (`MD063`). It does not fix heading case; the fixer agent or you do.
+rumdl reports skipped levels, a second top-level heading, trailing punctuation, bold-as-heading, duplicate headings, broken `#fragment` links, setext headings and non-sentence-case headings (`MD063`).
+It does not fix heading case; the fixer agent or you do.
 
 ## Callouts
 
-Use the five GitHub alert types, uppercase, alone on the marker line, with the body on the following `>` lines. Obsidian renders them as callouts.
+Use the five GitHub alert types, uppercase, alone on the marker line, with the body on the following `>` lines.
+Obsidian renders them as callouts.
 
 ```markdown
 > [!WARNING]
@@ -64,24 +82,40 @@ Use the five GitHub alert types, uppercase, alone on the marker line, with the b
 
 Rules that keep alerts portable:
 
-- No text after the marker. GitHub shows a titled marker line as a plain quote. When a title is needed, bold the first body line.
-- No fold markers (`-`, `+`) and no nesting. GitHub does not render alerts nested in other elements.
-- Put a blank line between two alerts. Without it GitHub merges them into one.
+- No text after the marker.
+  GitHub shows a titled marker line as a plain quote.
+  When a title is needed, bold the first body line.
+- No fold markers (`-`, `+`) and no nesting.
+  GitHub does not render alerts nested in other elements.
+- Put a blank line between two alerts.
+  Without it GitHub merges them into one.
 - Put a blank line before an alert that follows a paragraph or list.
-- Obsidian styles `IMPORTANT` like `tip` and `CAUTION` like `warning`, so the two pairs look alike there. Choose the type by meaning, not by colour.
+- Obsidian styles `IMPORTANT` like `tip` and `CAUTION` like `warning`, so the two pairs look alike there.
+  Choose the type by meaning, not by colour.
 
-Choose a callout over bold text or a `Note:` paragraph when the reader would be harmed or waste real time by missing the sentence while skimming: a destructive command, a prerequisite, a behaviour that contradicts the obvious reading, a version or platform limit. Use a plain sentence when the information is ordinary context. Use bold for a term or one phrase inside a sentence, never for a whole paragraph.
+Choose a callout over bold text or a `Note:` paragraph when the reader would be harmed or waste real time by missing the sentence while skimming: a destructive command, a prerequisite, a behaviour that contradicts the obvious reading, a version or platform limit.
+Use a plain sentence when the information is ordinary context.
+Use bold for a term or one phrase inside a sentence, never for a whole paragraph.
 
-A callout is noise when it repeats the paragraph above it, holds a nice-to-have, or competes with another callout on the same screen. GitHub's own guidance is one or two alerts per article and none back to back. This convention allows more in long documents, but no more than one per section, and a file with more than about five needs a second look: promote the content to a heading or cut it.
+A callout is noise when it repeats the paragraph above it, holds a nice-to-have, or competes with another callout on the same screen.
+GitHub's own guidance is one or two alerts per article and none back to back.
+This convention allows more in long documents, but no more than one per section, and a file with more than about five needs a second look: promote the content to a heading or cut it.
 
-rumdl fixes spacing inside alerts and leaves the line breaks inside quotes and alerts as written. It cannot see the alert type, so the kit's docs check (`hlf-rumdl-docs-check`, part of the rumdl step) enforces the format: `callout/type` (one of the five types, uppercase), `callout/title` (no text after the marker, no fold marker), `callout/nested` (no alert inside a list item or quote) and `callout/label` (a `Note:`, `**Warning:**` or `**Tip**:` paragraph becomes an alert or a plain sentence). In a file whose flavor is `obsidian` the first three are off, because Obsidian allows custom types, titles, folds and nesting. Whether an alert is worth its place stays a review decision.
+rumdl fixes spacing inside alerts and leaves the line breaks inside quotes and alerts as written.
+It cannot see the alert type, so the kit's docs check (`hlf-rumdl-docs-check`, part of the rumdl step) enforces the format: `callout/type` (one of the five types, uppercase), `callout/title` (no text after the marker, no fold marker), `callout/nested` (no alert inside a list item or quote) and `callout/label` (a `Note:`, `**Warning:**` or `**Tip**:` paragraph becomes an alert or a plain sentence).
+In a file whose flavor is `obsidian` the first three are off, because Obsidian allows custom types, titles, folds and nesting.
+Whether an alert is worth its place stays a review decision.
 
 ## Links
 
-- Link between files in the repository with relative paths: `[policy](lint-policy.md)`. GitHub rewrites them per branch and they work in clones.
-- Name files without spaces. Obsidian needs `%20` or angle brackets for a space, and GitHub link text must stay on one line.
-- Do not use wikilinks (`[[note]]`) or embeds (`![[file]]`) in files that GitHub renders. GitHub shows them as literal text.
-- Write link text that names the target. Do not use "here".
+- Link between files in the repository with relative paths: `[policy](lint-policy.md)`.
+  GitHub rewrites them per branch and they work in clones.
+- Name files without spaces.
+  Obsidian needs `%20` or angle brackets for a space, and GitHub link text must stay on one line.
+- Do not use wikilinks (`[[note]]`) or embeds (`![[file]]`) in files that GitHub renders.
+  GitHub shows them as literal text.
+- Write link text that names the target.
+  Do not use "here".
 - Wrap bare URLs as `<https://example.com>` or as a link with text.
 - When the same URL appears more than once in a file, use a reference-style link and define it once at the end.
 
@@ -91,17 +125,40 @@ See the [GitHub docs][gh] and the [alert guide][gh] again.
 [gh]: https://docs.github.com/en/get-started/writing-on-github
 ```
 
-rumdl reports bare URLs, links to missing files, broken fragments, undefined references, empty links and vague link text. It does not fix bare URLs, because its fix breaks a URL that contains a placeholder such as `<slug>`; the fixer agent or you wrap them. It cannot see wikilinks, and it cannot see a repeated URL that should be a reference.
+rumdl reports bare URLs, links to missing files, broken fragments, undefined references, empty links and vague link text.
+It does not fix bare URLs, because its fix breaks a URL that contains a placeholder such as `<slug>`; the fixer agent or you wrap them.
+It cannot see wikilinks, and it cannot see a repeated URL that should be a reference.
 
 ## Lists, code, tables and emphasis
 
-- Bullets use `-`; nested items indent two spaces. Ordered lists use `1.` on every item or count up; do not mix.
-- Fence code with backticks and always give a language. Use `text` for plain output. A `mermaid` fence renders as a diagram on GitHub.
-- Tables use pipes with a header separator row. Leave alignment to rumdl; do not pad cells by hand. Do not put `|` inside a cell.
+- Bullets use `-`; nested items indent two spaces.
+  Ordered lists use `1.` on every item or count up; do not mix.
+- Fence code with backticks and always give a language.
+  Use `text` for plain output.
+  A `mermaid` fence renders as a diagram on GitHub.
+- Tables use pipes with a header separator row.
+  Leave alignment to rumdl; do not pad cells by hand.
+  Do not put `|` inside a cell.
 - Italic uses underscores (`_text_`), bold uses asterisks (`**text**`).
 - Task lists use `- [ ]` and `- [x]`.
 
-rumdl fixes marker style, indentation, emphasis style, table alignment and spacing around lists and fences. It reports missing fence languages and indented code blocks. It cannot see whether a list should be a table.
+rumdl fixes marker style, indentation, emphasis style, table alignment and spacing around lists and fences.
+It reports missing fence languages and indented code blocks.
+It cannot see whether a list should be a table.
+
+## Markdown style
+
+- Keep table cells short.
+  Move the detail into prose or a list under the table. rumdl keeps a table aligned up to 120 characters wide (`MD060` `max-width`) and writes a wider one in compact style.
+- Put a run of backticked names in a list, not in one long sentence.
+  Keep backticks for names a reader types or searches for: files, commands, settings and named items in a product, such as OBS scenes.
+- Put commands in `sh` blocks, not in inline code inside a sentence, so they can be copied whole.
+- Mark warnings and prerequisites with the GitHub alerts in [Callouts](#callouts), at the top level only.
+- Keep `flavor = "standard"` outside a vault.
+  Do not use `==highlight==` or wikilinks; GitHub shows them as literal text.
+
+rumdl splits sentences and compacts wide tables.
+It cannot see a long cell, a name run or a command left inline; review catches those.
 
 ## Front matter
 
@@ -116,15 +173,21 @@ aliases:
 ---
 ```
 
-GitHub renders front matter as a table above the file. Obsidian reads it as properties: `tags`, `aliases` and `cssclasses` are lists, and tags must be written as a list. Obsidian does not render Markdown in property values, so keep them to plain text. Quote wikilinks in property values (`"[[Note]]"`); they are Obsidian-only.
+GitHub renders front matter as a table above the file.
+Obsidian reads it as properties: `tags`, `aliases` and `cssclasses` are lists, and tags must be written as a list.
+Obsidian does not render Markdown in property values, so keep them to plain text.
+Quote wikilinks in property values (`"[[Note]]"`); they are Obsidian-only.
 
-A `title:` key and a `#` heading may both be present: rumdl does not count the key as a heading, and Obsidian shows the file name, not the key, as the note title. Keep the `#` heading, because GitHub and raw text show nothing else as the title.
+A `title:` key and a `#` heading may both be present: rumdl does not count the key as a heading, and Obsidian shows the file name, not the key, as the note title.
+Keep the `#` heading, because GitHub and raw text show nothing else as the title.
 
-rumdl reports a missing blank line after front matter. It cannot see whether a key is meaningful.
+rumdl reports a missing blank line after front matter.
+It cannot see whether a key is meaningful.
 
 ## Obsidian-only syntax
 
-These constructs render in Obsidian and appear as literal text on GitHub. Use them only in files inside a vault, never in a file that is also read on GitHub:
+These constructs render in Obsidian and appear as literal text on GitHub.
+Use them only in files inside a vault, never in a file that is also read on GitHub:
 
 - wikilinks `[[note]]`, embeds `![[file]]` and block ids `^id`
 - comments `%%text%%`
@@ -135,11 +198,14 @@ These constructs render in Obsidian and appear as literal text on GitHub. Use th
 
 In a file read on both, hide text with an HTML comment `<!-- text -->`, which both renderers hide.
 
-Mark a vault so rumdl accepts this syntax: set the Obsidian flavor for the vault's paths in the `[per-file-flavor]` table of `.rumdl.toml`, or run rumdl with `--flavor obsidian` inside the vault. The setting is described in [rumdl/README.md](../rumdl/README.md#obsidian-vaults). Without it rumdl reports a line that starts with `#tag` as a malformed heading.
+Mark a vault so rumdl accepts this syntax: set the Obsidian flavor for the vault's paths in the `[per-file-flavor]` table of `.rumdl.toml`, or run rumdl with `--flavor obsidian` inside the vault.
+The setting is described in [rumdl/README.md](../rumdl/README.md#obsidian-vaults).
+Without it rumdl reports a line that starts with `#tag` as a malformed heading.
 
 ## Inline HTML
 
-Use Markdown wherever it can express the content. These elements are acceptable because GitHub documents them as supported; Obsidian renders HTML elements but not Markdown inside them:
+Use Markdown wherever it can express the content.
+These elements are acceptable because GitHub documents them as supported; Obsidian renders HTML elements but not Markdown inside them:
 
 - `<br>` for a forced line break
 - `<kbd>` for key names
@@ -147,6 +213,7 @@ Use Markdown wherever it can express the content. These elements are acceptable 
 - `<details>` with `<summary>` for a collapsed section
 - `<picture>` with `<source>` and `<img>` for a dark-mode image or a sized image
 
-Inside `<details>`, put a blank line after `<details>` and after `</summary>` so GitHub renders the Markdown in the body. Obsidian does not render Markdown inside HTML elements, so keep `<details>` bodies out of files meant for vaults, or keep them plain text.
+Inside `<details>`, put a blank line after `<details>` and after `</summary>` so GitHub renders the Markdown in the body.
+Obsidian does not render Markdown inside HTML elements, so keep `<details>` bodies out of files meant for vaults, or keep them plain text.
 
 Do not use `<script>`, `<iframe>`, inline `style` or any element not in the list. rumdl reports every element outside its allow-list (`MD033`) and cannot fix it.
