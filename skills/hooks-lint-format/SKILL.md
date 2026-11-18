@@ -1,6 +1,6 @@
 ---
 name: hooks-lint-format
-description: Adopt or re-align the hooks-lint-format kit in a repository - hk hooks, oxfmt, oxlint with tsrs-lint, ruff and ty, rumdl for Markdown, actionlint, zizmor, Conventional Commits, mise pins, an optional `hk check` CI gate, commitizen releases. Use when asked to set up or migrate to it (from husky, lefthook, lint-staged, pre-commit, Prettier, ESLint, markdownlint) or to match "my usual lint setup". Do not use to fix single lint findings or edit the kit's files.
+description: Adopt or re-align the hooks-lint-format kit in a repository - hk hooks, oxfmt, oxlint with tsrs-lint, ruff and ty, SwiftFormat and SwiftLint, rumdl for Markdown, actionlint, zizmor, Conventional Commits, mise pins, an optional `hk check` CI gate, commitizen releases. Use when asked to set up or migrate to it (from husky, lefthook, lint-staged, pre-commit, Prettier, ESLint, markdownlint) or to match "my usual lint setup". Do not use to fix single lint findings or edit the kit's files.
 ---
 
 # Adopt hooks-lint-format
@@ -14,20 +14,21 @@ This file sits inside the kit, two directories below its root: `<kit>/skills/hoo
 
 Each tool directory under `KIT` holds the canonical config and a README with the reason for every setting. Adopting means adapting: excludes, ignore patterns and version files differ per repository. This file covers order and decisions; the READMEs cover the details. Tool versions live only in `KIT/mise/mise.toml`.
 
-| Need                                        | Read                                                  |
-| ------------------------------------------- | ----------------------------------------------------- |
-| Hooks, steps, excludes                      | `KIT/hk/README.md`, `KIT/hk/hk.pkl`                   |
-| Tool pins, script tool, task include        | `KIT/mise/README.md`, `KIT/mise/mise.toml`            |
-| Formatting (not Markdown)                   | `KIT/oxfmt/README.md`                                 |
-| JS and TS lint, type errors                 | `KIT/oxlint/README.md`                                |
-| Markdown lint, format, fixer agent          | `KIT/rumdl/README.md`                                 |
-| Markdown writing convention                 | `KIT/docs/markdown-convention.md`                     |
-| Workflow lint and security                  | `KIT/actionlint/README.md`, `KIT/zizmor/README.md`    |
-| Delivery by version                         | `KIT/hk/README.md`, `KIT/mise/README.md`, `KIT/tasks` |
-| Versioning                                  | `KIT/commitizen/README.md`                            |
-| Changelog                                   | `KIT/git-cliff/README.md`                             |
-| CI and release workflows                    | `KIT/github/README.md`                                |
-| Replacing husky, Prettier, ESLint and so on | `references/legacy-tools.md`                          |
+| Need                                        | Read                                                   |
+| ------------------------------------------- | ------------------------------------------------------ |
+| Hooks, steps, excludes                      | `KIT/hk/README.md`, `KIT/hk/hk.pkl`                    |
+| Tool pins, script tool, task include        | `KIT/mise/README.md`, `KIT/mise/mise.toml`             |
+| Formatting (not Markdown)                   | `KIT/oxfmt/README.md`                                  |
+| JS and TS lint, type errors                 | `KIT/oxlint/README.md`                                 |
+| Swift format and lint                       | `KIT/swiftformat/README.md`, `KIT/swiftlint/README.md` |
+| Markdown lint, format, fixer agent          | `KIT/rumdl/README.md`                                  |
+| Markdown writing convention                 | `KIT/docs/markdown-convention.md`                      |
+| Workflow lint and security                  | `KIT/actionlint/README.md`, `KIT/zizmor/README.md`     |
+| Delivery by version                         | `KIT/hk/README.md`, `KIT/mise/README.md`, `KIT/tasks`  |
+| Versioning                                  | `KIT/commitizen/README.md`                             |
+| Changelog                                   | `KIT/git-cliff/README.md`                              |
+| CI and release workflows                    | `KIT/github/README.md`                                 |
+| Replacing husky, Prettier, ESLint and so on | `references/legacy-tools.md`                           |
 
 `KIT/hooks-lint-format.html` is the illustrated overview; point the user at it, do not read it.
 
@@ -61,7 +62,7 @@ Adoption is a global mise task, not a copy: the kit is delivered by version (tag
 1. Run the maintainer's global `repo-adopt` task (in `~/.config/mise`) with `--dry-run` in the repository and read what it would write. The task is interactive, asks per norm and is additive: it never overwrites without showing the difference. Agents pass `--yes norm1,norm2` to accept named norms without prompts.
 2. Run the global `repo-adopt` task without `--dry-run`. It writes:
    - `hk.pkl` that amends `package://github.com/gootecks/hooks-lint-format/releases/download/v0.2.2/hk-base@0.2.2#/hk.pkl` and adds only repository extras (`exclude = super.exclude + List(...)`, extra steps imported from hk's `Builtins.pkl`).
-   - `mise.toml` pins: `hk`, `actionlint`, `zizmor`, `rumdl`, `npm:oxfmt`, `npm:oxlint`, `uv`, and the script tool `"github:gootecks/hooks-lint-format"` (provides `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` on `PATH`), plus `[task_config] includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.2.2"]` for the shared `pre-commit`, `release:preview`, `skills:link` and `skills:check` tasks. The same `mise.toml` needs `[settings]` with `experimental = true`: mise skips a `git::` include otherwise, CI has no global setting, and `hlf-rumdl-docs-check` then reports `ref/task` findings. A `task_config.includes` setting replaces mise's default task directories, so list the repository's local task directories too.
+   - `mise.toml` pins: `hk`, `actionlint`, `zizmor`, `rumdl`, `npm:oxfmt`, `npm:oxlint`, `uv` (plus `swiftformat` and `swiftlint` in Swift repositories), and the script tool `"github:gootecks/hooks-lint-format"` (provides `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` on `PATH`), plus `[task_config] includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.2.2"]` for the shared `pre-commit`, `release:preview`, `skills:link` and `skills:check` tasks. The same `mise.toml` needs `[settings]` with `experimental = true`: mise skips a `git::` include otherwise, CI has no global setting, and `hlf-rumdl-docs-check` then reports `ref/task` findings. A `task_config.includes` setting replaces mise's default task directories, so list the repository's local task directories too.
    - Optional: the `hk check` CI workflow, and with the release norm `.cz.toml` (`version_provider` from the repository; `KIT/commitizen/README.md`) and `release.yml`.
    - Steps and pins for languages the survey shows are absent are skipped.
 3. Upgrading a repository that has an older kit copy is something `repo-adopt` offers: the copied rumdl scripts under `hooks/` are replaced by the script tool, and a copied `hk.pkl` becomes an amending one. Show the user each difference between the copy and the base and keep a local difference only as a deliberate adaptation with a stated reason; it goes into the amending file as an extra.
@@ -71,6 +72,7 @@ Adoption is a global mise task, not a copy: the kit is delivered by version (tag
 7. In `.rumdl.toml`, list the repository's product, tool and project names in `[MD063] ignore-words` so the sentence-case check keeps their capitals (`KIT/rumdl/README.md`, "Heading case"). Add `.rumdl_cache/` to `.gitignore`.
 8. In an Obsidian vault, set the `obsidian` flavor for the vault's paths (`KIT/rumdl/README.md`, "Obsidian vaults"). When `MD063` reports note titles, show the user the count and let them choose between re-casing the titles and listing names; do not change `min-level` to hide them.
 9. Python with uv: `uv add --dev ruff ty`, then add the `ruff`, `ruff-format` and `ty` steps in the amending `hk.pkl`, each with `prefix = List("uv", "run")` (`KIT/hk/README.md`, "Python repositories"), and a `ty-check` mise task (`uv run ty check`). Fix ty findings in code; no `# ty: ignore`, no rule set to `ignore`, no `exclude` entry.
+10. Swift: add the `swiftformat` and `swiftlint` pins to `mise.toml`, copy `KIT/swiftformat/.swiftformat` and `KIT/swiftlint/.swiftlint.yml` to the repository root, set `--swiftversion` in `.swiftformat`, and import `swift.pkl` from the `hk-base` package in the amending `hk.pkl` to add both steps (`KIT/hk/README.md`, "Swift repositories"). swiftformat formats; swiftlint has no fix command. Fix swiftlint findings in code; no `// swiftlint:disable`, no `disabled_rules` entry beyond the kit's formatter overlap.
 
 The `docs-drift`, `unslop` and `tsrs:install` global tasks (in the maintainer's `~/.config/mise`) and the czg commit prompt (in `~/.config/hk/config.pkl`) are not part of the kit, and `repo-adopt` does not write them.
 

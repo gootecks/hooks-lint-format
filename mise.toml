@@ -8,6 +8,8 @@ rumdl = "0.3.2"
 "npm:oxlint" = "1.92.0"
 uv = "0.11.26"
 git-cliff = "2.14.2"
+swiftformat = "0.64.7"
+swiftlint = "0.65.1"
 
 [env]
 _.path = ["{{config_root}}/bin"]
@@ -173,6 +175,29 @@ cd "$tmp"
 git init -q
 printf 'amends "file://%s/hk/hk.pkl"\n' "$root" > hk.pkl
 hk test
+'''
+
+[tasks."test:hk-swift-steps"]
+description = "hk test passes the swiftformat and swiftlint steps of hk/swift.pkl in a consumer that imports the local module"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+root=$PWD
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+git init -q
+cat > hk.pkl <<PKL
+amends "file://$root/hk/hk.pkl"
+import "file://$root/hk/swift.pkl" as Swift
+
+steps {
+    ["swiftformat"] = Swift.swiftformat
+    ["swiftlint"] = Swift.swiftlint
+}
+PKL
+hk test --step swiftformat --step swiftlint
 '''
 
 [tasks."test:nlpm-check"]

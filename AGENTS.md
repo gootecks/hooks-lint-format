@@ -7,7 +7,7 @@
 
 ## Prerequisites
 
-- `mise` on `PATH`. It installs the tools pinned in the root `mise.toml`: hk, pkl, actionlint, zizmor, rumdl, oxfmt, oxlint, uv and git-cliff.
+- `mise` on `PATH`. It installs the tools pinned in the root `mise.toml`: hk, pkl, actionlint, zizmor, rumdl, oxfmt, oxlint, swiftformat, swiftlint, uv and git-cliff.
 - The global tasks `docs-drift` and `repo-adopt` in `~/.config/mise`. They are not part of the kit.
 
 ## Layout

@@ -1,0 +1,5 @@
+# Wrap at 120 columns, the width oxfmt uses for TS; swiftlint's line_length warning sits above it because swiftformat cannot wrap long string literals
+--maxwidth 120
+
+# Build output and dependency checkouts are not the repository's code
+--exclude .build,.swiftpm,Carthage,DerivedData,Pods
