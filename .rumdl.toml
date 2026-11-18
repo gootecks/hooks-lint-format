@@ -5,6 +5,8 @@ ignore-words = [
   "hk",
   "oxlint",
   "oxfmt",
+  "swiftformat",
+  "swiftlint",
   "rumdl",
   "czg",
   "zizmor",

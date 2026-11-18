@@ -48,6 +48,8 @@ A merge into `main` that holds a `fix`, `feat` or breaking commit since the last
 | `ruff`        | Python (added per repository, below)         | builtin through `uv run`                                                                               | builtin                 |
 | `ruff-format` | Python (added per repository, below)         | builtin through `uv run`                                                                               | builtin                 |
 | `ty`          | Python (added per repository, below)         | builtin through `uv run`                                                                               | none                    |
+| `swiftformat` | Swift (added per repository, below)          | `swiftformat --lint` ([../swiftformat](../swiftformat/README.md))                                      | `swiftformat`           |
+| `swiftlint`   | Swift (added per repository, below)          | `swiftlint lint --strict` ([../swiftlint](../swiftlint/README.md))                                     | none                    |
 
 hk runs steps in parallel. The steps share no files: oxfmt ignores Markdown through `ignorePatterns` in `.oxfmtrc.json`, so rumdl alone formats and lints Markdown and no step depends on another. `--deny-config-warnings` makes a misspelled key in `.rumdl.toml` fail the step instead of being ignored.
 
@@ -78,6 +80,27 @@ hk runs steps in parallel. The steps share no files: oxfmt ignores Markdown thro
 3. Add a `ty-check` task to `mise.toml` (`run = "uv run ty check"`) next to the repository's other check tasks, so the type check runs by hand with the same command.
 
 ty findings are fixed in code. A `# ty: ignore`, an `[tool.ty]` rule set to `ignore` or an `exclude` entry to reach a green run breaks [../docs/lint-policy.md](../docs/lint-policy.md), like `ts-ignore` does for TypeScript.
+
+## Swift repositories
+
+`hk.pkl` carries no Swift steps, for the same reason as Python: most repositories have none, and a step in the base would make `hk test` and every consumer need `swiftformat` and `swiftlint`. hk has a `swiftlint` builtin but none for SwiftFormat, and the builtin's `swiftlint --fix` would fight swiftformat. The package therefore ships both steps in `swift.pkl`, next to `hk.pkl`. A Swift repository imports it and adds the two steps:
+
+1. Add the `swiftformat` and `swiftlint` pins from [../mise/mise.toml](../mise/mise.toml) to `mise.toml`.
+2. Copy [../swiftformat/.swiftformat](../swiftformat/.swiftformat) and [../swiftlint/.swiftlint.yml](../swiftlint/.swiftlint.yml) to the repository root and adapt them ([swiftformat](../swiftformat/README.md), [swiftlint](../swiftlint/README.md)).
+3. Import the module and add the steps to `hk.pkl`:
+
+   ```pkl
+   import "package://github.com/gootecks/hooks-lint-format/releases/download/v0.2.2/hk-base@0.2.2#/swift.pkl" as Swift
+
+   steps {
+       ["swiftformat"] = Swift.swiftformat
+       ["swiftlint"] = Swift.swiftlint
+   }
+   ```
+
+   The version in the URL changes with the other three kit version places ([Pinning and upgrading](#pinning-and-upgrading)).
+
+swiftformat is the only formatter; swiftlint has no fix command and reports what is left. `mise run test:hk-swift-steps` runs both steps' tests against the local `swift.pkl`.
 
 ## Hooks
 

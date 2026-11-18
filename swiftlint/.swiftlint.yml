@@ -1,0 +1,31 @@
+# swiftformat owns layout and punctuation; these rules would report what swiftformat rewrites, or demand the opposite (trailing_comma)
+disabled_rules:
+  - closing_brace
+  - colon
+  - comma
+  - control_statement
+  - empty_enum_arguments
+  - leading_whitespace
+  - opening_brace
+  - redundant_discardable_let
+  - return_arrow_whitespace
+  - statement_position
+  - trailing_comma
+  - trailing_newline
+  - trailing_whitespace
+  - vertical_whitespace
+  - void_return
+
+# swiftformat wraps at 120 and leaves what it cannot wrap (string literals, long signatures); only a line well past that is a finding
+line_length:
+  warning: 140
+  error: 200
+  ignores_urls: true
+
+# Build output and dependency checkouts are not the repository's code
+excluded:
+  - .build
+  - .swiftpm
+  - Carthage
+  - DerivedData
+  - Pods

@@ -1,0 +1,29 @@
+import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/builtins/test/helpers.pkl" as TestHelpers
+
+swiftformat: Config.Step = new {
+    glob = List("**/*.swift")
+    check = "swiftformat --lint --quiet {{files}}"
+    fix = "swiftformat --quiet {{files}}"
+    tests = new {
+        local const testMaker = new TestHelpers.TestMaker { filename = "foo.swift" }
+        local const bad = "let x=1+2\n"
+        local const good = "let x = 1 + 2\n"
+        ["check bad file"] = testMaker.checkFail(bad, 1)
+        ["check good file"] = testMaker.checkPass(good)
+        ["fix bad file"] = testMaker.fixPass(bad, good)
+        ["fix good file"] = testMaker.fixPass(good, good)
+    }
+}
+
+swiftlint: Config.Step = new {
+    glob = List("**/*.swift")
+    check = "swiftlint lint --strict --quiet {{files}}"
+    tests = new {
+        local const testMaker = new TestHelpers.TestMaker { filename = "foo.swift" }
+        local const bad = "let value: Any = 1\nlet number = value as! Int\n"
+        local const good = "let value: Any = 1\nlet number = value as? Int\n"
+        ["check bad file"] = testMaker.checkFail(bad, 2)
+        ["check good file"] = testMaker.checkPass(good)
+    }
+}

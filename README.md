@@ -10,18 +10,20 @@ Shared git hooks, linters, formatters and release automation for gootecks repos.
 
 Open [hooks-lint-format.html](hooks-lint-format.html) for the illustrated reference. To set a repo up, use the maintainer's global `repo-adopt` task (in `~/.config/mise`; interactive, per norm, additive; flags `--dry-run`, `--yes norm1,norm2` for agents) or the [`hooks-lint-format`](skills/hooks-lint-format/SKILL.md) skill, which holds the only ordered adopt procedure.
 
-| Directory                          | Tool           | What it does                                                                                     |
-| ---------------------------------- | -------------- | ------------------------------------------------------------------------------------------------ |
-| [hk](hk/README.md)                 | hk             | Runs every step as git hooks, `hk check` and `hk fix`                                            |
-| [mise](mise/README.md)             | mise           | Pins hk, actionlint, zizmor, rumdl, uv, oxfmt, oxlint and the script tool; shared task includes  |
-| [oxfmt](oxfmt/README.md)           | oxfmt          | Formats code and config (JS/TS, JSON, YAML, TOML, CSS, HTML); does not touch Markdown            |
-| [oxlint](oxlint/README.md)         | oxlint         | Lints JS/TS with type-aware rules and type errors through tsrs-lint                              |
-| [rumdl](rumdl/README.md)           | rumdl          | Formats and lints Markdown; an agent fixes what auto-fix leaves                                  |
-| [actionlint](actionlint/README.md) | actionlint     | Checks workflow syntax and expressions                                                           |
-| [zizmor](zizmor/README.md)         | zizmor         | Audits workflow security and applies safe fixes                                                  |
-| [commitizen](commitizen/README.md) | commitizen     | Bumps the version and tags                                                                       |
-| [git-cliff](git-cliff/README.md)   | git-cliff      | Writes the changelog and the release notes                                                       |
-| [github](github/README.md)         | GitHub Actions | `hk check` in CI (optional); release on every push to `main`                                     |
+| Directory                            | Tool           | What it does                                                                                                            |
+| ------------------------------------ | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [hk](hk/README.md)                   | hk             | Runs every step as git hooks, `hk check` and `hk fix`                                                                   |
+| [mise](mise/README.md)               | mise           | Pins hk, actionlint, zizmor, rumdl, uv, oxfmt, oxlint, swiftformat, swiftlint and the script tool; shared task includes |
+| [oxfmt](oxfmt/README.md)             | oxfmt          | Formats code and config (JS/TS, JSON, YAML, TOML, CSS, HTML); does not touch Markdown                                   |
+| [oxlint](oxlint/README.md)           | oxlint         | Lints JS/TS with type-aware rules and type errors through tsrs-lint                                                     |
+| [swiftformat](swiftformat/README.md) | SwiftFormat    | Formats Swift (opt-in per repository)                                                                                   |
+| [swiftlint](swiftlint/README.md)     | SwiftLint      | Lints Swift without rewriting; defers formatting rules to swiftformat (opt-in per repository)                           |
+| [rumdl](rumdl/README.md)             | rumdl          | Formats and lints Markdown; an agent fixes what auto-fix leaves                                                         |
+| [actionlint](actionlint/README.md)   | actionlint     | Checks workflow syntax and expressions                                                                                  |
+| [zizmor](zizmor/README.md)           | zizmor         | Audits workflow security and applies safe fixes                                                                         |
+| [commitizen](commitizen/README.md)   | commitizen     | Bumps the version and tags                                                                                              |
+| [git-cliff](git-cliff/README.md)     | git-cliff      | Writes the changelog and the release notes                                                                              |
+| [github](github/README.md)           | GitHub Actions | `hk check` in CI (optional); release on every push to `main`                                                            |
 
 Tool versions are stated in [mise/mise.toml](mise/mise.toml) and nowhere else in the READMEs. The hk version inside the URLs of [hk/hk.pkl](hk/hk.pkl) is the one other place.
 

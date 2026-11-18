@@ -8,6 +8,7 @@ Pinned in `[tools]`:
 
 - `hk`: hooks, `hk check`.
 - `actionlint`, `zizmor`, `rumdl`, `oxfmt`, `oxlint`: the step of the same name.
+- `swiftformat`, `swiftlint`: the Swift steps, which Swift repositories add ([../hk](../hk/README.md#swift-repositories)); other repositories leave the pins out.
 - `uv`: `hlf-rumdl-docs-check` and `hlf-nlpm-check` (`uv run --script`) and `release:preview`.
 - `github:gootecks/hooks-lint-format`: `hlf-rumdl-fix`, `hlf-rumdl-docs-check`, `hlf-nlpm-check` and the vendored `nlpm-check` from the release's `bin` directory.
 
