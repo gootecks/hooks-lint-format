@@ -110,7 +110,7 @@ Required before the first release, in a repository that has a `CHANGELOG.md` or 
 
 ### Consuming a kit fix
 
-1. Confirm a release tag holds the fix: `git -C KIT tag --contains <fix commit>`. A merged fix with no tag is not usable; ask for a release first. Releases go through a release PR whose merge lets `release.yml` create the tag; never push a release tag by hand, because a tag without the version-bump commit publishes a release without assets.
+1. Confirm a release tag holds the fix: `git -C KIT tag --contains <fix commit>`. A merged fix with no tag is not usable; ask for a release first. Merging a `fix` or `feat` PR into the kit's `main` makes `release.yml` bump, tag and publish it; never push a release tag by hand, because a tag without the version-bump commit publishes a release without assets.
 2. Bump the three pins together to that tag: the `amends` URL in `hk.pkl`, the `"github:gootecks/hooks-lint-format"` version in `mise.toml`, and the `?ref=` of the `[task_config] includes` entry. Run `mise install`, then `hk check --all`.
 
 ## 6. Verify

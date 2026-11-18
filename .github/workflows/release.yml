@@ -1,10 +1,16 @@
+# Adapted copy of github/release.yml for this repository: mise provides uv and pkl (root mise.toml), and the release attaches the hk-base package and the scripts tarball.
 name: Release
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
 
-permissions: {}
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -21,32 +27,61 @@ jobs:
         with:
           cache: false
 
-      - name: Check the tag matches hk/PklProject
-        env:
-          TAG: ${{ github.ref_name }}
+      - name: Find the next version
+        id: next
         run: |
-          version=$(sed -n 's/^ *version = "\(.*\)"$/\1/p' hk/PklProject)
-          if [ "v$version" != "$TAG" ]; then
-            echo "Tag $TAG does not match version $version in hk/PklProject" >&2
+          code=0
+          version=$(uvx --from commitizen==4.19.3 cz bump --get-next --yes) || code=$?
+          if [ "$code" -eq 21 ]; then
+            echo "No feat, fix or breaking commit since the last tag; nothing to release."
+            exit 0
+          fi
+          [ "$code" -eq 0 ] || exit "$code"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Bump version and changelog
+        if: steps.next.outputs.version != ''
+        env:
+          VERSION: ${{ steps.next.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          uvx git-cliff@2.14.2 --unreleased --tag "v$VERSION" --strip all > "$RUNNER_TEMP/notes.md"
+          uvx --from commitizen==4.19.3 --with git-cliff==2.14.2 cz bump --yes
+
+      - name: Check hk/PklProject matches the new version
+        if: steps.next.outputs.version != ''
+        env:
+          VERSION: ${{ steps.next.outputs.version }}
+        run: |
+          found=$(sed -n 's/^ *version = "\(.*\)"$/\1/p' hk/PklProject)
+          if [ "$found" != "$VERSION" ]; then
+            echo "hk/PklProject has version $found after the bump, expected $VERSION" >&2
             exit 1
           fi
-          echo "VERSION=$version" >> "$GITHUB_ENV"
 
-      - name: Package hk-base
-        run: pkl project package hk/ --output-path ".out/%{name}@%{version}"
+      - name: Package hk-base and the scripts
+        if: steps.next.outputs.version != ''
+        env:
+          VERSION: ${{ steps.next.outputs.version }}
+        run: |
+          pkl project package hk/ --output-path ".out/%{name}@%{version}"
+          tar -czf ".out/hooks-lint-format-scripts-$VERSION.tar.gz" bin
 
-      - name: Package the scripts
-        run: tar -czf ".out/hooks-lint-format-scripts-$VERSION.tar.gz" bin
-
-      - name: Write the release notes
-        run: git-cliff --latest --strip all > "$RUNNER_TEMP/notes.md"
+      - name: Push the bump commit and tag
+        if: steps.next.outputs.version != ''
+        env:
+          VERSION: ${{ steps.next.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: git push --atomic "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" HEAD:main "v$VERSION"
 
       - name: Create the GitHub Release
+        if: steps.next.outputs.version != ''
         env:
-          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.next.outputs.version }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md" \
+          gh release create "v$VERSION" --verify-tag --title "v$VERSION" --notes-file "$RUNNER_TEMP/notes.md" \
             ".out/hk-base@$VERSION/hk-base@$VERSION" \
             ".out/hk-base@$VERSION/hk-base@$VERSION.sha256" \
             ".out/hk-base@$VERSION/hk-base@$VERSION.zip" \
