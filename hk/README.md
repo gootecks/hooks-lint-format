@@ -11,7 +11,7 @@ To install the kit into a repository, use the maintainer's global `repo-adopt` t
 A repository's `hk.pkl` amends the released package and adds only what is specific to it:
 
 ```pkl
-amends "package://github.com/gootecks/hooks-lint-format/releases/download/v0.3.0/hk-base@0.3.0#/hk.pkl"
+amends "package://github.com/gootecks/hooks-lint-format/releases/download/v0.4.0/hk-base@0.4.0#/hk.pkl"
 import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
 
 exclude = super.exclude + List("repo/specific/**")
@@ -110,7 +110,7 @@ A Swift repository imports it and adds the two steps:
 3. Import the module and add the steps to `hk.pkl`:
 
    ```pkl
-   import "package://github.com/gootecks/hooks-lint-format/releases/download/v0.3.0/hk-base@0.3.0#/swift.pkl" as Swift
+   import "package://github.com/gootecks/hooks-lint-format/releases/download/v0.4.0/hk-base@0.4.0#/swift.pkl" as Swift
 
    steps {
        ["swiftformat"] = Swift.swiftformat

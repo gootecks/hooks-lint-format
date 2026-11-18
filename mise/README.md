@@ -35,7 +35,7 @@ The base `hk.pkl` calls both by name ([../hk](../hk/README.md)).
 
 ```toml
 [task_config]
-includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.3.0"]
+includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.4.0"]
 ```
 
 The `git::` source is experimental in mise, and mise skips the include with a warning unless experimental is on.

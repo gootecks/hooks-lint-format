@@ -78,15 +78,15 @@ Summarise the survey and get the user's agreement before the first edit.
 
 ## 2. Adopt and adapt
 
-Adoption is a global mise task, not a copy: the kit is delivered by version (tag `v0.3.0`) as a Pkl package `hk-base`, a script tool and a task include.
+Adoption is a global mise task, not a copy: the kit is delivered by version (tag `v0.4.0`) as a Pkl package `hk-base`, a script tool and a task include.
 
 1. Run the maintainer's global `repo-adopt` task (in `~/.config/mise`) with `--dry-run` in the repository and read what it would write.
    The task is interactive, asks per norm and is additive: it never overwrites without showing the difference.
    Agents pass `--yes norm1,norm2` to accept named norms without prompts.
 2. Run the global `repo-adopt` task without `--dry-run`.
    It writes:
-   - `hk.pkl` that amends `package://github.com/gootecks/hooks-lint-format/releases/download/v0.3.0/hk-base@0.3.0#/hk.pkl` and adds only repository extras (`exclude = super.exclude + List(...)`, extra steps imported from hk's `Builtins.pkl`).
-   - `mise.toml` pins: `hk`, `actionlint`, `zizmor`, `rumdl`, `npm:oxfmt`, `npm:oxlint`, `uv` (plus `swiftformat` and `swiftlint` in Swift repositories), and the script tool `"github:gootecks/hooks-lint-format"` (provides `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` on `PATH`), plus `[task_config] includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.3.0"]` for the shared `pre-commit`, `release:preview`, `skills:link` and `skills:check` tasks.
+   - `hk.pkl` that amends `package://github.com/gootecks/hooks-lint-format/releases/download/v0.4.0/hk-base@0.4.0#/hk.pkl` and adds only repository extras (`exclude = super.exclude + List(...)`, extra steps imported from hk's `Builtins.pkl`).
+   - `mise.toml` pins: `hk`, `actionlint`, `zizmor`, `rumdl`, `npm:oxfmt`, `npm:oxlint`, `uv` (plus `swiftformat` and `swiftlint` in Swift repositories), and the script tool `"github:gootecks/hooks-lint-format"` (provides `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` on `PATH`), plus `[task_config] includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.4.0"]` for the shared `pre-commit`, `release:preview`, `skills:link` and `skills:check` tasks.
      The same `mise.toml` needs `[settings]` with `experimental = true`: mise skips a `git::` include otherwise, CI has no global setting, and `hlf-rumdl-docs-check` then reports `ref/task` findings.
      A `task_config.includes` setting replaces mise's default task directories, so list the repository's local task directories too.
    - Optional: the `hk check` CI workflow, and with the release norm `.cz.toml` (`version_provider` from the repository; `KIT/commitizen/README.md`) and `release.yml`.

@@ -1,3 +1,21 @@
+## [0.4.0](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.4.0) - 2026-11-18
+
+### ✨ Features
+
+- **rumdl**: Reflow prose to one sentence per line and cap aligned tables at 120
+
+  MD013 reflow-mode normalize put a whole paragraph on one line, which is hard to read in an editor and makes one edit a paragraph-wide diff. sentence-per-line renders the same on GitHub. MD060 had no width limit with line-length = 0 and tables = false, so wide tables were padded to hundreds of columns; max-width = 120 writes those compact. rules-table.py emits its intro one sentence per line so the generated table passes the new config.
+
+- **rumdl**: Sentence-per-line reflow, MD060 max-width and Markdown style ([#61](https://github.com/gootecks/hooks-lint-format/pull/61))
+
+  feat(rumdl): sentence-per-line reflow, MD060 max-width and Markdown style
+
+### 📝 Docs
+
+- **rumdl**: Document sentence-per-line, table width and Markdown style
+
+  markdown-convention.md explains one sentence per line and adds a Markdown style section (short table cells, name runs as lists, commands in sh blocks, top-level alerts, standard flavor). rumdl/README.md describes the new MD013 and MD060 settings and how a consumer upgrades with one reflow commit recorded in .git-blame-ignore-revs; SKILL.md points the upgrade step at it. These files are reflowed with their edits.
+
 ## [0.3.0](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.3.0) - 2026-11-18
 
 ### ✨ Features

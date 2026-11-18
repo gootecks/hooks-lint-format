@@ -10,10 +10,10 @@ uv = "0.11.26"
 git-cliff = "2.14.2"
 swiftformat = "0.64.7"
 swiftlint = "0.65.1"
-"github:gootecks/hooks-lint-format" = { version = "0.3.0", asset_pattern = "hooks-lint-format-scripts-*.tar.gz", bin_path = "bin" }
+"github:gootecks/hooks-lint-format" = { version = "0.4.0", asset_pattern = "hooks-lint-format-scripts-*.tar.gz", bin_path = "bin" }
 
 [task_config]
-includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.3.0"]
+includes = ["git::https://github.com/gootecks/hooks-lint-format.git//tasks?ref=v0.4.0"]
 
 [settings]
 experimental = true
