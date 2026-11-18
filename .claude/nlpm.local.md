@@ -25,4 +25,5 @@ Score NL artifacts in this repository at **standard** strictness and flag artifa
 
 The excluded `.agents/skills/*` entries are third-party skills installed through `skills-lock.json`; fix them upstream, not here.
 
-`hlf-nlpm-check` (the `nlpm` hk step) reads this file for the exclude list and the R51 vocabulary registry. LLM scoring with `/nlpm:score` and `/nlpm:check` stays a manual pass.
+`hlf-nlpm-check` (the `nlpm` hk step) reads this file for the exclude list and the R51 vocabulary registry.
+LLM scoring with `/nlpm:score` and `/nlpm:check` stays a manual pass.
