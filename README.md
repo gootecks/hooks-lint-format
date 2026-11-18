@@ -1,12 +1,12 @@
 # hooks-lint-format
 
-Shared git hooks, linters, formatters and release automation for gootecks repos. Each directory holds a canonical config and a README that explains every setting. Repos consume the kit by version, not by copy: release tag `v0.2.1` publishes three artifacts.
+Shared git hooks, linters, formatters and release automation for gootecks repos. Each directory holds a canonical config and a README that explains every setting. Repos consume the kit by version, not by copy: release tag `v0.2.2` publishes three artifacts.
 
 | Artifact     | What it is                                                                                                                                                                                                                                                |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pkl package  | `hk-base`: the shared `hk.pkl`. A repo's `hk.pkl` amends `package://github.com/gootecks/hooks-lint-format/releases/download/v0.2.1/hk-base@0.2.1#/hk.pkl` and adds only its own extras                                                                    |
-| Script tool  | `hooks-lint-format-scripts-0.2.1.tar.gz` with `hlf-rumdl-fix`, `hlf-rumdl-docs-check`, `hlf-nlpm-check` and `nlpm-check`, pinned in `mise.toml` as `"github:gootecks/hooks-lint-format"`                                                                  |
-| Task include | `tasks/` with `pre-commit`, `release:preview`, `skills:link` and `skills:check`, included through `[task_config] includes` with `?ref=v0.2.1`; the consumer `mise.toml` also needs `[settings] experimental = true` ([mise](mise/README.md#shared-tasks)) |
+| Pkl package  | `hk-base`: the shared `hk.pkl`. A repo's `hk.pkl` amends `package://github.com/gootecks/hooks-lint-format/releases/download/v0.2.2/hk-base@0.2.2#/hk.pkl` and adds only its own extras                                                                    |
+| Script tool  | `hooks-lint-format-scripts-0.2.2.tar.gz` with `hlf-rumdl-fix`, `hlf-rumdl-docs-check`, `hlf-nlpm-check` and `nlpm-check`, pinned in `mise.toml` as `"github:gootecks/hooks-lint-format"`                                                                  |
+| Task include | `tasks/` with `pre-commit`, `release:preview`, `skills:link` and `skills:check`, included through `[task_config] includes` with `?ref=v0.2.2`; the consumer `mise.toml` also needs `[settings] experimental = true` ([mise](mise/README.md#shared-tasks)) |
 
 Open [hooks-lint-format.html](hooks-lint-format.html) for the illustrated reference. To set a repo up, use the maintainer's global `repo-adopt` task (in `~/.config/mise`; interactive, per norm, additive; flags `--dry-run`, `--yes norm1,norm2` for agents) or the [`hooks-lint-format`](skills/hooks-lint-format/SKILL.md) skill, which holds the only ordered adopt procedure.
 

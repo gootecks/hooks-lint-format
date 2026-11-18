@@ -1,3 +1,17 @@
+## [0.2.2](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.2.2) - 2026-11-18
+
+### 🐛 Fixes
+
+- **hk**: Replace oxlint step tests that fail under --type-check ([#56](https://github.com/gootecks/hooks-lint-format/pull/56))
+
+  The oxlint step amends the builtin ox_lint and adds --type-aware --type-check, but kept the builtin's tests. Their bare return statement is not a TypeScript program, and oxlint 1.92 applies the double-comparisons fix only as a suggestion, so hk test failed 3 oxlint tests in every consumer. Use a typed exported function and no-extra-non-null-assertion, and add test:hk-steps to run hk test in a consumer of the local hk.pkl.
+
+### 📦️ Build and CI
+
+- Release the kit from main with cz bump ([#58](https://github.com/gootecks/hooks-lint-format/pull/58))
+
+  release.yml ran on a hand-pushed v* tag, so each release needed a cz bump PR and a manual tag, and a tag without the bump produced a release with no assets (#43). Follow github/release.yml: on push to main, cz bump --get-next decides, cz bump commits and tags, the job checks hk/PklProject, packages hk-base and the scripts, pushes commit and tag atomically and publishes the release with its assets.
+
 ## [0.2.1](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.2.1) - 2026-11-16
 
 ### 🐛 Fixes
