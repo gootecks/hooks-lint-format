@@ -1,6 +1,10 @@
 # hk
 
-[hk](https://hk.jdx.dev) runs every linter and formatter in this kit as git hooks and as `hk check` / `hk fix`. `hk.pkl` is the shared base, published as the Pkl package `hk-base`; the scripts it calls, `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` (plus the vendored `nlpm-check`), ship in the release's script tarball and live in [../bin](../bin). Repositories do not copy any of them: they amend the package and install the scripts through mise. The hk version appears in the `amends` and `import` URLs; the other tool versions are pinned in [../mise/mise.toml](../mise/mise.toml). To install the kit into a repository, use the maintainer's global `repo-adopt` task (in `~/.config/mise`) or follow [../skills/hooks-lint-format/SKILL.md](../skills/hooks-lint-format/SKILL.md).
+[hk](https://hk.jdx.dev) runs every linter and formatter in this kit as git hooks and as `hk check` / `hk fix`.
+`hk.pkl` is the shared base, published as the Pkl package `hk-base`; the scripts it calls, `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` (plus the vendored `nlpm-check`), ship in the release's script tarball and live in [../bin](../bin).
+Repositories do not copy any of them: they amend the package and install the scripts through mise.
+The hk version appears in the `amends` and `import` URLs; the other tool versions are pinned in [../mise/mise.toml](../mise/mise.toml).
+To install the kit into a repository, use the maintainer's global `repo-adopt` task (in `~/.config/mise`) or follow [../skills/hooks-lint-format/SKILL.md](../skills/hooks-lint-format/SKILL.md).
 
 ## Consuming the package
 
@@ -19,9 +23,12 @@ steps {
 }
 ```
 
-The `import` line is needed only when the repository adds steps from hk's builtins. hk does not resolve `PklProject` dependencies, so the package imports hk's `Config.pkl` and `Builtins.pkl` by absolute `package://` URL. The base imports hk's builtins as `KitBuiltins`, so a consumer can use the bare name `Builtins`.
+The `import` line is needed only when the repository adds steps from hk's builtins. hk does not resolve `PklProject` dependencies, so the package imports hk's `Config.pkl` and `Builtins.pkl` by absolute `package://` URL.
+The base imports hk's builtins as `KitBuiltins`, so a consumer can use the bare name `Builtins`.
 
-The steps call `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` by name. The repository's `mise.toml` installs them with the `github:gootecks/hooks-lint-format` tool, which puts the release's `bin` directory on `PATH` ([../mise](../mise/README.md)). The scripts start with `uv run --script`, so `uv` is pinned in the same file.
+The steps call `hlf-rumdl-fix`, `hlf-rumdl-docs-check` and `hlf-nlpm-check` by name.
+The repository's `mise.toml` installs them with the `github:gootecks/hooks-lint-format` tool, which puts the release's `bin` directory on `PATH` ([../mise](../mise/README.md)).
+The scripts start with `uv run --script`, so `uv` is pinned in the same file.
 
 ### Pinning and upgrading
 
@@ -33,7 +40,9 @@ The kit version appears in three places of a consumer repository; change all thr
 
 ### Publishing
 
-A merge into `main` that holds a `fix`, `feat` or breaking commit since the last tag publishes `v<version>` through [../.github/workflows/release.yml](../.github/workflows/release.yml). It runs `cz bump`, fails unless the bumped `version` in `PklProject` matches, runs `pkl project package`, pushes the bump commit and tag, and attaches `hk-base@<version>`, its zip and both `.sha256` files, plus `hooks-lint-format-scripts-<version>.tar.gz`, to the GitHub release. `PklProject` excludes `README.md` from the package.
+A merge into `main` that holds a `fix`, `feat` or breaking commit since the last tag publishes `v<version>` through [../.github/workflows/release.yml](../.github/workflows/release.yml).
+It runs `cz bump`, fails unless the bumped `version` in `PklProject` matches, runs `pkl project package`, pushes the bump commit and tag, and attaches `hk-base@<version>`, its zip and both `.sha256` files, plus `hooks-lint-format-scripts-<version>.tar.gz`, to the GitHub release.
+`PklProject` excludes `README.md` from the package.
 
 ## Steps
 
@@ -51,19 +60,27 @@ A merge into `main` that holds a `fix`, `feat` or breaking commit since the last
 | `swiftformat` | Swift (added per repository, below)          | `swiftformat --lint` ([../swiftformat](../swiftformat/README.md))                                      | `swiftformat`           |
 | `swiftlint`   | Swift (added per repository, below)          | `swiftlint lint --strict` ([../swiftlint](../swiftlint/README.md))                                     | none                    |
 
-hk runs steps in parallel. The steps share no files: oxfmt ignores Markdown through `ignorePatterns` in `.oxfmtrc.json`, so rumdl alone formats and lints Markdown and no step depends on another. `--deny-config-warnings` makes a misspelled key in `.rumdl.toml` fail the step instead of being ignored.
+hk runs steps in parallel.
+The steps share no files: oxfmt ignores Markdown through `ignorePatterns` in `.oxfmtrc.json`, so rumdl alone formats and lints Markdown and no step depends on another.
+`--deny-config-warnings` makes a misspelled key in `.rumdl.toml` fail the step instead of being ignored.
 
-`hk test` runs each step's tests in a temporary directory, including in repositories without the step's file types. The `oxlint` step replaces the builtin's tests: their bare `return` statement is not a TypeScript program, so `--type-check` fails it, and oxlint 1.92 treats the builtin's double-comparison fix as a suggestion that `--fix` does not apply. The kit's fixtures are a typed, exported function and `no-extra-non-null-assertion`, whose fix is safe. `mise run test:hk-steps` runs `hk test` in a consumer of the local `hk.pkl`; it needs `tsrs-lint` at `OXLINT_TSGOLINT_PATH`.
+`hk test` runs each step's tests in a temporary directory, including in repositories without the step's file types.
+The `oxlint` step replaces the builtin's tests: their bare `return` statement is not a TypeScript program, so `--type-check` fails it, and oxlint 1.92 treats the builtin's double-comparison fix as a suggestion that `--fix` does not apply.
+The kit's fixtures are a typed, exported function and `no-extra-non-null-assertion`, whose fix is safe.
+`mise run test:hk-steps` runs `hk test` in a consumer of the local `hk.pkl`; it needs `tsrs-lint` at `OXLINT_TSGOLINT_PATH`.
 
 > [!NOTE]
 > The `zizmor` fix command rewrites workflow files. In the `fix` and `pre-commit` hooks it runs on every workflow change, and `pre-commit` stages the result.
 
 ## Python repositories
 
-`hk.pkl` carries no Python steps, because most repositories have none. A Python repository that uses uv adds ruff, ruff-format and ty and keeps the tools in the project environment, so the hook runs the versions the lockfile pins:
+`hk.pkl` carries no Python steps, because most repositories have none.
+A Python repository that uses uv adds ruff, ruff-format and ty and keeps the tools in the project environment, so the hook runs the versions the lockfile pins:
 
-1. `uv add --dev ruff ty`. Neither tool goes in `mise.toml`.
-2. Add the three steps to `steps` in `hk.pkl`. `prefix = List("uv", "run")` makes hk run each builtin as `uv run ruff ...`:
+1. `uv add --dev ruff ty`.
+   Neither tool goes in `mise.toml`.
+2. Add the three steps to `steps` in `hk.pkl`.
+   `prefix = List("uv", "run")` makes hk run each builtin as `uv run ruff ...`:
 
    ```pkl
    ["ruff"] = (Builtins.ruff) {
@@ -79,11 +96,14 @@ hk runs steps in parallel. The steps share no files: oxfmt ignores Markdown thro
 
 3. Add a `ty-check` task to `mise.toml` (`run = "uv run ty check"`) next to the repository's other check tasks, so the type check runs by hand with the same command.
 
-ty findings are fixed in code. A `# ty: ignore`, an `[tool.ty]` rule set to `ignore` or an `exclude` entry to reach a green run breaks [../docs/lint-policy.md](../docs/lint-policy.md), like `ts-ignore` does for TypeScript.
+ty findings are fixed in code.
+A `# ty: ignore`, an `[tool.ty]` rule set to `ignore` or an `exclude` entry to reach a green run breaks [../docs/lint-policy.md](../docs/lint-policy.md), like `ts-ignore` does for TypeScript.
 
 ## Swift repositories
 
-`hk.pkl` carries no Swift steps, for the same reason as Python: most repositories have none, and a step in the base would make `hk test` and every consumer need `swiftformat` and `swiftlint`. hk has a `swiftlint` builtin but none for SwiftFormat, and the builtin's `swiftlint --fix` would fight swiftformat. The package therefore ships both steps in `swift.pkl`, next to `hk.pkl`. A Swift repository imports it and adds the two steps:
+`hk.pkl` carries no Swift steps, for the same reason as Python: most repositories have none, and a step in the base would make `hk test` and every consumer need `swiftformat` and `swiftlint`. hk has a `swiftlint` builtin but none for SwiftFormat, and the builtin's `swiftlint --fix` would fight swiftformat.
+The package therefore ships both steps in `swift.pkl`, next to `hk.pkl`.
+A Swift repository imports it and adds the two steps:
 
 1. Add the `swiftformat` and `swiftlint` pins from [../mise/mise.toml](../mise/mise.toml) to `mise.toml`.
 2. Copy [../swiftformat/.swiftformat](../swiftformat/.swiftformat) and [../swiftlint/.swiftlint.yml](../swiftlint/.swiftlint.yml) to the repository root and adapt them ([swiftformat](../swiftformat/README.md), [swiftlint](../swiftlint/README.md)).
@@ -100,28 +120,40 @@ ty findings are fixed in code. A `# ty: ignore`, an `[tool.ty]` rule set to `ign
 
    The version in the URL changes with the other three kit version places ([Pinning and upgrading](#pinning-and-upgrading)).
 
-swiftformat is the only formatter; swiftlint has no fix command and reports what is left. `mise run test:hk-swift-steps` runs both steps' tests against the local `swift.pkl`.
+swiftformat is the only formatter; swiftlint has no fix command and reports what is left.
+`mise run test:hk-swift-steps` runs both steps' tests against the local `swift.pkl`.
 
 ## Hooks
 
-- `check` (`hk check`): no fixes, no staging, no stash. This is what CI runs ([../github/hk.yml](../github/hk.yml)).
+- `check` (`hk check`): no fixes, no staging, no stash.
+  This is what CI runs ([../github/hk.yml](../github/hk.yml)).
 - `fix` (`hk fix`): applies fixes to the working tree, stages nothing.
-- `pre-commit`: applies fixes and stages them. `stash = "git"` stashes unstaged changes first, so fixes only touch what is being committed.
+- `pre-commit`: applies fixes and stages them.
+  `stash = "git"` stashes unstaged changes first, so fixes only touch what is being committed.
 - `commit-msg`: `KitBuiltins.check_conventional_commit` rejects messages that are not [Conventional Commits](https://www.conventionalcommits.org). commitizen reads those messages to pick the next version ([../commitizen](../commitizen/README.md)).
 
-The base has no `prepare-commit-msg` hook. An interactive commit prompt (czg) is personal and belongs in the user's hk config, `~/.config/hk/config.pkl`, which hk merges with the project `hk.pkl`.
+The base has no `prepare-commit-msg` hook.
+An interactive commit prompt (czg) is personal and belongs in the user's hk config, `~/.config/hk/config.pkl`, which hk merges with the project `hk.pkl`.
 
 ## Exclude
 
-`exclude` lists paths no step should see: agent state (`.omp`, `.agents`), Obsidian app state (`.obsidian`), build output, generated files and `CHANGELOG.md`. Obsidian rewrites the files in `.obsidian` itself, so a formatter would only cause churn, and the plugin READMEs there are third-party text. git-cliff writes `CHANGELOG.md`, and a failing Markdown check on it would leave a half-done version bump. An entry is justified only by the rules in [../docs/lint-policy.md](../docs/lint-policy.md).
+`exclude` lists paths no step should see: agent state (`.omp`, `.agents`), Obsidian app state (`.obsidian`), build output, generated files and `CHANGELOG.md`.
+Obsidian rewrites the files in `.obsidian` itself, so a formatter would only cause churn, and the plugin READMEs there are third-party text. git-cliff writes `CHANGELOG.md`, and a failing Markdown check on it would leave a half-done version bump.
+An entry is justified only by the rules in [../docs/lint-policy.md](../docs/lint-policy.md).
 
 ## `hlf-rumdl-fix`
 
-hk fix command for Markdown. It takes the files hk passes and:
+hk fix command for Markdown.
+It takes the files hk passes and:
 
-1. Runs `rumdl check --fix --deny-config-warnings --output-format json` once. This fixes what rumdl can fix and reports what is left. It then runs [`hlf-rumdl-docs-check`](#hlf-rumdl-docs-check) with `--json` on the same files and merges its findings into the list. No findings: exit 0.
-2. Prints the remaining findings as `file:line:column: rule message`. File names with spaces are kept intact.
-3. Unless the agent is off, runs the `repo-markdown-fixer` agent (`omp -p`) once for all files that still have findings. The agent receives the repository root, the finding count per rule (for example `MD063: 12` or `callout/label: 2`), the file list one per line, and then the JSON findings.
+1. Runs `rumdl check --fix --deny-config-warnings --output-format json` once.
+   This fixes what rumdl can fix and reports what is left.
+   It then runs [`hlf-rumdl-docs-check`](#hlf-rumdl-docs-check) with `--json` on the same files and merges its findings into the list.
+   No findings: exit 0.
+2. Prints the remaining findings as `file:line:column: rule message`.
+   File names with spaces are kept intact.
+3. Unless the agent is off, runs the `repo-markdown-fixer` agent (`omp -p`) once for all files that still have findings.
+   The agent receives the repository root, the finding count per rule (for example `MD063: 12` or `callout/label: 2`), the file list one per line, and then the JSON findings.
 4. Runs the same two checks once more and exits non-zero while findings remain.
 
 The checks run once when nothing is left or the agent is off, and twice when the agent runs.
@@ -135,15 +167,22 @@ Every failing path prints one `rumdl-fix:` line that names what failed and what 
 
 Environment switches:
 
-- `RUMDL_AGENT=0` runs no agent. Findings still fail the step.
-- `RUMDL_AGENT_RUNNING` is set by the script on the agent's process so a nested run never starts a second agent. Do not set it by hand.
+- `RUMDL_AGENT=0` runs no agent.
+  Findings still fail the step.
+- `RUMDL_AGENT_RUNNING` is set by the script on the agent's process so a nested run never starts a second agent.
+  Do not set it by hand.
 - `RUMDL_AGENT_FILE` overrides the agent file (default `~/.omp/agent/agents/repo-markdown-fixer.md`).
 - `RUMDL_AGENT_MAX_TIME` is the agent time limit (default `5m`).
 - `CI`, when set, runs no agent.
 
 ## `hlf-nlpm-check`
 
-The `nlpm` step runs `hlf-nlpm-check` once for the whole repository. It has no `glob` and does not use `{{files}}`, because the base `exclude` hides `.agents/**` from `{{files}}` and the check must see the skills there. It needs `uv` (`uv run --script` installs `pyyaml`). It checks the tracked files `**/SKILL.md`, `AGENTS.md` and `CLAUDE.md` at any depth, `agents/*.md`, `commands/*.md` and `.claude/**/*.md`, and reads `.claude/nlpm.local.md`: `discovery.exclude` (globs to skip) and `rule_overrides.R51` (`enabled`, `vocabulary_skill`, the directory holding NLPM's `registry.yaml`). Exit status: 0 clean, 1 failing findings, 2 tool error; `--json` prints the findings and exits 0 unless a tool fails. Output is one `path:line: RULE message` line per finding.
+The `nlpm` step runs `hlf-nlpm-check` once for the whole repository.
+It has no `glob` and does not use `{{files}}`, because the base `exclude` hides `.agents/**` from `{{files}}` and the check must see the skills there.
+It needs `uv` (`uv run --script` installs `pyyaml`).
+It checks the tracked files `**/SKILL.md`, `AGENTS.md` and `CLAUDE.md` at any depth, `agents/*.md`, `commands/*.md` and `.claude/**/*.md`, and reads `.claude/nlpm.local.md`: `discovery.exclude` (globs to skip) and `rule_overrides.R51` (`enabled`, `vocabulary_skill`, the directory holding NLPM's `registry.yaml`).
+Exit status: 0 clean, 1 failing findings, 2 tool error; `--json` prints the findings and exits 0 unless a tool fails.
+Output is one `path:line: RULE message` line per finding.
 
 | Rule          | Reports                                                                                          | Fails |
 | ------------- | ------------------------------------------------------------------------------------------------ | ----- |
@@ -154,11 +193,18 @@ The `nlpm` step runs `hlf-nlpm-check` once for the whole repository. It has no `
 | `R01`         | One of the 11 vague quantifiers of NLPM rule R01, outside frontmatter, fences and inline code.   | no    |
 | `R51`         | A deprecated synonym from the registry, outside frontmatter, fences and inline code, when on.    | yes   |
 
-R51 applies the registry's `verbs` of every scope whose `paths` contain the artifact, plus the registry's `nouns` (`enforce_terms` when present, else `deprecated`), minus canonical terms and `sanctioned` (term, path) pairs. An artifact outside every scope is not checked. When a tracked `.claude-plugin/plugin.json` exists, the vendored `nlpm-check` (NLPM 1.4.3, ISC license) also runs on that plugin root and the worst exit status wins. LLM scoring (`/nlpm:score`) is not part of the step and stays a manual pass.
+R51 applies the registry's `verbs` of every scope whose `paths` contain the artifact, plus the registry's `nouns` (`enforce_terms` when present, else `deprecated`), minus canonical terms and `sanctioned` (term, path) pairs.
+An artifact outside every scope is not checked.
+When a tracked `.claude-plugin/plugin.json` exists, the vendored `nlpm-check` (NLPM 1.4.3, ISC license) also runs on that plugin root and the worst exit status wins.
+LLM scoring (`/nlpm:score`) is not part of the step and stays a manual pass.
 
 ## `hlf-rumdl-docs-check`
 
-The rumdl step's second check. `hk check` runs `rumdl check --deny-config-warnings` and `hlf-rumdl-docs-check {{files}}`, both every time, and fails with the higher of the two exit statuses; a rumdl finding does not hide the docs check findings. `hlf-rumdl-fix` runs it with `--json` after every `rumdl check --fix` and merges its findings into the rumdl findings, so the printed list, the per-rule counts, the agent prompt and the final gate include them. It needs `uv` (the script header pins no dependencies) and rumdl 0.3.2 or newer (`rumdl experimental export-elements` and `report-diagnostics`). Exit status: 0 clean, 1 findings, 2 tool error; with `--json` it exits 0 with findings.
+The rumdl step's second check.
+`hk check` runs `rumdl check --deny-config-warnings` and `hlf-rumdl-docs-check {{files}}`, both every time, and fails with the higher of the two exit statuses; a rumdl finding does not hide the docs check findings.
+`hlf-rumdl-fix` runs it with `--json` after every `rumdl check --fix` and merges its findings into the rumdl findings, so the printed list, the per-rule counts, the agent prompt and the final gate include them.
+It needs `uv` (the script header pins no dependencies) and rumdl 0.3.2 or newer (`rumdl experimental export-elements` and `report-diagnostics`).
+Exit status: 0 clean, 1 findings, 2 tool error; with `--json` it exits 0 with findings.
 
 | Rule             | Reports                                                                                                     |
 | ---------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -169,17 +215,34 @@ The rumdl step's second check. `hk check` runs `rumdl check --deny-config-warnin
 | `ref/path`       | A code span that looks like a repository path and does not exist.                                           |
 | `ref/task`       | `mise run <name>` in a code span or a shell fence, where the repository's mise config defines no such task. |
 
-- Files whose effective rumdl flavor is `obsidian` (`[global] flavor` and `[per-file-flavor]` in `.rumdl.toml`, same glob rules as rumdl) skip `callout/type`, `callout/title` and `callout/nested`. `callout/label` and the `ref/*` rules apply in every flavor.
-- A path code span has a `/`, no whitespace, none of `*?[{$<`, no `://` and does not start with `~`, `/` or `-`. A trailing `:LINE`, `:LINE-LINE`, `::symbol`, `#fragment` or `/` is ignored.
-- `ref/path` checks a reference only when its first segment exists, resolved from the repository root or from the Markdown file's directory. It passes when the full path is tracked, untracked but not ignored, gitignored, or present on disk (file, directory or symlink, tracked or not), so a gitignored nested repository checked out in the tree counts. Lint rule names (`typescript/await-thenable`), `owner/repo` names, `origin/HEAD` and paths under `.git/` are never checked because their first segment is not a directory. A top-level directory that disappeared entirely is therefore not reported.
-- A path the reader is told to create (an optional config file in a consumer repository) is reported when its directory exists. Name the file and its directory separately: `actionlint.yaml` in the `.github` directory.
-- `ref/task` uses `mise tasks ls --no-global --hidden --json` and counts only tasks whose source is inside the repository or comes from a `git::` entry in `task_config.includes` (mise's `remote-git-tasks-cache`), so `mise run release:preview` from the kit's task include passes. In a monorepo root (`monorepo_root = true`) mise names the root tasks `//:<name>`; the check strips the `//:` prefix, so `mise run <name>` passes. Global tasks never count, because CI does not have them, with one fixed exception: the kit's documented maintainer tasks `repo-adopt`, `repo-init`, `docs-drift`, `unslop` and `tsrs:install` always pass, so a repository's docs can tell its maintainer to run them and the result is the same locally and in CI. No other global task is accepted. A `git::` include that mise skipped, because `[settings] experimental = true` is missing from the repository's `mise.toml`, shows up as `ref/task` findings for the kit's tasks. It is skipped silently when `mise` is not on `PATH` or fails.
+- Files whose effective rumdl flavor is `obsidian` (`[global] flavor` and `[per-file-flavor]` in `.rumdl.toml`, same glob rules as rumdl) skip `callout/type`, `callout/title` and `callout/nested`.
+  `callout/label` and the `ref/*` rules apply in every flavor.
+- A path code span has a `/`, no whitespace, none of `*?[{$<`, no `://` and does not start with `~`, `/` or `-`.
+  A trailing `:LINE`, `:LINE-LINE`, `::symbol`, `#fragment` or `/` is ignored.
+- `ref/path` checks a reference only when its first segment exists, resolved from the repository root or from the Markdown file's directory.
+  It passes when the full path is tracked, untracked but not ignored, gitignored, or present on disk (file, directory or symlink, tracked or not), so a gitignored nested repository checked out in the tree counts.
+  Lint rule names (`typescript/await-thenable`), `owner/repo` names, `origin/HEAD` and paths under `.git/` are never checked because their first segment is not a directory.
+  A top-level directory that disappeared entirely is therefore not reported.
+- A path the reader is told to create (an optional config file in a consumer repository) is reported when its directory exists.
+  Name the file and its directory separately: `actionlint.yaml` in the `.github` directory.
+- `ref/task` uses `mise tasks ls --no-global --hidden --json` and counts only tasks whose source is inside the repository or comes from a `git::` entry in `task_config.includes` (mise's `remote-git-tasks-cache`), so `mise run release:preview` from the kit's task include passes.
+  In a monorepo root (`monorepo_root = true`) mise names the root tasks `//:<name>`; the check strips the `//:` prefix, so `mise run <name>` passes.
+  Global tasks never count, because CI does not have them, with one fixed exception: the kit's documented maintainer tasks `repo-adopt`, `repo-init`, `docs-drift`, `unslop` and `tsrs:install` always pass, so a repository's docs can tell its maintainer to run them and the result is the same locally and in CI.
+  No other global task is accepted.
+  A `git::` include that mise skipped, because `[settings] experimental = true` is missing from the repository's `mise.toml`, shows up as `ref/task` findings for the kit's tasks.
+  It is skipped silently when `mise` is not on `PATH` or fails.
 
 ## Escape hatches
 
-Each switch below exists for one situation. None of them is a way to deal with a large number of findings: for that, follow [../docs/lint-policy.md](../docs/lint-policy.md).
+Each switch below exists for one situation.
+None of them is a way to deal with a large number of findings: for that, follow [../docs/lint-policy.md](../docs/lint-policy.md).
 
-- `HK=0` runs one command without hk. Use it for `cz bump`, where pre-commit fixers would rewrite or block the generated bump commit ([../commitizen](../commitizen/README.md)), and for a merge commit after the gate passed.
-- `git commit --no-verify` skips all git hooks. It has the same effect as `HK=0` for one commit, and CI runs `hk check` as the backstop ([../github](../github/README.md)).
-- `HK_SKIP_STEPS=<step> git commit ...` skips named steps for one commit. Use it when a step's tool cannot run on this machine, not when the step reports findings.
-- `RUMDL_AGENT=0` stops `hlf-rumdl-fix` from launching the agent. Use it when `omp` is unavailable or a run must not start an agent. The step still fails while findings remain.
+- `HK=0` runs one command without hk.
+  Use it for `cz bump`, where pre-commit fixers would rewrite or block the generated bump commit ([../commitizen](../commitizen/README.md)), and for a merge commit after the gate passed.
+- `git commit --no-verify` skips all git hooks.
+  It has the same effect as `HK=0` for one commit, and CI runs `hk check` as the backstop ([../github](../github/README.md)).
+- `HK_SKIP_STEPS=<step> git commit ...` skips named steps for one commit.
+  Use it when a step's tool cannot run on this machine, not when the step reports findings.
+- `RUMDL_AGENT=0` stops `hlf-rumdl-fix` from launching the agent.
+  Use it when `omp` is unavailable or a run must not start an agent.
+  The step still fails while findings remain.

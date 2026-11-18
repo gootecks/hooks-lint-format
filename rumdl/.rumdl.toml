@@ -35,10 +35,11 @@ br-spaces = 2
 strict = false
 
 [MD013]
-# Prose is one line per paragraph; reflow joins wrapped paragraphs back into one line.
+# Prose is one sentence per line; reflow splits a paragraph at sentence ends and joins hard-wrapped lines.
+# GitHub renders it the same as one line per paragraph, and a one-sentence edit gives a one-line diff.
 line-length = 0
 reflow = true
-reflow-mode = "normalize"
+reflow-mode = "sentence-per-line"
 # Fix corrupts content: reflow joins the body of a titled callout (`> [!note] Title`) into the marker line,
 # which changes the title in Obsidian. Quotes and callouts keep the line breaks the author wrote.
 blockquotes = false
@@ -98,6 +99,9 @@ style = "aligned"
 [MD060]
 enabled = true
 style = "aligned"
+# With MD013 line-length = 0 and tables = false, MD060 has no width limit and pads wide tables to hundreds of columns.
+# A table wider than this falls back to the compact style; narrower tables stay aligned.
+max-width = 120
 
 [MD063]
 enabled = true
