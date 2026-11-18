@@ -1,3 +1,9 @@
+## [0.3.0](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.3.0) - 2026-11-18
+
+### ✨ Features
+
+- **swift**: Add swiftformat and swiftlint hk steps and shared configs ([#60](https://github.com/gootecks/hooks-lint-format/pull/60))
+
 ## [0.2.2](https://github.com/gootecks/hooks-lint-format/releases/tag/v0.2.2) - 2026-11-18
 
 ### 🐛 Fixes
