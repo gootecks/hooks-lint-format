@@ -33,7 +33,7 @@ The kit version appears in three places of a consumer repository; change all thr
 
 ### Publishing
 
-Pushing a tag `v<version>` runs [../.github/workflows/release.yml](../.github/workflows/release.yml). It fails unless the tag matches `version` in `PklProject`, runs `pkl project package` and attaches `hk-base@<version>`, its zip and both `.sha256` files, plus `hooks-lint-format-scripts-<version>.tar.gz`, to the GitHub release. `PklProject` excludes `README.md` from the package.
+A merge into `main` that holds a `fix`, `feat` or breaking commit since the last tag publishes `v<version>` through [../.github/workflows/release.yml](../.github/workflows/release.yml). It runs `cz bump`, fails unless the bumped `version` in `PklProject` matches, runs `pkl project package`, pushes the bump commit and tag, and attaches `hk-base@<version>`, its zip and both `.sha256` files, plus `hooks-lint-format-scripts-<version>.tar.gz`, to the GitHub release. `PklProject` excludes `README.md` from the package.
 
 ## Steps
 
