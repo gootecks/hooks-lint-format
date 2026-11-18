@@ -51,6 +51,8 @@ Pushing a tag `v<version>` runs [../.github/workflows/release.yml](../.github/wo
 
 hk runs steps in parallel. The steps share no files: oxfmt ignores Markdown through `ignorePatterns` in `.oxfmtrc.json`, so rumdl alone formats and lints Markdown and no step depends on another. `--deny-config-warnings` makes a misspelled key in `.rumdl.toml` fail the step instead of being ignored.
 
+`hk test` runs each step's tests in a temporary directory, including in repositories without the step's file types. The `oxlint` step replaces the builtin's tests: their bare `return` statement is not a TypeScript program, so `--type-check` fails it, and oxlint 1.92 treats the builtin's double-comparison fix as a suggestion that `--fix` does not apply. The kit's fixtures are a typed, exported function and `no-extra-non-null-assertion`, whose fix is safe. `mise run test:hk-steps` runs `hk test` in a consumer of the local `hk.pkl`; it needs `tsrs-lint` at `OXLINT_TSGOLINT_PATH`.
+
 > [!NOTE]
 > The `zizmor` fix command rewrites workflow files. In the `fix` and `pre-commit` hooks it runs on every workflow change, and `pre-commit` stages the result.
 

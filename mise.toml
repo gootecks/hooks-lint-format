@@ -160,6 +160,21 @@ grep -q 'MD018' <<<"$out"
 grep -q 'ref/task' <<<"$out"
 '''
 
+[tasks."test:hk-steps"]
+description = "hk test passes every step's tests in a consumer that amends the local hk/hk.pkl"
+dir = "{{config_root}}"
+shell = "bash -c"
+run = '''
+set -euo pipefail
+root=$PWD
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+cd "$tmp"
+git init -q
+printf 'amends "file://%s/hk/hk.pkl"\n' "$root" > hk.pkl
+hk test
+'''
+
 [tasks."test:nlpm-check"]
 description = "hlf-nlpm-check fails on name mismatch, R05 and R51 hits, reports R01 as advisory, and exits 0 on a clean repository"
 dir = "{{config_root}}"
